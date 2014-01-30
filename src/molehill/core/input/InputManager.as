@@ -2,13 +2,18 @@ package molehill.core.input
 {
 	import flash.display.DisplayObject;
 	import flash.display.InteractiveObject;
+	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
+	import molehill.core.Scene3DManager;
+	import molehill.core.events.Input3DEvent;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.Sprite3D;
+	import molehill.core.render.Sprite3DContainer;
 	
 	public class InputManager
 	{
@@ -33,7 +38,8 @@ package molehill.core.input
 				throw new Error("Use InputManager::getInstance()");
 			}
 			
-			_hashEventListeners = new Object();
+			_hashListenersByType = new Dictionary();
+			_hashTypeByListeners = new Dictionary();
 			_objectsUnderMouse = new Dictionary();
 		}
 		
@@ -42,12 +48,17 @@ package molehill.core.input
 		{
 			_mouseListener = mouseListener;
 			
+			_mouseStageX = mouseListener.stage != null ? mouseListener.stage.mouseX : mouseListener.mouseX;
+			_mouseStageY = mouseListener.stage != null ? mouseListener.stage.mouseY : mouseListener.mouseY;
+			
 			mouseListener.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 			mouseListener.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 			mouseListener.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			
 			mouseListener.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			mouseListener.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+			
+			mouseListener.addEventListener(Event.ENTER_FRAME, onListenerEnterFrame, false, int.MAX_VALUE);
 		}
 		
 		private var _enabled:Boolean = true;
@@ -55,7 +66,7 @@ package molehill.core.input
 		{
 			return _enabled;
 		}
-
+		
 		public function set enabled(value:Boolean):void
 		{
 			if (value == _enabled)
@@ -89,7 +100,7 @@ package molehill.core.input
 			_enabled = value;
 		}
 		
-		private function updateObjectsUnderCursor(listObjects:Array):void
+		private function updateNativeObjectsUnderCursor(listObjects:Array):void
 		{
 			var i:int = 0;
 			while (listObjects.length > i)
@@ -130,46 +141,11 @@ package molehill.core.input
 				return;
 			}
 			
-			var objectsUnderPoint:Array = _mouseListener.stage.getObjectsUnderPoint(new Point(event.stageX, event.stageY));
-			updateObjectsUnderCursor(objectsUnderPoint);
-			
-			if (objectsUnderPoint.length > 0)
-			{
-				return;
-			}
-			
-			var listener:InteractiveSprite3D;
-			var mouseUpListeners:Vector.<InteractiveSprite3D> = _hashEventListeners[MouseEvent.MOUSE_UP];
-			var mousePoint:Point = new Point(event.stageX, event.stageY);
-			var cameraPositionX:Number;
-			var cameraPositionY:Number;
-			var currentScene:Scene3D;
-			for each (listener in mouseUpListeners)
-			{
-				if (listener.getScene() == null)
-				{
-					continue;
-				}
-				
-				if (currentScene != listener.getScene())
-				{
-					currentScene = listener.getScene();
-					cameraPositionX = currentScene.cameraX;
-					cameraPositionY = currentScene.cameraY;
-				}
-				
-				if (listener.hitTestPoint(mousePoint))
-				{
-					listener.onMouseUp(
-						event.stageX,
-						event.stageY,
-						event.stageX - cameraPositionX,
-						event.stageY - cameraPositionY
-					);
-				}
-			}
+			_mouseKeyPressed = false;
+			_mouseKeyStateChanged = true;
 		}
 		
+		private var _listObjectsMouseDown:Array;
 		private function onMouseDown(event:MouseEvent):void
 		{
 			if (_mouseListener.stage == null)
@@ -177,44 +153,8 @@ package molehill.core.input
 				return;
 			}
 			
-			var objectsUnderPoint:Array = _mouseListener.stage.getObjectsUnderPoint(new Point(event.stageX, event.stageY));
-			updateObjectsUnderCursor(objectsUnderPoint);
-			
-			if (objectsUnderPoint.length > 0)
-			{
-				return;
-			}
-			
-			var listener:InteractiveSprite3D;
-			var mouseDownListeners:Vector.<InteractiveSprite3D> = _hashEventListeners[MouseEvent.MOUSE_DOWN];
-			var mousePoint:Point = new Point(event.stageX, event.stageY);
-			var cameraPositionX:Number;
-			var cameraPositionY:Number;
-			var currentScene:Scene3D;
-			for each (listener in mouseDownListeners)
-			{
-				if (listener.getScene() == null)
-				{
-					continue;
-				}
-				
-				if (currentScene != listener.getScene())
-				{
-					currentScene = listener.getScene();
-					cameraPositionX = currentScene.cameraX;
-					cameraPositionY = currentScene.cameraY;
-				}
-				
-				if (listener.hitTestPoint(mousePoint))
-				{
-					listener.onMouseDown(
-						event.stageX,
-						event.stageY,
-						event.stageX - cameraPositionX,
-						event.stageY - cameraPositionY
-					);
-				}
-			}
+			_mouseKeyPressed = true;
+			_mouseKeyStateChanged = true;
 		}
 		
 		private var _objectsUnderMouse:Dictionary;
@@ -225,146 +165,9 @@ package molehill.core.input
 				return;
 			}
 			
-			var objectsUnderPoint:Array = _mouseListener.stage.getObjectsUnderPoint(new Point(event.stageX, event.stageY));
-			var listener:InteractiveSprite3D;
-			
-			var mouseMoveListeners:Vector.<InteractiveSprite3D> = _hashEventListeners[MouseEvent.MOUSE_MOVE];
-			var mouseOverListeners:Vector.<InteractiveSprite3D> = _hashEventListeners[MouseEvent.MOUSE_OVER];
-			var mouseOutListeners:Vector.<InteractiveSprite3D> = _hashEventListeners[MouseEvent.MOUSE_OUT];
-			
-			var mousePoint:Point = new Point(event.stageX, event.stageY);
-			var cameraPositionX:Number;
-			var cameraPositionY:Number;
-			var currentScene:Scene3D;
-			
-			updateObjectsUnderCursor(objectsUnderPoint);
-			
-			if (objectsUnderPoint.length > 0)
-			{
-				for (var listenerObj:Object in _objectsUnderMouse)
-				{
-					listener = listenerObj as InteractiveSprite3D;
-					if (mouseOutListeners != null && mouseOutListeners.indexOf(listener) != -1 && _objectsUnderMouse[listener] != null)
-					{
-						if (listener.getScene() == null)
-						{
-							continue;
-						}
-						
-						if (currentScene != listener.getScene())
-						{
-							currentScene = listener.getScene();
-							cameraPositionX = currentScene.cameraX;
-							cameraPositionY = currentScene.cameraY;
-						}
-						
-						listener.onMouseOut(
-							event.stageX,
-							event.stageY,
-							event.stageX - cameraPositionX,
-							event.stageY - cameraPositionY
-						);
-						_objectsUnderMouse[listener] = null;
-					}
-				}
-				
-				return;
-			}
-			
-			for each (listener in mouseMoveListeners)
-			{
-				if (listener.getScene() == null)
-				{
-					continue;
-				}
-				
-				if (currentScene != listener.getScene())
-				{
-					currentScene = listener.getScene();
-					cameraPositionX = currentScene.cameraX;
-					cameraPositionY = currentScene.cameraY;
-				}
-				
-				if (listener.visible == false)
-				{
-					continue;
-				}
-				
-				if (listener.hitTestPoint(mousePoint))
-				{
-					listener.onMouseMove(
-						event.stageX,
-						event.stageY,
-						event.stageX - cameraPositionX,
-						event.stageY - cameraPositionY
-					);
-					if (mouseOverListeners == null || mouseOverListeners != null && mouseOverListeners.indexOf(listener) == -1)
-					{
-						_objectsUnderMouse[listener] = true;
-					}
-				}
-			}
-			
-			for (listenerObj in _objectsUnderMouse)
-			{
-				listener = listenerObj as InteractiveSprite3D;
-				
-				if (listener.getScene() == null)
-				{
-					continue;
-				}
-				
-				if (currentScene != listener.getScene())
-				{
-					currentScene = listener.getScene();
-					cameraPositionX = currentScene.cameraX;
-					cameraPositionY = currentScene.cameraY;
-				}
-				
-				if (!listener.hitTestPoint(mousePoint))
-				{
-					if (mouseOutListeners != null && mouseOutListeners.indexOf(listener) != -1 && _objectsUnderMouse[listener] != null)
-					{
-						listener.onMouseOut(
-							event.stageX,
-							event.stageY,
-							event.stageX - cameraPositionX,
-							event.stageY - cameraPositionY
-						);
-						_objectsUnderMouse[listener] = null;
-					}
-				}
-			}
-			
-			for each (listener in mouseOverListeners)
-			{
-				if (listener.getScene() == null)
-				{
-					continue;
-				}
-				
-				if (currentScene != listener.getScene())
-				{
-					currentScene = listener.getScene();
-					cameraPositionX = currentScene.cameraX;
-					cameraPositionY = currentScene.cameraY;
-				}
-				
-				if (listener.hitTestPoint(mousePoint))
-				{
-					if (_objectsUnderMouse[listener] == null)
-					{
-						listener.onMouseOver(
-							event.stageX,
-							event.stageY,
-							event.stageX - cameraPositionX,
-							event.stageY - cameraPositionY
-						);
-						_objectsUnderMouse[listener] = true;
-					}
-				}
-			}
-			
+			_mouseStageX = event.stageX;
+			_mouseStageY = event.stageY;
+			_mouseCoordsChanged = true;
 		}
 		
 		private function onKeyUp(event:KeyboardEvent):void
@@ -377,38 +180,308 @@ package molehill.core.input
 			
 		}
 		
-		private var _hashEventListeners:Object;
-		public function registerSprite(type:String, sprite:InteractiveSprite3D):void
+		private var _mouseStageX:Number = 0;
+		private var _mouseStageY:Number = 0;
+		private var _mouseKeyPressed:Boolean = false;
+		private var _mouseKeyStateChanged:Boolean = false;
+		private var _mouseCoordsChanged:Boolean = false;
+		private var _lastMouseDownObject:Sprite3D;
+		private function onListenerEnterFrame(event:Event):void
 		{
-			if (_hashEventListeners[type] == null)
-			{
-				_hashEventListeners[type] = new Vector.<InteractiveSprite3D>();
-			}
-			else if (_hashEventListeners[type].indexOf(sprite) != -1)
+			if (!_mouseCoordsChanged && !_mouseKeyStateChanged)
 			{
 				return;
 			}
 			
-			_hashEventListeners[type].push(sprite);
+			var listener:InteractiveSprite3D;
+			var mousePoint:Point = new Point(_mouseStageX, _mouseStageY);
+			var nativeObjects:Array = _mouseListener.stage.getObjectsUnderPoint(mousePoint);
+			updateNativeObjectsUnderCursor(nativeObjects);
+			
+			var parent:Sprite3DContainer;
+			var localShiftX:Number = 0;
+			var localShiftY:Number = 0;
+			// Display List objects overlap our 3d scene
+			// Dispatching MOUSE_OUT for previous objects under mouse
+			var listMouseOutListeners:Array = _hashListenersByType[Input3DEvent.MOUSE_OUT];
+			if (nativeObjects.length > 0)
+			{
+				for (var objectUnderMouse:Object in _objectsUnderMouse)
+				{
+					listener = objectUnderMouse as InteractiveSprite3D;
+					
+					localShiftX = 0;
+					localShiftY = 0;
+					
+					parent = listener.parent;
+					while (parent != null)
+					{
+						if (parent.scrollRect != null)
+						{
+							localShiftX += parent.scrollRect.x;
+							localShiftY += parent.scrollRect.y;
+						}
+						
+						parent = parent.parent;
+					}
+					
+					if (listMouseOutListeners != null && listMouseOutListeners.indexOf(listener) != -1)
+					{
+						listener.onMouseOut(
+							_mouseStageX,
+							_mouseStageY,
+							_mouseStageX + localShiftX,
+							_mouseStageY + localShiftY
+						);
+					}
+					
+					_objectsUnderMouse[listener] = null;
+				}
+				
+				return;
+			}
+			
+			var activeScene:Scene3D = Scene3DManager.getInstance().activeScene;
+			var molehillObjects:Vector.<Sprite3D> = activeScene.getObjectsUnderPoint(mousePoint);
+			var numObjects:Number = molehillObjects.length;
+			
+			for (var i:int = numObjects - 1; i >= 0; i--)
+			{
+				var candidate:Sprite3D = molehillObjects[i] as Sprite3D;
+				if (candidate == null)
+				{
+					continue;
+				}
+				
+				if (!candidate.mouseEnabled)
+				{
+					parent = candidate.parent;
+					while (parent != null && !parent.mouseEnabled) 
+					{
+						parent = parent.parent;
+					}
+					
+					if (parent == null)
+					{
+						continue;
+					}
+				}
+				
+				if (_hashTypeByListeners[candidate] == null)
+				{
+					parent = candidate.parent;
+					while (parent != null && _hashTypeByListeners[parent] == null) 
+					{
+						parent = parent.parent;
+					}
+					
+					if (parent == null)
+					{
+						continue;
+					}
+					
+					candidate = parent;
+				}
+				
+				
+				localShiftX = 0;
+				localShiftY = 0;
+				
+				parent = candidate is Sprite3DContainer ? candidate as Sprite3DContainer : candidate.parent;
+				while (parent != null)
+				{
+					if (parent.scrollRect != null)
+					{
+						localShiftX += parent.scrollRect.x;
+						localShiftY += parent.scrollRect.y;
+					}
+					
+					parent = parent.parent;
+				}
+				
+				var eventTypes:Array = _hashTypeByListeners[candidate];
+				for (var j:int = 0; j < eventTypes.length; j++)
+				{
+					var eventType:String = eventTypes[j];
+					switch (eventType)
+					{
+						case Input3DEvent.MOUSE_OVER:
+							if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
+							{
+								if ((candidate as InteractiveSprite3D).onMouseOver(
+									_mouseStageX,
+									_mouseStageY,
+									_mouseStageX + localShiftX,
+									_mouseStageY + localShiftY
+								))
+								{
+									_objectsUnderMouse[candidate] = true;
+								}
+							}
+							break;
+						case Input3DEvent.CLICK:
+							if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
+							{
+								if ((candidate as InteractiveSprite3D).onMouseClick(
+									_mouseStageX,
+									_mouseStageY,
+									_mouseStageX + localShiftX,
+									_mouseStageY + localShiftY
+								))
+								{
+									_objectsUnderMouse[candidate] = true;
+								}
+							}
+							break;
+						case Input3DEvent.MOUSE_UP:
+							if (_mouseKeyStateChanged && !_mouseKeyPressed)
+							{
+								if ((candidate as InteractiveSprite3D).onMouseUp(
+									_mouseStageX,
+									_mouseStageY,
+									_mouseStageX + localShiftX,
+									_mouseStageY + localShiftY
+								))
+								{
+									_objectsUnderMouse[candidate] = true;
+								}
+							}
+							break;
+						case Input3DEvent.MOUSE_DOWN:
+							if (_mouseKeyStateChanged && _mouseKeyPressed)
+							{
+								if ((candidate as InteractiveSprite3D).onMouseDown(
+									_mouseStageX,
+									_mouseStageY,
+									_mouseStageX + localShiftX,
+									_mouseStageY + localShiftY
+								))
+								{
+									_objectsUnderMouse[candidate] = true;
+								}
+							}
+							break;
+						case Input3DEvent.MOUSE_MOVE:
+							if (_mouseCoordsChanged)
+							{
+								if ((candidate as InteractiveSprite3D).onMouseMove(
+									_mouseStageX,
+									_mouseStageY,
+									_mouseStageX + localShiftX,
+									_mouseStageY + localShiftY
+								))
+								{
+									_objectsUnderMouse[candidate] = true;
+								}
+							}
+							break;
+					}
+				}
+				
+				if (_mouseKeyStateChanged)
+				{
+					_lastMouseDownObject = _mouseKeyPressed ? candidate : null;
+				}
+				
+				
+				break;
+			}
+			
+			for (objectUnderMouse in _objectsUnderMouse)
+			{
+				listener = objectUnderMouse as InteractiveSprite3D;
+				if (_objectsUnderMouse[listener] == null)
+				{
+					continue;
+				}
+				
+				if (listener === candidate)
+				{
+					continue;
+				}
+				
+				localShiftX = 0;
+				localShiftY = 0;
+				
+				parent = listener.parent;
+				while (parent != null)
+				{
+					if (parent.scrollRect != null)
+					{
+						localShiftX += parent.scrollRect.x;
+						localShiftY += parent.scrollRect.y;
+					}
+					
+					parent = parent.parent;
+				}
+				
+				if (listMouseOutListeners != null && listMouseOutListeners.indexOf(listener) != -1)
+				{
+					listener.onMouseOut(
+						_mouseStageX,
+						_mouseStageY,
+						_mouseStageX + localShiftX,
+						_mouseStageY + localShiftY
+					);
+				}
+				
+				_objectsUnderMouse[listener] = null;
+			}
+			
+			_mouseKeyStateChanged = false;
+			_mouseCoordsChanged = false;
+		}
+		
+		private var _hashListenersByType:Dictionary;
+		private var _hashTypeByListeners:Dictionary;
+		public function registerSprite(type:String, sprite:InteractiveSprite3D):void
+		{
+			if (_hashTypeByListeners[sprite] == null)
+			{
+				_hashTypeByListeners[sprite] = new Array();
+			}
+			if (_hashTypeByListeners[sprite].indexOf(type) == -1)
+			{
+				_hashTypeByListeners[sprite].push(type);
+			}
+			
+			if (_hashListenersByType[type] == null)
+			{
+				_hashListenersByType[type] = new Array();
+			}
+			if (_hashListenersByType[type].indexOf(sprite) == -1)
+			{
+				_hashListenersByType[type].push(sprite);
+			}
+			
 		}
 		
 		public function unregisterSprite(type:String, sprite:InteractiveSprite3D):void
 		{
-			if (_hashEventListeners[type] == null)
+			if (_hashTypeByListeners[sprite] != null)
 			{
-				return;
+				var listenerIndex:int = _hashTypeByListeners[sprite].indexOf(type);
+				if (listenerIndex != -1)
+				{
+					_hashTypeByListeners[sprite].splice(listenerIndex, 1);
+					if (_hashTypeByListeners[sprite].length == 0)
+					{
+						delete _hashTypeByListeners[sprite];
+					}
+				}
 			}
 			
-			var listenerIndex:int = _hashEventListeners[type].indexOf(sprite);
-			if (listenerIndex == -1)
+			if (_hashListenersByType[type] != null)
 			{
-				return;
-			}
-			
-			_hashEventListeners[type].splice(listenerIndex, 1);
-			if (_hashEventListeners[type].length == 0)
-			{
-				delete _hashEventListeners[type];
+				listenerIndex = _hashListenersByType[type].indexOf(sprite);
+				if (listenerIndex != -1)
+				{
+					_hashListenersByType[type].splice(listenerIndex, 1);
+					if (_hashListenersByType[type].length == 0)
+					{
+						delete _hashListenersByType[type];
+					}
+				}
 			}
 		}
 	}

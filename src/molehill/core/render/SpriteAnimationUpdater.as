@@ -21,12 +21,15 @@ package molehill.core.render
 		}
 		
 		private static var _allowInstantion:Boolean = false;
+		private var _timePerFrame:int;
 		public function SpriteAnimationUpdater()
 		{
 			if (!_allowInstantion)
 			{
 				throw new Error("Use SpriteAnimationUpdater::getInstance()");
 			}
+			
+			_timePerFrame = 1000 / _fps;
 		}
 		
 		private var _enabled:Boolean = true;
@@ -127,7 +130,6 @@ package molehill.core.render
 		
 		private var _lastTimerValue:uint = 0;
 		private var _timerRemainedValue:uint = 0;
-		private var _timePerFrame:int;
 		private function update():void
 		{
 			if (!_enabled)
@@ -137,7 +139,7 @@ package molehill.core.render
 			
 			_timerRemainedValue += getTimer() - _lastTimerValue;
 			var frameSwitched:Boolean = false;
-			while (_timerRemainedValue > _timePerFrame)
+			while (_timePerFrame > 0 && _timerRemainedValue > _timePerFrame)
 			{
 				if (_dropFrames || !frameSwitched)
 				{

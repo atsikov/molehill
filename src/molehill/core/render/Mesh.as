@@ -1,5 +1,8 @@
 package molehill.core.render
 {
+	import flash.display3D.Context3D;
+	import flash.display3D.IndexBuffer3D;
+	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
@@ -30,6 +33,7 @@ package molehill.core.render
 		/**
 		 *  should be passed as 0,1,2,0,2,3
 		 **/ 
+		protected var _reuseVertices:Boolean = true;
 		public function addTile(
 			x0:Number, y0:Number,
 			x1:Number, y1:Number,
@@ -47,7 +51,7 @@ package molehill.core.render
 		{
 			_vertexData = null;
 			var index0:int = _listVerticesX.indexOf(x0);
-			if (index0 == -1 || _listVerticesY[index0] != y0)
+			if (!_reuseVertices || index0 == -1 || _listVerticesY[index0] != y0)
 			{
 				index0 = _listVerticesX.push(x0) - 1;
 				_listVerticesY.push(y0);
@@ -58,7 +62,7 @@ package molehill.core.render
 			_listIndices.writeShort(index0);
 			
 			var index1:int = _listVerticesX.indexOf(x1);
-			if (index1 == -1 || _listVerticesY[index1] != y1)
+			if (!_reuseVertices || index1 == -1 || _listVerticesY[index1] != y1)
 			{
 				index1 = _listVerticesX.push(x1) - 1;
 				_listVerticesY.push(y1);
@@ -69,7 +73,7 @@ package molehill.core.render
 			_listIndices.writeShort(index1);
 			
 			var index2:int = _listVerticesX.indexOf(x2);
-			if (index2 == -1 || _listVerticesY[index2] != y2)
+			if (!_reuseVertices || index2 == -1 || _listVerticesY[index2] != y2)
 			{
 				index2 = _listVerticesX.push(x2) - 1;
 				_listVerticesY.push(y2);
@@ -83,7 +87,7 @@ package molehill.core.render
 			_listIndices.writeShort(index2);
 			
 			var index3:int = _listVerticesX.indexOf(x3);
-			if (index3 == -1 || _listVerticesY[index3] != y3)
+			if (!_reuseVertices || index3 == -1 || _listVerticesY[index3] != y3)
 			{
 				index3 = _listVerticesX.push(x3) - 1;
 				_listVerticesY.push(y3);
@@ -92,11 +96,80 @@ package molehill.core.render
 				_listColors.push(rgba3);
 			}
 			_listIndices.writeShort(index3);
+			
+			if (x0 < _left)
+			{
+				_left = x0;
+			}
+			if (x1 < _left)
+			{
+				_left = x1;
+			}
+			if (x2 < _left)
+			{
+				_left = x2;
+			}
+			if (x3 < _left)
+			{
+				_left = x3;
+			}
+			
+			if (x0 > _right)
+			{
+				_right = x0;
+			}
+			if (x1 > _right)
+			{
+				_right = x1;
+			}
+			if (x2 > _right)
+			{
+				_right = x2;
+			}
+			if (x3 > _right)
+			{
+				_right = x3;
+			}
+			
+			if (y0 < _top)
+			{
+				_top = y0;
+			}
+			if (y1 < _top)
+			{
+				_top = y1;
+			}
+			if (y2 < _top)
+			{
+				_top = y2;
+			}
+			if (y3 < _top)
+			{
+				_top = y3;
+			}
+			
+			if (y0 > _bottom)
+			{
+				_bottom = y0;
+			}
+			if (y1 > _bottom)
+			{
+				_bottom = y1;
+			}
+			if (y2 > _bottom)
+			{
+				_bottom = y2;
+			}
+			if (y3 > _bottom)
+			{
+				_bottom = y3;
+			}
 		}
 		
 		private var _vertexData:ByteArray;
 		public function getVerticesData():ByteArray
 		{
+			updateScrollableContainerValues();
 			if (_vertexData != null)
 			{
 				return _vertexData;
@@ -111,12 +184,11 @@ package molehill.core.render
 				_vertexData.writeFloat(_listVerticesY[i]);
 				_vertexData.writeFloat(0);
 				
-				var argb:uint = _listColors[i];
-				//trace(argb >>> 24);
-				_vertexData.writeFloat((argb >>> 24) / 0xFF);
-				_vertexData.writeFloat(((argb >>> 16) & 0xFF) / 0xFF);
-				_vertexData.writeFloat(((argb >>> 8) & 0xFF) / 0xFF);
-				_vertexData.writeFloat(uint(argb & 0xFF) / 0xFF);
+				var rgba:uint = _listColors[i];
+				_vertexData.writeFloat((rgba >>> 24) / 0xFF);
+				_vertexData.writeFloat(((rgba >>> 16) & 0xFF) / 0xFF);
+				_vertexData.writeFloat(((rgba >>> 8) & 0xFF) / 0xFF);
+				_vertexData.writeFloat(uint(rgba & 0xFF) / 0xFF);
 				
 				_vertexData.writeFloat(_listTextureU[i]);
 				_vertexData.writeFloat(_listTextureW[i]);
@@ -131,7 +203,7 @@ package molehill.core.render
 			if (passedVertices != _lastPassedVertices)
 			{
 				_listIndices.position = 0;
-				var shift:int = passedVertices / 9;
+				var shift:int = passedVertices / 9 - _lastPassedVertices / 9;
 				for (var i:int = 0; i < _listIndices.length / 2; i++)
 				{
 					var index:int = _listIndices.readShort();
@@ -148,9 +220,7 @@ package molehill.core.render
 		override public function set textureID(value:String):void
 		{
 			super.textureID = value;
-			_textureAtlasID = TextureManager.getInstance().getAtlasIDByTexture(
-				TextureManager.getInstance().getTextureByID(textureID)
-			);
+			_textureAtlasID = TextureManager.getInstance().getAtlasDataByTextureID(textureID).atlasID;
 		}
 		
 		// IVertexBatcher
@@ -168,6 +238,113 @@ package molehill.core.render
 		public function set textureAtlasID(value:String):void
 		{
 			_textureAtlasID = value;
+		}
+		
+		private var _scrollRect:Rectangle;
+		public function get scrollRect():Rectangle
+		{
+			if (_scrollRect == null)
+			{
+				_scrollRect = new Rectangle();
+			}
+			
+			return _scrollRect;
+		}
+		
+		private var _scrollRectOwner:Sprite3DContainer;
+		public function get scrollRectOwner():Sprite3DContainer
+		{
+			return _scrollRectOwner;
+		}
+		
+		public function set scrollRectOwner(value:Sprite3DContainer):void
+		{
+			if (_scrollRectOwner === value)
+			{
+				return;
+			}
+			
+			_scrollRectOwner = value;
+			
+			if (_scrollRectOwner == null)
+			{
+				_scrollRect = null;
+				return;
+			}
+			
+			updateScrollableContainerValues();
+		}
+		
+		private function updateScrollableContainerValues():void
+		{
+			if (_scrollRectOwner == null || _scrollRectOwner != null && _scrollRectOwner.scrollRect == null)
+			{
+				return;
+			}
+			
+			if (_scrollRect == null)
+			{
+				_scrollRect = new Rectangle();
+			}
+			
+			_scrollRect.x = _scrollRectOwner.scrollRect.x;
+			_scrollRect.y = _scrollRectOwner.scrollRect.y;
+			_scrollRect.width = _scrollRectOwner.width;
+			_scrollRect.height = _scrollRectOwner.height;
+			var parent:Sprite3DContainer = _scrollRectOwner.parent;
+			while (parent != null)
+			{
+				if (parent.scrollRect != null)
+				{
+					_scrollRect.x += parent.scrollRect.x;
+					_scrollRect.y += parent.scrollRect.y;
+				}
+				
+				parent = parent.parent;
+			}
+		}
+		
+		private var _left:Number = int.MAX_VALUE;
+
+		public function get left():Number
+		{
+			return _left;
+		}
+
+		private var _right:Number = int.MIN_VALUE;
+
+		public function get right():Number
+		{
+			return _right;
+		}
+
+		private var _top:Number = int.MAX_VALUE;
+
+		public function get top():Number
+		{
+			return _top;
+		}
+
+		private var _bottom:Number = int.MIN_VALUE;
+
+		public function get bottom():Number
+		{
+			return _bottom;
+		}
+		
+		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
+		{
+			return null;
+		}
+		
+		public function getCustomIndexBuffer(context:Context3D):IndexBuffer3D
+		{
+			return null;
+		}
+		
+		public function get indexBufferOffset():int
+		{
+			return -1;
 		}
 	}
 }

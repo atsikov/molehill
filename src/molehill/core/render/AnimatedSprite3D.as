@@ -1,9 +1,6 @@
 package molehill.core.render
 {
 	
-	import flash.display.BitmapData;
-	import flash.display.Sprite;
-	import flash.display3D.textures.Texture;
 	import flash.geom.Rectangle;
 	
 	import molehill.core.sprite.SpriteAnimationData;
@@ -14,6 +11,19 @@ package molehill.core.render
 
 	public class AnimatedSprite3D extends Sprite3D
 	{
+		public static function createFromTexture(textureID:String):AnimatedSprite3D
+		{
+			var sprite:AnimatedSprite3D = new AnimatedSprite3D();
+			sprite.textureID = textureID;
+			
+			var spriteSheetData:SpriteSheetData = TextureManager.getInstance().getSpriteSheetData(textureID);
+			sprite.setSize(spriteSheetData.frameWidth, spriteSheetData.frameHeight);
+			sprite.totalFrames = spriteSheetData.totalFrames;
+			sprite.regionsInRow = spriteSheetData.framesPerRow;
+			
+			return sprite;
+		}
+		
 		public function AnimatedSprite3D()
 		{
 			super();
@@ -120,8 +130,7 @@ package molehill.core.render
 		
 		private function updateFrame():void
 		{
-			var texture:Texture = TextureManager.getInstance().getTextureByID(textureID);
-			if (texture == null)
+			if (!TextureManager.getInstance().isTextureCreated(textureID))
 			{
 				SpriteAnimationUpdater.getInstance().removeAnimation(this);
 				return;
@@ -131,8 +140,7 @@ package molehill.core.render
 			if (spriteSheetData != null)
 			{
 				var frameRegion:Rectangle = spriteSheetData.getFrameRectangle(_currentFrame % spriteSheetData.totalFrames);
-				var atlasID:String = TextureManager.getInstance().getAtlasIDByTexture(texture);
-				var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByID(atlasID);
+				var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(textureID);
 				var sheetRegion:Rectangle = atlas.getTextureBitmapRect(textureID);
 				
 				frameRegion.x += sheetRegion.x;

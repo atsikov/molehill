@@ -139,7 +139,7 @@ package molehill.core.texture
 			while (rawData.bytesAvailable > 0)
 			{
 				var textureID:String = rawData.readUTF();
-				var chunkSize:int = rawData.readUnsignedShort();
+				var chunkSize:int = rawData.readUnsignedShort(); // 4 bytes for width and height + width / 8 * height bytes for alpha data
 				var chunkData:ByteArray = new ByteArray();
 				chunkData.writeBytes(rawData, rawData.position, chunkSize);
 				rawData.position += chunkSize;

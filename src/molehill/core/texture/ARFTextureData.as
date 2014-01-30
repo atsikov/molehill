@@ -16,8 +16,7 @@ package molehill.core.texture
 			return textureData;
 		}
 		
-		private var _rawATFData:ByteArray;
-		private var _textureAtlasData:TextureAtlasData;
+		protected var _rawATFData:ByteArray;
 		private var _rawSpriteAnimationData:Object;
 		public function ARFTextureData(rawData:ByteArray)
 		{
@@ -84,6 +83,13 @@ package molehill.core.texture
 			return Math.pow(2, log2Height);
 		}
 		
+		public function get numTextures():uint
+		{
+			_rawATFData.position = 9;
+			return _rawATFData.readByte();
+		}
+		
+		protected var _textureAtlasData:TextureAtlasData;
 		public function get textureAtlasData():TextureAtlasData
 		{
 			return _textureAtlasData;

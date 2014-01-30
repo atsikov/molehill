@@ -7,8 +7,8 @@ package molehill.core
 	
 	import molehill.core.render.Scene3D;
 	import molehill.core.render.Sprite3D;
-	import molehill.core.render.engine.IRenderEngine;
-	import molehill.core.render.engine.MolehillRenderEngine;
+	import molehill.core.render.RenderEngine;
+	import molehill.core.render.shader.Shader3DCache;
 	import molehill.core.texture.TextureManager;
 
 	public class Scene3DManager
@@ -27,7 +27,7 @@ package molehill.core
 		}
 		
 		private static var _allowInstantion:Boolean = false;
-		private static var _renderer:MolehillRenderEngine;
+		private static var _renderer:RenderEngine;
 		public function Scene3DManager()
 		{
 			if (!_allowInstantion)
@@ -71,7 +71,8 @@ package molehill.core
 			else
 			{
 				TextureManager.getInstance().setContext(context);
-				_renderer = new MolehillRenderEngine(context);
+				Shader3DCache.getInstance().init(context);
+				_renderer = new RenderEngine(context);
 				_renderer.setViewportSize(_stage.stageWidth, _stage.stageHeight);
 				_renderer.configureVertexBuffer(
 					Sprite3D.VERTICES_OFFSET,
@@ -96,12 +97,6 @@ package molehill.core
 			
 		}
 		
-		public function get isConstrained():Boolean
-		{
-			var context:Context3D = _stage.stage3Ds[0].context3D;
-			return context.driverInfo.toLocaleLowerCase().indexOf("constrained") != -1;
-		}
-		
 		private function onContext3DLost(event:Event):void
 		{
 			var context:Context3D = _stage.stage3Ds[0].context3D;
@@ -120,25 +115,52 @@ package molehill.core
 		 **/
 		private var _hashScenes:Object;
 		private var _activeScene:Scene3D;
-		public function addScene(alias:String, scene:Scene3D):void
+		public function createEmptyScene(alias:String):void
 		{
+			var scene:Scene3D = new Scene3D();
+			
 			if (_hashScenes[alias] != null)
 			{
 				throw new Error("SceneManager: scene with alias " + alias + " already added. Remove existing scene or use new alias.");
 			}
 			
 			_hashScenes[alias] = scene;
+			
+			if (_activeScene == null)
+			{
+				switchScene(alias);
+			}
+		}
+		
+		public function addScene(alias:String, scene:Scene3D):void
+		{
+			if (_hashScenes[alias] != null)
+			{
+				throw new Error("Scene3DManager: scene with alias " + alias + " already added. Remove existing scene or use new alias.");
+			}
+			
+			_hashScenes[alias] = scene;
+			
+			if (_activeScene == null)
+			{
+				switchScene(alias);
+			}
 		}
 		
 		public function removeScene(alias:String):void
 		{
+			if (_hashScenes[alias] === _activeScene)
+			{
+				throw new Error("Scene3DManager: unable to remove active scene. Switch to another scene first.");
+			}
+			
 			if (_hashScenes[alias] != null)
 			{
 				delete _hashScenes[alias];
 			}
 		}
 		
-		public function get renderEngine():IRenderEngine
+		public function get renderEngine():RenderEngine
 		{
 			return _renderer;
 		}
