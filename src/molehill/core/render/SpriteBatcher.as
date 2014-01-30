@@ -2,11 +2,18 @@ package molehill.core.render
 {
 	import easy.collections.LinkedList;
 	import easy.collections.LinkedListElement;
+	import easy.collections.TreeNode;
 	
+	import flash.display.Shader;
+	import flash.display.Sprite;
+	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
+	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
+	
+	import molehill.core.render.shader.Shader3D;
 	
 	/**
 	 * 
@@ -34,18 +41,6 @@ package molehill.core.render
 			_blendMode = value;
 		}
 
-		
-		private var _atlasID:String;
-		internal function getTextureAtlasID():String
-		{
-			return _atlasID;
-		}
-		
-		internal function setTextureAtlasID(value:String):void
-		{
-			_atlasID = value;
-		}
-		
 		private var _textureAtlasID:String;
 		public function get textureAtlasID():String
 		{
@@ -67,12 +62,9 @@ package molehill.core.render
 		
 		internal function addChild(sprite:Sprite3D):void
 		{
-			//addChildAt(sprite, numSprites - 1);
 			_listSprites.enqueue(sprite);
 			_needUpdateBuffers = true;
 			_numSprites++;
-			
-			//sprite.addEventListener(Sprite3DEvent.CHANGE, onSpriteChanged);
 			
 			if (_totalVertexBuffer != null)
 			{
@@ -85,39 +77,138 @@ package molehill.core.render
 				_totalIndexBuffer = null;
 			}
 		}
-		/*
-		internal function addChildAt(sprite:Sprite3D, index:int):void
+		
+		internal function addChildBefore(child1:Sprite3D, child2:Sprite3D):void
 		{
-			if (index >= _listSprites.length)
+			var cursor:LinkedListElement = _listSprites.head;
+			while (cursor != null && cursor.data !== child1)
 			{
-				_listSprites.push(sprite);
+				cursor = cursor.next;
+			}
+			
+			if (cursor == null)
+			{
+				_listSprites.enqueue(child2);
 			}
 			else
 			{
-				_listSprites.splice(index, 0, sprite);
+				var element:LinkedListElement = new LinkedListElement();
+				element.data = child2;
+				
+				if (cursor.prev == null)
+				{
+					_listSprites.addElementToHead(element);
+				}
+				else
+				{
+					_listSprites.insertElementAfter(cursor.prev, element);
+				}
 			}
-			
-			if (sprite.visible)
-			{
-				_numVisibleSprites++;
-			}
-			
 			_needUpdateBuffers = true;
+			_numSprites++;
 			
-			sprite.addEventListener(Sprite3DEvent.CHANGE, onSpriteChanged);
-		}
-		*/
-		/*
-		internal function getChildAt(index:int):Sprite3D
-		{
-			if (index > numSprites)
+			if (_totalVertexBuffer != null)
 			{
-				return null;
+				_totalVertexBuffer.dispose();
+				_totalVertexBuffer = null;
+			}
+			if (_totalIndexBuffer != null)
+			{
+				_totalIndexBuffer.dispose();
+				_totalIndexBuffer = null;
+			}
+		}
+		
+		
+		internal function addChildAfter(child1:Sprite3D, child2:Sprite3D):void
+		{
+			var cursor:LinkedListElement = _listSprites.head;
+			while (cursor != null && cursor.data !== child1)
+			{
+				cursor = cursor.next;
 			}
 			
-			return _listSprites[index];
+			if (cursor == null)
+			{
+				_listSprites.enqueue(child2);
+			}
+			else
+			{
+				var element:LinkedListElement = new LinkedListElement();
+				element.data = child2;
+				_listSprites.insertElementAfter(cursor, element);
+			}
+			_needUpdateBuffers = true;
+			_numSprites++;
+			
+			if (_totalVertexBuffer != null)
+			{
+				_totalVertexBuffer.dispose();
+				_totalVertexBuffer = null;
+			}
+			if (_totalIndexBuffer != null)
+			{
+				_totalIndexBuffer.dispose();
+				_totalIndexBuffer = null;
+			}
 		}
-		*/
+		
+		internal function reset():void
+		{
+			while (!_listSprites.empty)
+			{
+				var child:Sprite3D = _listSprites.dequeue() as Sprite3D;
+				if (child is AnimatedSprite3D)
+				{
+					(child as AnimatedSprite3D).stop();
+				}
+			}
+			
+			_numSprites = 0;
+			_numVisibleSprites = 0;
+			
+			if (_totalVertexBuffer != null)
+			{
+				_totalVertexBuffer.dispose();
+				_totalVertexBuffer = null;
+			}
+			
+			if (_totalIndexBuffer != null)
+			{
+				_totalIndexBuffer.dispose();
+				_totalIndexBuffer = null;
+			}
+			
+			if (_vertexBufferData != null)
+			{
+				_vertexBufferData.length = 0;
+				_vertexBufferData = null;
+			}
+			
+			if (_indexBufferData != null)
+			{
+				_indexBufferData.length = 0;
+				_indexBufferData = null;
+			}
+		}
+		
+		internal function pushSpriteContainerTree(container:Sprite3DContainer):void
+		{
+			var root:TreeNode = container.localTreeRoot.firstChild;
+			
+			while (root != null)
+			{
+				if (root.value is Sprite3DContainer)
+				{
+					pushSpriteContainerTree(root.value as Sprite3DContainer);
+				}
+				
+				addChild(root.value as Sprite3D);
+				
+				root = root.nextSibling;
+			}
+		}
+		
 		internal function getFirstChild():Sprite3D
 		{
 			return _listSprites.head == null ? null : _listSprites.head.data as Sprite3D;
@@ -163,29 +254,58 @@ package molehill.core.render
 			
 			if (_vertexBufferData != null)
 			{
+				_vertexBufferData.length = 0;
 				_vertexBufferData = null;
 			}
 			
 			if (_indexBufferData != null)
 			{
+				_indexBufferData.length = 0;
 				_indexBufferData = null;
 			}
 			
 			_needUpdateBuffers = true;
 		}
-		/*
-		internal function setChildIndex(child:Sprite3D, index:int):void
+		
+		internal function splitAfterChild(child:Sprite3D):SpriteBatcher
 		{
-			var childCurrentIndex:int = _listSprites.indexOf(child);
-			if (childCurrentIndex == -1)
+			var element:LinkedListElement = _listSprites.head;
+			var childIndex:int = 0;
+			while (element != null && element.data !== child)
 			{
-				return;
+				element = element.next;
+				childIndex++;
 			}
 			
-			_listSprites.splice(childCurrentIndex, 1);
-			_listSprites.splice(index, 0, child);
+			element = element == null ? null : element.next;
+			
+			if (element == null)
+			{
+				return null;
+			}
+			
+			childIndex++;
+			
+			var result:SpriteBatcher = new SpriteBatcher(_parent);
+			result._textureAtlasID = _textureAtlasID;
+			result._blendMode = _blendMode;
+			result._scrollRectOwner = _scrollRectOwner;
+			result._shader = shader;
+			result._listSprites = _listSprites.splitAtElement(element);
+			result._numSprites = _numSprites - childIndex;
+			result._numVisibleSprites = result._numSprites;
+			result._needUpdateBuffers = true;
+			
+			_indexBufferData = null;
+			_vertexBufferData = null;
+			
+			_needUpdateBuffers = true;
+			_numSprites = childIndex;
+			_numVisibleSprites = childIndex;
+			
+			return result;
 		}
-		*/
+		
 		internal function contains(child:Sprite3D):Boolean
 		{
 			// TODO: implement search from both head and tail
@@ -197,6 +317,63 @@ package molehill.core.render
 			}
 			
 			return cursorHead != null;
+		}
+		
+		private var _scrollRect:Rectangle;
+		public function get scrollRect():Rectangle
+		{
+			if (_scrollRect == null)
+			{
+				_scrollRect = new Rectangle();
+			}
+			
+			return _scrollRect;
+		}
+		
+		private var _scrollRectOwner:Sprite3DContainer;
+		public function get scrollRectOwner():Sprite3DContainer
+		{
+			return _scrollRectOwner;
+		}
+		
+		public function set scrollRectOwner(value:Sprite3DContainer):void
+		{
+			if (_scrollRectOwner === value)
+			{
+				return;
+			}
+			
+			_scrollRectOwner = value;
+			updateScrollableContainerValues();
+		}
+		
+		private function updateScrollableContainerValues():void
+		{
+			if (_scrollRectOwner.scrollRect == null)
+			{
+				return;
+			}
+			
+			if (_scrollRect == null)
+			{
+				_scrollRect = new Rectangle();
+			}
+			
+			_scrollRect.x = _scrollRectOwner.scrollRect.x;
+			_scrollRect.y = _scrollRectOwner.scrollRect.y;
+			_scrollRect.width = _scrollRectOwner.width;
+			_scrollRect.height = _scrollRectOwner.height;
+			var parent:Sprite3DContainer = _scrollRectOwner.parent;
+			while (parent != null)
+			{
+				if (parent.scrollRect != null)
+				{
+					_scrollRect.x += parent.scrollRect.x;
+					_scrollRect.y += parent.scrollRect.y;
+				}
+				
+				parent = parent.parent;
+			}
 		}
 		
 		private var _numVisibleSprites:int;
@@ -233,7 +410,6 @@ package molehill.core.render
 					var index:int = _indexBufferData.readShort();
 					_indexBufferData.position -= 2;
 					_indexBufferData.writeShort(index + shift);
-					//_totalIndexBufferData.push(_indexBufferData[i] + _numVertices / 9);
 				}
 				
 				_lastPassedVertices = passedVertices;
@@ -324,117 +500,30 @@ package molehill.core.render
 			
 			var i:int = 0;
 			cursor = _listSprites.head;
-			/*
-			var left:int = -_parent.cameraX;
-			var top:int = -_parent.cameraY;
-			var right:int = left + _parent.renderEngine.getViewportWidth();
-			var bottom:int = top + _parent.renderEngine.getViewportHeight();
-			*/
 			while (cursor != null)
 			{
 				sprite = cursor.data as Sprite3D;
 				
 				indexNum = numSprites - 1 - i;
-				/*
-				if (sprite.hasChanged && sprite.visible)
-				{
-					sprite.updateValues();
-				}
 				
-				if (sprite._x2 < left ||
-					sprite._x0 > right ||
-					sprite._y0 < top ||
-					sprite._y1 > bottom)
-				{
-					cursor = cursor.next;
-					continue;
-				}
-				*/
 				var j:int;
 				
 				if (!sprite.visible)
 				{
 					sprite.hasChanged = false;
 					sprite._textureChanged = false;
-					/*
-					nextIndexNum = (numSprites - 1 - indexNum + _numVisibleSprites) * Sprite3D.NUM_ELEMENTS_PER_VERTEX * Sprite3D.NUM_VERTICES_PER_SPRITE;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.VERTICES_OFFSET] = sprite.x0;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.VERTICES_OFFSET] = sprite.x1;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.VERTICES_OFFSET] = sprite.x2;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.VERTICES_OFFSET] = sprite.x3;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.VERTICES_OFFSET + 1] = sprite.y0;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.VERTICES_OFFSET + 1] = sprite.y1;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.VERTICES_OFFSET + 1] = sprite.y2;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.VERTICES_OFFSET + 1] = sprite.y3;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.VERTICES_OFFSET + 2] = sprite.z0;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.VERTICES_OFFSET + 2] = sprite.z1;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.VERTICES_OFFSET + 2] = sprite.z2;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.VERTICES_OFFSET + 2] = sprite.z3;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.COLOR_OFFSET] = sprite.redMultiplier;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.COLOR_OFFSET] = sprite.redMultiplier;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.COLOR_OFFSET] = sprite.redMultiplier;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.COLOR_OFFSET] = sprite.redMultiplier;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.COLOR_OFFSET + 1] = sprite.greenMultiplier;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.COLOR_OFFSET + 1] = sprite.greenMultiplier;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.COLOR_OFFSET + 1] = sprite.greenMultiplier;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.COLOR_OFFSET + 1] = sprite.greenMultiplier;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.COLOR_OFFSET + 2] = sprite.blueMultiplier;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.COLOR_OFFSET + 2] = sprite.blueMultiplier;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.COLOR_OFFSET + 2] = sprite.blueMultiplier;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.COLOR_OFFSET + 2] = sprite.blueMultiplier;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.COLOR_OFFSET + 3] = sprite.alpha;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.COLOR_OFFSET + 3] = sprite.alpha;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.COLOR_OFFSET + 3] = sprite.alpha;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.COLOR_OFFSET + 3] = sprite.alpha;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.TEXTURE_OFFSET] = sprite.textureU0;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.TEXTURE_OFFSET] = sprite.textureU1;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.TEXTURE_OFFSET] = sprite.textureU2;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.TEXTURE_OFFSET] = sprite.textureU3;
-					
-					_vertexBufferData[nextIndexNum + v0 + Sprite3D.TEXTURE_OFFSET + 1] = sprite.textureW0;
-					_vertexBufferData[nextIndexNum + v1 + Sprite3D.TEXTURE_OFFSET + 1] = sprite.textureW1;
-					_vertexBufferData[nextIndexNum + v2 + Sprite3D.TEXTURE_OFFSET + 1] = sprite.textureW2;
-					_vertexBufferData[nextIndexNum + v3 + Sprite3D.TEXTURE_OFFSET + 1] = sprite.textureW3;
-					
-					indexNum = numSprites - 1 - indexNum + _numVisibleSprites;
-					nextIndexNum = indexNum * 6;
-					
-					indexNum *= 4;
-					
-					_indexBufferData[nextIndexNum + 0] = indexNum;
-					_indexBufferData[nextIndexNum + 1] = indexNum + 1;
-					_indexBufferData[nextIndexNum + 2] = indexNum + 2;
-					_indexBufferData[nextIndexNum + 3] = indexNum;
-					_indexBufferData[nextIndexNum + 4] = indexNum + 2;
-					_indexBufferData[nextIndexNum + 5] = indexNum + 3;
-					*/
 				}
 				else
 				{
 					nextIndexNum = _numVisibleSprites * Sprite3D.NUM_ELEMENTS_PER_SPRITE;
-					/*
-					spriteVertexData = sprite.vertexData;
-					for (j = 0; j < Sprite3D.NUM_ELEMENTS_PER_VERTEX * Sprite3D.NUM_VERTICES_PER_SPRITE; j++)
-					{
-					_vertexBufferData[nextIndexNum + j] = sprite.vertexData[j];
-					}
-					*/
+					
 					if (sprite.hasChanged || _needUpdateBuffers)
 					{
 						sprite.updateValues();
-						//sprite.updateParentShiftAndScale();
 						
 						_vertexBufferData.position = (nextIndexNum + v0) * 4;
-						_vertexBufferData.writeFloat(sprite._x0/* + sprite._parentShiftX*/);
-						_vertexBufferData.writeFloat(sprite._y0/* + sprite._parentShiftY*/);
+						_vertexBufferData.writeFloat(sprite._x0);
+						_vertexBufferData.writeFloat(sprite._y0);
 						_vertexBufferData.writeFloat(sprite._z0);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -442,8 +531,8 @@ package molehill.core.render
 						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
 						
 						_vertexBufferData.position = (nextIndexNum + v1) * 4;
-						_vertexBufferData.writeFloat(sprite._x1/* + sprite._parentShiftX*/);
-						_vertexBufferData.writeFloat(sprite._y1/* + sprite._parentShiftY*/);
+						_vertexBufferData.writeFloat(sprite._x1);
+						_vertexBufferData.writeFloat(sprite._y1);
 						_vertexBufferData.writeFloat(sprite._z1);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -451,8 +540,8 @@ package molehill.core.render
 						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
 						
 						_vertexBufferData.position = (nextIndexNum + v2) * 4;
-						_vertexBufferData.writeFloat(sprite._x2/* + sprite._parentShiftX*/);
-						_vertexBufferData.writeFloat(sprite._y2/* + sprite._parentShiftY*/);
+						_vertexBufferData.writeFloat(sprite._x2);
+						_vertexBufferData.writeFloat(sprite._y2);
 						_vertexBufferData.writeFloat(sprite._z2);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -460,8 +549,8 @@ package molehill.core.render
 						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
 						
 						_vertexBufferData.position = (nextIndexNum + v3) * 4;
-						_vertexBufferData.writeFloat(sprite._x3/* + sprite._parentShiftX*/);
-						_vertexBufferData.writeFloat(sprite._y3/* + sprite._parentShiftY*/);
+						_vertexBufferData.writeFloat(sprite._x3);
+						_vertexBufferData.writeFloat(sprite._y3);
 						_vertexBufferData.writeFloat(sprite._z3);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -498,14 +587,7 @@ package molehill.core.render
 						{
 							_right = sprite._x2;
 						}
-						/*
-						if (_top > _bottom)
-						{
-							var tmp:Number = _bottom;
-							_bottom = _top;
-							_top = tmp;
-						}
-						*/
+						
 						sprite.hasChanged = false;
 					}
 					
@@ -560,29 +642,37 @@ package molehill.core.render
 		internal function prepareSprites():void
 		{
 			updateBuffers();
+			
+			if (_scrollRectOwner != null)
+			{
+				updateScrollableContainerValues();
+			}
 		}
 		
-		private var _preRenderFunction:Function;
-		public function get preRenderFunction():Function
+		private var _shader:Shader3D;
+		public function get shader():Shader3D
 		{
-			return _preRenderFunction;
+			return _shader;
 		}
-
-		public function set preRenderFunction(value:Function):void
+		
+		public function set shader(value:Shader3D):void
 		{
-			_preRenderFunction = value;
+			_shader = value;
 		}
-
-		private var _postRenderFunction:Function;
-		public function get postRenderFunction():Function
+		
+		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
-			return _postRenderFunction;
+			return null;
 		}
-
-		public function set postRenderFunction(value:Function):void
+		
+		public function getCustomIndexBuffer(context:Context3D):IndexBuffer3D
 		{
-			_postRenderFunction = value;
+			return null;
 		}
-
+		
+		public function get indexBufferOffset():int
+		{
+			return -1;
+		}
 	}
 }

@@ -1,18 +1,26 @@
 package molehill.core.render
 {
+	import avmplus.getQualifiedClassName;
+	
 	import flash.events.EventDispatcher;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.utils.getQualifiedClassName;
 	
 	import molehill.core.Scene3DManager;
-	import molehill.core.render.engine.MolehillRenderEngine;
+	import molehill.core.render.shader.Shader3D;
+	import molehill.core.render.shader.Shader3DFactory;
+	import molehill.core.render.shader.species.mask.CutoutObjectShader;
+	import molehill.core.render.shader.species.mask.MaskAlphaCutoutShader;
+	import molehill.core.render.shader.species.mask.MaskedObjectShader;
 	import molehill.core.sort.IZSortDisplayObject;
+	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
+	
+	import utils.StringUtils;
 	
 	public class Sprite3D extends EventDispatcher implements IZSortDisplayObject
 	{
-		
-		
 		public static function createFromTexture(textureID:String):Sprite3D
 		{
 			var sprite:Sprite3D = new Sprite3D();
@@ -94,6 +102,16 @@ package molehill.core.render
 			_scene = value;
 			mask = _mask;
 			cutout = _cutout;
+			
+			if (_scene != null)
+			{
+				onAddedToScene();
+			}
+		}
+		
+		protected function onAddedToScene():void
+		{
+			
 		}
 		
 		public function Sprite3D()
@@ -291,11 +309,17 @@ package molehill.core.render
 				return;
 			}
 			
+			var prevAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(_textureID);
 			_textureID = value;
 			
 			if (_scene != null)
 			{
 				_scene._needUpdateBatchers = true;
+			}
+			
+			if (_parent != null && prevAtlasData !== TextureManager.getInstance().getAtlasDataByTextureID(_textureID))
+			{
+				_parent.textureAtlasChanged = true;
 			}
 		}
 		
@@ -304,9 +328,9 @@ package molehill.core.render
 			return _textureID != "" && _textureID != null;
 		}
 		
-		public var _parentShiftX:Number = 0;
-		public var _parentShiftY:Number = 0;
-		public var _parentShiftZ:Number = 0;
+		internal var _parentShiftX:Number = 0;
+		internal var _parentShiftY:Number = 0;
+		internal var _parentShiftZ:Number = 0;
 		
 		internal var _parentScaleX:Number = 1;
 		internal var _parentScaleY:Number = 1;
@@ -321,6 +345,22 @@ package molehill.core.render
 		
 		internal function updateParentShiftAndScale():void
 		{
+			var currentParent:Sprite3D = _parent;
+			while (currentParent != null)
+			{
+				if (currentParent.hasChanged)
+				{
+					break;
+				}
+				
+				currentParent = currentParent.parent;
+			}
+			
+			if (currentParent == null)
+			{
+				return;
+			}
+			
 			_parentScaleX = 1;
 			_parentScaleY = 1;
 			_parentScaleZ = 1;
@@ -336,7 +376,7 @@ package molehill.core.render
 			
 			_parentRotation = 0;
 			
-			var currentParent:Sprite3D = _parent;
+			currentParent = _parent;
 			while (currentParent != null)
 			{
 				_parentShiftX += currentParent._shiftX;
@@ -352,6 +392,8 @@ package molehill.core.render
 				_parentAlpha *= currentParent._alpha;
 				
 				_parentRotation += currentParent._rotation;
+				
+				(currentParent as Sprite3DContainer).updateDimensions(this);
 				
 				currentParent = currentParent._parent;
 			}
@@ -371,8 +413,6 @@ package molehill.core.render
 			{
 				scaledWidth = _width * _parentScaleX * _scaleX;
 				scaledHeight = _height * _parentScaleY * _scaleY;
-	//			var halfWidth:Number = _width * _scaleX / 2;
-	//			var halfHeight:Number = _height * _scaleY / 2;
 				
 				var rad:Number = (_rotation+ _parentRotation) / 180 * Math.PI;
 				cos = Math.cos(rad);
@@ -411,18 +451,6 @@ package molehill.core.render
 				_y3 = _width * _matrix.b + _height * _matrix.d + dy;
 			}
 			
-//			_x0 = -halfWidth * cos - halfHeight * sin + _shiftX + halfWidth;
-//			_y0 = -halfWidth * sin + halfHeight * cos + _shiftY + halfHeight;
-//			
-//			_x1 = -halfWidth * cos + halfHeight * sin + _shiftX + halfWidth;
-//			_y1 = -halfWidth * sin - halfHeight * cos + _shiftY + halfHeight;
-//			
-//			_x2 = halfWidth * cos + halfHeight * sin + _shiftX + halfWidth;
-//			_y2 = halfWidth * sin - halfHeight * cos + _shiftY + halfHeight;
-//			
-//			_x3 = halfWidth * cos - halfHeight * sin + _shiftX + halfWidth;
-//			_y3 = halfWidth * sin + halfHeight * cos + _shiftY + halfHeight;
-				
 			_z0 = _shiftZ; 
 			_z1 = _shiftZ; 
 			_z2 = _shiftZ; 
@@ -443,9 +471,9 @@ package molehill.core.render
 			_fromMatrix = true;
 		}
 		
-		protected var _shiftX:Number = 0;
-		protected var _shiftY:Number = 0;
-		protected var _shiftZ:Number = 0;
+		internal var _shiftX:Number = 0;
+		internal var _shiftY:Number = 0;
+		internal var _shiftZ:Number = 0;
 		public function moveTo(x:Number, y:Number, z:Number = 0):void
 		{
 			_shiftX = x;
@@ -472,29 +500,25 @@ package molehill.core.render
 			hasChanged = true;
 		}
 	
-		private var _width:Number;
-		private var _cachedWidth:Number = 0;
+		protected var _width:Number;
+		internal var _cachedWidth:Number = 0;
 		public function get width():Number
 		{
-			if (_cachedWidth == 0)
-			{
-				_cachedWidth = _width * _scaleX;
-			}
 			return _cachedWidth;
 		}
 		
 		public function set width(value:Number):void
 		{
 			_width = value;
-			_cachedWidth = 0;
+			_cachedWidth = _width * _scaleX;
 			
 			_fromMatrix = false;
 			
 			hasChanged = true;
 		}
 		
-		private var _height:Number;
-		private var _cachedHeight:Number = 0;
+		protected var _height:Number;
+		internal var _cachedHeight:Number = 0;
 		public function get height():Number
 		{
 			if (_cachedHeight == 0)
@@ -508,7 +532,7 @@ package molehill.core.render
 		public function set height(value:Number):void
 		{
 			_height = value;
-			_cachedHeight = 0;
+			_cachedHeight = _height * _scaleY;
 			
 			_fromMatrix = false;
 			
@@ -526,7 +550,7 @@ package molehill.core.render
 					return false;
 				}
 				
-				currentParent = currentParent.parent;
+				currentParent = currentParent._parent;
 			}
 			
 			return _visible;
@@ -549,6 +573,9 @@ package molehill.core.render
 			_width = w;
 			_height = h;
 			
+			_cachedWidth = _width * _scaleX;
+			_cachedHeight = _height * _scaleY;
+			
 			hasChanged = true;
 		}
 		
@@ -562,7 +589,7 @@ package molehill.core.render
 		public function set scaleX(value:Number):void
 		{
 			_scaleX = value;
-			_cachedWidth = 0;
+			_cachedWidth = _width * _scaleX;
 			
 			_fromMatrix = false;
 			
@@ -579,6 +606,7 @@ package molehill.core.render
 		public function set scaleY(value:Number):void
 		{
 			_scaleY = value;
+			_cachedHeight = _height * _scaleY;
 			
 			_fromMatrix = false;
 			
@@ -589,6 +617,9 @@ package molehill.core.render
 		{
 			_scaleX = scaleX;
 			_scaleY = scaleY;
+			
+			_cachedWidth = _width * _scaleX;
+			_cachedHeight = _height * _scaleY;
 			
 			_fromMatrix = false;
 			
@@ -666,9 +697,21 @@ package molehill.core.render
 			{
 				return;
 			}
-
 			
-			_textureRegion = value;
+			if (_textureRegion == null && value == null)
+			{
+				return;
+			}
+			
+			if (_textureRegion == null)
+			{
+				_textureRegion = new Rectangle();
+			}
+			
+			_textureRegion.x = value.x;
+			_textureRegion.y = value.y;
+			_textureRegion.width = value.width;
+			_textureRegion.height = value.height;
 			
 			_textureU0 = _textureRegion.x;
 			_textureU1 = _textureRegion.x;
@@ -724,7 +767,7 @@ package molehill.core.render
 			}
 		}
 		*/
-		private var _mouseEnabled:Boolean = true;
+		private var _mouseEnabled:Boolean = false;
 		public function get mouseEnabled():Boolean
 		{
 			return _mouseEnabled;
@@ -737,12 +780,12 @@ package molehill.core.render
 		
 		public function hitTestPoint(point:Point):Boolean
 		{
-			var localMouseX:Number = point.x - _scene.cameraX;
-			var localMouseY:Number = point.y - _scene.cameraY;
-			var a:int = Math.min(_x0, _x2);
-			var b:int = Math.max(_x0, _x2);
-			var c:int = Math.min(_y0, _y1);
-			var d:int = Math.max(_y0, _y1);
+			var localMouseX:Number = point.x;
+			var localMouseY:Number = point.y;
+			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
+			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
+			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
+			var d:int = Math.max(_shiftY, _shiftY + _cachedHeight);
 			return	(a <= localMouseX) &&
 				(b >= localMouseX) &&
 				(c <= localMouseY) &&
@@ -756,12 +799,12 @@ package molehill.core.render
 				return false;
 			}
 			
-			var localMouseX:Number = localX - _scene.cameraX;
-			var localMouseY:Number = localY - _scene.cameraY;
-			var a:int = Math.min(_shiftX, _shiftX + width);
-			var b:int = Math.max(_shiftX, _shiftX + width);
-			var c:int = Math.min(_shiftY, _shiftY + height);
-			var d:int = Math.max(_shiftY, _shiftY + height);
+			var localMouseX:Number = localX;
+			var localMouseY:Number = localY;
+			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
+			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
+			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
+			var d:int = Math.max(_shiftY, _shiftY + _cachedHeight);
 			return	(a <= localMouseX) &&
 				(b >= localMouseX) &&
 				(c <= localMouseY) &&
@@ -794,50 +837,28 @@ package molehill.core.render
 			_hasChanged = value;
 		}
 		
-		private var _preRenderFunction:Function;
-		public function get preRenderFunction():Function
+		internal var addedToScene:Boolean = false;
+		private var _shader:Shader3D;
+		public function get shader():Shader3D
 		{
 			var currentParent:Sprite3DContainer = parent;
-			var func:Function;
+			var shader:Shader3D;
 			while (currentParent != null)
 			{
-				if (currentParent.preRenderFunction != null)
+				if (currentParent.shader != null)
 				{
-					func = currentParent.preRenderFunction;
+					shader = currentParent.shader;
 				}
 				
 				currentParent = currentParent.parent;
 			}
-			return func != null ? func : _preRenderFunction;
+			return shader != null ? shader : _shader;
 		}
-		
-		public function set preRenderFunction(value:Function):void
+
+		public function set shader(value:Shader3D):void
 		{
-			_preRenderFunction = value;
+			_shader = value;
 		}
-		
-		private var _postRenderFunction:Function;
-		public function get postRenderFunction():Function
-		{
-			var currentParent:Sprite3DContainer = parent;
-			var func:Function;
-			while (currentParent != null)
-			{
-				if (currentParent.postRenderFunction != null)
-				{
-					func = currentParent.postRenderFunction;
-				}
-				
-				currentParent = currentParent.parent;
-			}
-			return func != null ? func : _postRenderFunction;
-		}
-		
-		public function set postRenderFunction(value:Function):void
-		{
-			_postRenderFunction = value;
-		}
-		
 		private var _mask:Sprite3D;
 		public function get mask():Sprite3D
 		{
@@ -850,24 +871,20 @@ package molehill.core.render
 			{
 				if (_mask != null)
 				{
-					_mask.preRenderFunction = null;
+					_mask.shader = null;
 				}
 				
 				if (value != null)
 				{
-					value.preRenderFunction = (SCENE_MANAGER.renderEngine as MolehillRenderEngine).enterMaskMode;
-					
-					preRenderFunction = (SCENE_MANAGER.renderEngine as MolehillRenderEngine).enterMaskedMode;
-					postRenderFunction = (SCENE_MANAGER.renderEngine as MolehillRenderEngine).enterNormalMode;
+					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
+					shader = Shader3DFactory.getInstance().getShaderInstance(MaskedObjectShader);
 				}
 			}
 			
 			if (value == null && _mask != null)
 			{
-				_mask.preRenderFunction = null;
-				
-				preRenderFunction = null;
-				postRenderFunction = null;
+				_mask.shader = null;
+				shader = null;
 			}
 			
 			_mask = value;
@@ -885,27 +902,46 @@ package molehill.core.render
 			{
 				if (_cutout != null)
 				{
-					_cutout.preRenderFunction = null;
+					_cutout.shader = null;
 				}
 				
 				if (value != null && SCENE_MANAGER.renderEngine != null)
 				{
-					value.preRenderFunction = (SCENE_MANAGER.renderEngine as MolehillRenderEngine).enterMaskMode;
-					
-					preRenderFunction = (SCENE_MANAGER.renderEngine as MolehillRenderEngine).enterCutoutMode;
-					postRenderFunction = (SCENE_MANAGER.renderEngine as MolehillRenderEngine).enterNormalMode;
+					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
+					shader = Shader3DFactory.getInstance().getShaderInstance(CutoutObjectShader);
 				}
 			}
 			
 			if (value == null && _cutout != null)
 			{
-				_cutout.preRenderFunction = null;
-				
-				preRenderFunction = null;
-				postRenderFunction = null;
+				_cutout.shader = null;
+				shader = null;
 			}
 			
 			_cutout = value;
+		}
+		
+		/**
+		 * 
+		 * While located in UIComponent3D container sprites with isBackground set to true will be moved to the bottom while rendering.
+		 * This can help to batch UI textures and present UI component with less draw calls. 
+		 * 
+		 **/
+		private var _isBackground:Boolean = false;
+		public function get isBackground():Boolean
+		{
+			return _isBackground;
+		}
+		
+		public function set isBackground(value:Boolean):void
+		{
+			_isBackground = value;
+		}
+		
+		override public function toString():String
+		{
+			var className:String = getQualifiedClassName(this);
+			return StringUtils.getObjectAddress(this) + " texture: " + textureID;
 		}
 	}
 }

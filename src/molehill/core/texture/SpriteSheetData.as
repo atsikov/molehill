@@ -67,9 +67,20 @@ package molehill.core.texture
 			return _listFramesInfo;
 		}
 		
+		private var _frameRectangle:Rectangle;
 		public function getFrameRectangle(frame:int):Rectangle
 		{
-			var rect:Rectangle = new Rectangle(0, 0, _frameWidth, _frameHeight);
+			if (_frameRectangle == null)
+			{
+				_frameRectangle = new Rectangle(0, 0, _frameWidth, _frameHeight);
+			}
+			else
+			{
+				_frameRectangle.x = 0;
+				_frameRectangle.y = 0;
+				_frameRectangle.width = _frameWidth;
+				_frameRectangle.height = _frameHeight;
+			}
 			/*
 			if (frame == 1 && _listFramesInfo[1] == SpriteSheet.KEY_FRAME)
 			{
@@ -85,16 +96,16 @@ package molehill.core.texture
 			{
 				if (_listFramesInfo[i] == SpriteSheet.KEY_FRAME)
 				{
-					rect.x += _frameWidth;
-					if (rect.x >= _framesPerRow * _frameWidth)
+					_frameRectangle.x += _frameWidth;
+					if (_frameRectangle.x >= _framesPerRow * _frameWidth)
 					{
-						rect.x = 0;
-						rect.y += _frameHeight;
+						_frameRectangle.x = 0;
+						_frameRectangle.y += _frameHeight;
 					}
 				}
 			}
 			
-			return rect;
+			return _frameRectangle;
 		}
 	}
 }

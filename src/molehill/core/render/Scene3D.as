@@ -4,29 +4,21 @@ package molehill.core.render
 	
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
-	import flash.display.Stage;
-	import flash.display3D.Context3D;
-	import flash.display3D.Context3DBlendFactor;
-	import flash.display3D.Context3DRenderMode;
 	import flash.display3D.textures.Texture;
 	import flash.events.Event;
-	import flash.events.TimerEvent;
-	import flash.geom.Point;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
-	import flash.utils.Timer;
 	
-	import molehill.core.Scene3DManager;
-	import molehill.core.render.engine.IRenderEngine;
-	import molehill.core.render.engine.MolehillRenderEngine;
+	import molehill.core.render.shader.Shader3D;
 	import molehill.core.texture.TextureManager;
+	
+	import utils.ObjectUtils;
 
-	public class Scene3D
+	public class Scene3D extends Sprite3DContainer
 	{
 		public static const MAX_SPRITES_PER_BATCHER:uint = 256;
 		
 		private var _textureManager:TextureManager;
-		private var _renderTreeRoot:TreeNode;
 		public function Scene3D()
 		{
 			_textureManager = TextureManager.getInstance();
@@ -34,313 +26,501 @@ package molehill.core.render
 			_listSpriteBatchers = new Vector.<IVertexBatcher>();
 			
 			_enterFrameListener = new Sprite();
+			_enterFrameListener.addEventListener(Event.EXIT_FRAME, onRenderEnterFrame);
 			
-			var timer:Timer = new Timer(1000 / 60);
-			_enterFrameListener.addEventListener(Event.ENTER_FRAME, onRenderEnterFrame);
-			
-			_renderTreeRoot = new TreeNode();
-			
-			_hashStaticBatchers = new Dictionary();
-			_hashStaticBatchersChanged = new Dictionary();
+			_scene = this;
 		}
 		
-		private var _renderEngine:IRenderEngine;
+		private var _renderEngine:RenderEngine;
 		public function get isActive():Boolean
 		{
 			return _renderEngine != null && _renderEngine.isReady;
 		}
 		
-		public function setRenderEngine(value:IRenderEngine):void
+		public function setRenderEngine(value:RenderEngine):void
 		{
 			_renderEngine = value;
 		}
 		
 		/**
-		 * public
-		 **/
-		//private var _listAllChildren:Vector.<Sprite3D>;
-		//private var _listUnassignedChildren:Vector.<Sprite3D>;
-		internal var _needUpdateBatchers:Boolean = false;
-		public function addChild(child:Sprite3D):void
-		{
-			child.setScene(this);
-			if (child is Sprite3DContainer)
-			{
-				updateLocalTree(
-					(child as Sprite3DContainer).localTreeRoot
-				);
-				_renderTreeRoot.addNode(
-					(child as Sprite3DContainer).localTreeRoot
-				);
-			}
-			else
-			{
-				var childNode:TreeNode = new TreeNode(child);
-				_renderTreeRoot.addNode(childNode);
-			}
-			
-			_needUpdateBatchers = true;
-		}
-		
-		private function updateLocalTree(root:TreeNode):void
-		{
-			var node:TreeNode = root.firstChild;
-			while (node != null)
-			{
-				if (node.hasChildren)
-				{
-					updateLocalTree(node);
-				}
-				(node.value as Sprite3D).setScene(this);
-				node = node.nextSibling;
-			}
-		}
-		/*
-		public function addChildAt(child:Sprite3D, index:int):void
-		{
-			if (index > numChildren)
-			{
-				// throw error
-				return;
-			}
-			
-			var texture:Texture = _textureManager.getTextureByID(child.textureID);
-			if (texture == null)
-			{
-				var childIndex:int = _listAllChildren.indexOf(child);
-				if (childIndex != -1)
-				{
-					
-				}
-				
-				_listAllChildren.splice(index, 0, child);
-				return;
-			}
-			
-			var batcher:SpriteBatcher;
-			var newBatcher:SpriteBatcher;
-			var j:int = 0;
-			var numAssignedSprites:int = 0;
-			while (j < _listSpriteBatchers.length)
-			{
-				batcher = _listSpriteBatchers[j];
-				if (numAssignedSprites + batcher.numSprites < (index + 1))
-				{
-					numAssignedSprites += batcher.numSprites
-				}
-				else
-				{
-					if (batcher.texture == texture)
-					{
-						// found batcher with the same texture
-						// adding sprite inside
-						batcher.addChildAt(sprite, index - numAssignedSprites);
-					}
-					else
-					{
-						// sprite isn't topmost
-						// splitting batcher with another texture into two batchers and add new batcher between them
-						newBatcher = new SpriteBatcher();
-						newBatcher.texture = batcher.texture;
-						newBatcher.context3D = _context3D;
-						while (batcher.numSprites > index - numAssignedSprites)
-						{
-							var sprite:Sprite3D = batcher.getChildAt(index - numAssignedSprites);
-							batcher.removeChild(sprite);
-							newBatcher.addChild(sprite);
-						}
-						
-						_listSpriteBatchers.splice(j + 1, 0, newBatcher);
-						
-						newBatcher = new SpriteBatcher();
-						newBatcher.texture = texture;
-						newBatcher.context3D = _context3D;
-						newBatcher.addChild(child);
-						_listSpriteBatchers.splice(j + 1, 0, newBatcher);
-						
-					}
-					break;
-				}
-				
-				j++;
-			}
-			
-			if (j == _listSpriteBatchers.length)
-			{
-				addChild(sprite);
-			}
-		}
-		*/
-		public function removeChild(child:Sprite3D):void
-		{
-			var childNode:TreeNode = _renderTreeRoot.getNodeByValue(child);
-			if (childNode != null)
-			{
-				childNode.parent.removeNode(childNode);
-			}
-			
-			if (child is AnimatedSprite3D)
-			{
-				(child as AnimatedSprite3D).stop();
-			}
-			
-			_needUpdateBatchers = true;
-		}
-		
-		public function get numChildren():int
-		{
-			return 0; //_listAllChildren.length;
-		}
-		
-		public function getChildIndex(child:Sprite3D):int
-		{
-			if (!contains(child))
-			{
-				//throw error?
-				return -1;
-			}
-			
-			return 0; //_listAllChildren.indexOf(child);
-		}
-		
-		public function setChildIndex(child:Sprite3D, index:int):void
-		{
-			var childIndex:int = getChildIndex(child);
-			if (childIndex == -1)
-			{
-				// throw error?
-				return;
-			}
-			
-			//_listAllChildren.splice(childIndex, 1);
-			//_listAllChildren.splice(index, 0, child);
-		}
-		
-		public function getTopmostChild():Sprite3D
-		{
-			return null/*_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1].getTopmostChild()*/;
-		}
-		/*
-		public function getChildAt(index:int):Sprite3D
-		{
-			if (index > numChildren)
-			{
-				// throw error?
-				return null;
-			}
-			
-			return null; //_listAllChildren[index];
-		}
-		*/
-		private function findBatcherWithSprite(sprite:Sprite3D):SpriteBatcher
-		{
-			/*
-			var batcher:SpriteBatcher;
-			for (var i:int = 0; i < _listSpriteBatchers.length; i++)
-			{
-				batcher = _listSpriteBatchers[i];
-				if (batcher.contains(sprite))
-				{
-					return batcher;
-				}
-			}
-			*/
-			return null;
-		}
-		
-		public function contains(child:Sprite3D):Boolean
-		{
-			return findBatcherWithSprite(child) != null;
-		}
-		
-		private var _needUpdateCameraMatrix:Boolean = false;
-		private var _cameraPoint:Point = new Point();
-		public function scrollTo(x:int, y:int):void
-		{
-			_cameraPoint.x = x;
-			_cameraPoint.y = y;
-			
-			if (_renderEngine != null)
-			{
-				_renderEngine.setCameraPosition(
-					_cameraPoint
-				);
-			}
-		}
-		
-		public function get cameraX():Number
-		{
-			return _cameraPoint.x;
-		}
-		
-		public function get cameraY():Number
-		{
-			return _cameraPoint.y;
-		}
-		
-		/**
 		 * private
 		 **/
+		private function compareTrees():Boolean
+		{
+			return ObjectUtils.traceTree(localTreeRoot) == ObjectUtils.traceTree(_bacthingTree);
+		}
+		
+		private function traceTrees():void
+		{
+			trace(ObjectUtils.traceTree(localTreeRoot));
+			trace('-----------------');
+			trace(ObjectUtils.traceTree(_bacthingTree));
+			trace('================================');
+		}
+		
+		internal var _needUpdateBatchers:Boolean = false;
 		private var _listSpriteBatchers:Vector.<IVertexBatcher>;
 		private var _enterFrameListener:Sprite;
 		
-		private function prepareBatchers(root:TreeNode):void
+		private var _currentBatcher:IVertexBatcher;
+		private var _lastBatchedChild:Sprite3D;
+		private var _batcherInsertPosition:uint;
+		
+		private var _hashBatchersOldToNew:Dictionary;
+		private var _hashBatchersNewToOld:Dictionary;
+		private function performBatchersCheck(treeNode:TreeNode, batchingTree:TreeNode, scrollRectOwner:Sprite3DContainer = null):void
 		{
-			var currentBatcher:IVertexBatcher = _listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1];
-			var tm:TextureManager = TextureManager.getInstance();
-			var node:TreeNode = root.firstChild;
+			var batchNode:TreeNode
+			if (treeNode == null)
+			{
+				return;
+			}
+			
+			while (treeNode != null)
+			{
+				//trace(treeNode.value, batchingTree.value);
+				if (treeNode.value !== (batchingTree.value as BatchingInfo).child)
+				{
+					if (!(treeNode.value as Sprite3D).addedToScene)
+					{
+						// new child added to render tree
+						batchNode = new TreeNode(
+							new BatchingInfo(treeNode.value)
+						);
+						
+						var treeParent:TreeNode = treeNode.parent;
+						var prevSibling:TreeNode = treeNode.prevSibling;
+						treeParent.removeNode(treeNode);
+						prepareBatchers(treeNode, batchNode, scrollRectOwner);
+						
+						if (prevSibling != null)
+						{
+							treeParent.insertNodeAfter(prevSibling, treeNode);
+						}
+						else
+						{
+							treeParent.addAsFirstNode(treeNode);
+						}
+						
+						if (batchingTree.prevSibling == null)
+						{
+							batchingTree.parent.addAsFirstNode(batchNode);
+						}
+						else
+						{
+							batchingTree.parent.insertNodeAfter(batchingTree.prevSibling, batchNode);
+						}
+						batchingTree = batchNode;
+					}
+					else
+					{
+						// child exists in batching tree but not in render tree
+						// need to remove child from batching
+						var prevNode:TreeNode = treeNode.prevSibling;
+						var batchingParent:TreeNode = batchingTree.parent
+						var nextNode:TreeNode = batchingTree.nextSibling;
+						batchingTree.parent.removeNode(batchingTree);
+						removeNodeReferences(batchingTree);
+						if (nextNode != null)
+						{
+							batchingTree = nextNode;
+							continue;
+						}
+						else
+						{
+							treeParent = treeNode.parent;
+							
+							batchNode = new TreeNode(
+								new BatchingInfo(treeNode.value)
+							);
+							treeParent.removeNode(treeNode);
+							prepareBatchers(treeNode, batchNode, scrollRectOwner);
+							if (prevNode != null)
+							{
+								treeParent.insertNodeAfter(prevNode, treeNode);
+							}
+							else
+							{
+								treeParent.addAsFirstNode(treeNode);
+							}
+							
+							batchingParent.addNode(batchNode);
+							
+							batchingTree = batchNode;
+						}
+					}
+				}
+				
+				if ((batchingTree.value as BatchingInfo).batcher != null)
+				{
+					var oldBatcher:IVertexBatcher = (batchingTree.value as BatchingInfo).batcher;
+					if (_hashBatchersOldToNew[oldBatcher] != null)
+					{
+						(batchingTree.value as BatchingInfo).batcher = _hashBatchersOldToNew[oldBatcher];
+					}
+					
+					if (_currentBatcher !== (batchingTree.value as BatchingInfo).batcher)
+					{
+						_currentBatcher = (batchingTree.value as BatchingInfo).batcher;
+						_batcherInsertPosition = _currentBatcher == null ? 0 : _listSpriteBatchers.indexOf(_currentBatcher) + 1;
+					}
+					_lastBatchedChild = (batchingTree.value as BatchingInfo).child;
+				}
+				
+				if (treeNode.hasChildren)
+				{
+					var container:Sprite3DContainer = treeNode.value as Sprite3DContainer;
+					
+					if (!batchingTree.hasChildren)
+					{
+						// adding new empty container to batching
+						batchNode = new TreeNode(
+							new BatchingInfo(treeNode.firstChild.value)
+						);
+						var firstChild:TreeNode = treeNode.firstChild;
+						treeNode.removeNode(firstChild);
+						prepareBatchers(firstChild, batchNode, scrollRectOwner);
+						treeNode.addAsFirstNode(firstChild);
+						batchingTree.addAsFirstNode(batchNode);
+					}
+					
+					performBatchersCheck(treeNode.firstChild, batchingTree.firstChild, (treeNode.value as Sprite3DContainer).scrollRect != null ? treeNode.value as Sprite3DContainer : scrollRectOwner);
+					
+					// scroll rect changed
+					if (container.scrollRectAdded)
+					{
+						container.scrollRectAdded = false;
+						
+						_scrollRectOwner = container;
+						setScrollRectOwner(batchingTree.firstChild, _scrollRectOwner);
+						
+						_scrollRectOwner = null;
+					}
+					
+				}
+				
+				if (treeNode.nextSibling != null && batchingTree.nextSibling == null)
+				{
+					// need to add new branch at the end of the current
+					batchNode = new TreeNode(
+						new BatchingInfo(treeNode.nextSibling.value)
+					);
+					
+					var nextSibling:TreeNode = treeNode.nextSibling;
+					treeNode.parent.removeNode(nextSibling);
+					prepareBatchers(nextSibling, batchNode, scrollRectOwner);
+					treeNode.parent.insertNodeAfter(treeNode, nextSibling);
+					
+					batchingTree.parent.addNode(batchNode);
+				}
+				
+				treeNode = treeNode.nextSibling;
+				batchingTree = batchingTree.nextSibling;
+			}
+			
+			while (batchingTree != null)
+			{
+				nextNode = batchingTree.nextSibling;
+				batchingTree.parent.removeNode(batchingTree);
+				removeNodeReferences(batchingTree);
+				batchingTree = nextNode;
+			}
+		}
+		
+		private function removeNodeReferences(node:TreeNode):void
+		{
 			while (node != null)
 			{
 				if (node.hasChildren)
 				{
-					prepareBatchers(node);
+					removeNodeReferences(node.firstChild);
 				}
-				var sprite:Sprite3D = node.value as Sprite3D;
-				if (sprite is IVertexBatcher)
+				else
 				{
-					_listSpriteBatchers.push(sprite as IVertexBatcher);
-					currentBatcher = null;
-				}
-				else if (!(sprite is Sprite3DContainer))
-				{
-					var textureAtlasID:String = tm.getAtlasIDByTexture(
-						tm.getTextureByID(sprite.textureID)
-					);
-					var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
-					var staticBatching:Boolean = container != null ? container.staticBatching : false;
-					if (!(currentBatcher is SpriteBatcher) || 
-						(currentBatcher != null &&
-						(
-							currentBatcher.textureAtlasID != textureAtlasID ||
-							((currentBatcher as SpriteBatcher).numSprites == MAX_SPRITES_PER_BATCHER && !staticBatching)||
-							currentBatcher.preRenderFunction !== sprite.preRenderFunction ||
-							currentBatcher.postRenderFunction !== sprite.postRenderFunction ||
-							currentBatcher.blendMode !== sprite._blendMode
-						))
-					)
+					var batchingInfo:BatchingInfo = node.value as BatchingInfo;
+					var batcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
+					if (batcher != null)
 					{
-						currentBatcher = null;
+						batcher.removeChild(batchingInfo.child);
+						batchingInfo.child.addedToScene = false;
+						if (batcher.numSprites <= 0)
+						{
+							_listSpriteBatchers.splice(
+								_listSpriteBatchers.indexOf(batchingInfo.batcher), 1
+							);
+						}
 					}
-					if (currentBatcher == null)
+					else if (batchingInfo.batcher === batchingInfo.child)
 					{
-						currentBatcher = new SpriteBatcher(this);
-						currentBatcher.preRenderFunction = sprite.preRenderFunction;
-						currentBatcher.postRenderFunction = sprite.postRenderFunction;
-						currentBatcher.blendMode = sprite._blendMode;
-						_listSpriteBatchers.push(currentBatcher);
-						currentBatcher.textureAtlasID = textureAtlasID;
-					}
-					(currentBatcher as SpriteBatcher).addChild(sprite);
-					
-					if (container != null && _hashStaticBatchers[container] == null && staticBatching)
-					{
-						_hashStaticBatchers[sprite.parent] = currentBatcher;
-						_hashStaticBatchersChanged[sprite.parent] = false;
+						_listSpriteBatchers.splice(
+							_listSpriteBatchers.indexOf(batchingInfo.batcher), 1
+						);
 					}
 				}
+				
 				node = node.nextSibling;
 			}
+		}
+		
+		private var _doBatching:Boolean = false;
+		private var _batchingTrigger:Sprite3D;
+		
+		private var _bacthingTree:TreeNode;
+		private function prepareBatchers(root:TreeNode, batcherTreeNode:TreeNode, scrollRectOwner:Sprite3DContainer):void
+		{
+			var currentBatcher:IVertexBatcher = _currentBatcher != null ? _currentBatcher : (_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1]);
+			var node:TreeNode = root;
+			if (node == null)
+			{
+				return;
+			}
 			
+			while (node != null)
+			{
+				var sprite:Sprite3D = node.value as Sprite3D;
+				if (sprite is UIComponent3D)
+				{
+					prepareUIComponentBuffers();
+					parseUIComponent((sprite as Sprite3DContainer).localTreeRoot);
+					flushUIComponentBuffers();
+					
+					currentBatcher = null;
+				}
+				else if (node.hasChildren)
+				{
+					if (batcherTreeNode.firstChild == null)
+					{
+						// new branch found
+						var batchNode:TreeNode = new TreeNode(
+							new BatchingInfo(node.firstChild.value)
+						);
+						batcherTreeNode.addNode(batchNode);
+					}
+					
+					prepareBatchers(node.firstChild, batcherTreeNode.firstChild, (sprite as Sprite3DContainer).scrollRect != null ? sprite as Sprite3DContainer : scrollRectOwner);
+					sprite.addedToScene = true;
+				}
+				else
+				{
+					if (sprite is IVertexBatcher)
+					{
+						_listSpriteBatchers.splice(_batcherInsertPosition, 0, sprite);
+						_batcherInsertPosition++;
+						(sprite as IVertexBatcher).scrollRectOwner = scrollRectOwner;
+						(batcherTreeNode.value as BatchingInfo).batcher = sprite as IVertexBatcher;
+						_lastBatchedChild = sprite;
+						currentBatcher = null;
+					}
+					else if (!(sprite is Sprite3DContainer))
+					{
+						var textureAtlasID:String = sprite.textureID == null ? null : _textureManager.getAtlasDataByTextureID(sprite.textureID).atlasID;
+						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
+						if (!(currentBatcher is SpriteBatcher) || 
+							(currentBatcher != null &&
+							(currentBatcher as SpriteBatcher).numSprites == MAX_SPRITES_PER_BATCHER)
+						)
+						{
+							currentBatcher = null;
+						}
+						
+						var newBatcher:IVertexBatcher = pushToSuitableSpriteBacther(currentBatcher as SpriteBatcher, sprite, textureAtlasID, scrollRectOwner);
+						if (newBatcher !== currentBatcher)
+						{
+							if (_lastBatchedChild != null &&
+								currentBatcher != null
+								&&_lastBatchedChild !== (currentBatcher as SpriteBatcher).getLastChild()
+							)
+							{
+								var tailBatcher:SpriteBatcher = (currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
+								if (tailBatcher != null)
+								{
+									_listSpriteBatchers.splice(_batcherInsertPosition, 0, tailBatcher);
+									
+									_hashBatchersNewToOld[tailBatcher] = currentBatcher;
+									while (_hashBatchersNewToOld[currentBatcher] != null)
+									{
+										currentBatcher = _hashBatchersNewToOld[currentBatcher];
+									}
+									_hashBatchersOldToNew[currentBatcher] = tailBatcher;
+								}
+							}
+							_listSpriteBatchers.splice(_batcherInsertPosition, 0, newBatcher);
+							_batcherInsertPosition++;
+							currentBatcher = newBatcher;
+						}
+						_lastBatchedChild = sprite;
+						(batcherTreeNode.value as BatchingInfo).batcher = currentBatcher;
+					}
+				}
+				
+				node = node.nextSibling;
+				
+				if (node != null && batcherTreeNode.nextSibling == null)
+				{
+					batchNode = new TreeNode(
+						new BatchingInfo(node.value)
+					);
+					batcherTreeNode.parent.insertNodeAfter(batcherTreeNode, batchNode);
+				}
+				batcherTreeNode = batcherTreeNode.nextSibling;
+			}
+		}
+		
+		private var _listUiTextBatchers:Vector.<SpriteBatcher>;
+		private var _listUiBackBatchers:Vector.<SpriteBatcher>;
+		private var _listUiMiscBatchers:Vector.<SpriteBatcher>;
+		private function prepareUIComponentBuffers():void
+		{
+			if (_listUiBackBatchers == null)
+			{
+				_listUiBackBatchers = new Vector.<SpriteBatcher>();
+			}
+			if (_listUiMiscBatchers == null)
+			{
+				_listUiMiscBatchers = new Vector.<SpriteBatcher>();
+			}
+			if (_listUiTextBatchers == null)
+			{
+				_listUiTextBatchers = new Vector.<SpriteBatcher>();
+			}
+		}
+		
+		private function flushUIComponentBuffers():void
+		{
+			while (_listUiBackBatchers.length > 0)
+			{
+				_listSpriteBatchers.push(
+					_listUiBackBatchers.shift()
+				);
+			}
+			
+			while (_listUiMiscBatchers.length > 0)
+			{
+				_listSpriteBatchers.push(
+					_listUiMiscBatchers.shift()
+				);
+			}
+			
+			while (_listUiTextBatchers.length > 0)
+			{
+				_listSpriteBatchers.push(
+					_listUiTextBatchers.shift()
+				);
+			}
+		}
+		
+		// TODO: implement UI component parsing using new batching tree system
+		private function parseUIComponent(root:TreeNode, scrollRectOwner:Sprite3DContainer = null):void
+		{
+			var currentBackBatcher:SpriteBatcher = _listUiBackBatchers.length == 0 ? null : _listUiBackBatchers[_listUiBackBatchers.length - 1];
+			var currentMiscBatcher:SpriteBatcher = _listUiMiscBatchers.length == 0 ? null : _listUiMiscBatchers[_listUiMiscBatchers.length - 1];
+			var currentTextBatcher:SpriteBatcher = _listUiTextBatchers.length == 0 ? null : _listUiTextBatchers[_listUiTextBatchers.length - 1];
+			var tm:TextureManager = TextureManager.getInstance();
+			
+			var node:TreeNode = root.firstChild;
+			var newBatcher:SpriteBatcher;
+			
+			while (node != null)
+			{
+				var child:Sprite3D = node.value;
+				if (child is TextField3D)
+				{
+					if ((child as Sprite3DContainer).numChildren > 0)
+					{
+						var textureAtlasID:String = tm.getAtlasDataByTextureID(child.textureID).atlasID;
+						var shader:Shader3D = (child as Sprite3DContainer).shader;
+						var blendMode:String = (child as Sprite3DContainer).blendMode;
+						
+						if (currentTextBatcher != null &&
+							(currentTextBatcher.shader != shader ||
+							currentTextBatcher.textureAtlasID != textureAtlasID ||
+							currentTextBatcher.blendMode != blendMode)							
+						)
+						{
+							currentTextBatcher = null;
+						}
+						
+						if (currentTextBatcher == null)
+						{
+							currentTextBatcher = new SpriteBatcher(this);
+							currentTextBatcher.blendMode = blendMode;
+							currentTextBatcher.shader = shader;
+							currentTextBatcher.textureAtlasID = textureAtlasID;
+							currentTextBatcher.scrollRectOwner = scrollRectOwner;
+							_listUiTextBatchers.push(currentTextBatcher);
+						}
+						
+						currentTextBatcher.pushSpriteContainerTree(child as Sprite3DContainer);
+					}
+					node = node.nextSibling;
+					continue;
+				}
+				else if (node.hasChildren)
+				{
+					parseUIComponent(node, (child as Sprite3DContainer).scrollRect != null ? child as Sprite3DContainer : scrollRectOwner);
+				}
+				else
+				{
+					textureAtlasID = child.textureID == null ? null : tm.getAtlasDataByTextureID(child.textureID).atlasID;
+					if (child.isBackground)
+					{
+						newBatcher = pushToSuitableSpriteBacther(currentBackBatcher, child, textureAtlasID, scrollRectOwner);
+						if (newBatcher !== currentBackBatcher)
+						{
+							_listUiBackBatchers.push(newBatcher);
+							currentBackBatcher = newBatcher;
+						}
+					}
+					else
+					{
+						newBatcher = pushToSuitableSpriteBacther(currentMiscBatcher, child, textureAtlasID, scrollRectOwner);
+						if (newBatcher !== currentMiscBatcher)
+						{
+							_listUiMiscBatchers.push(newBatcher);
+							currentMiscBatcher = newBatcher;
+						}
+					}
+				}
+				
+				node = node.nextSibling;
+			}
+		}
+		
+		private function pushToSuitableSpriteBacther(candidateBatcher:SpriteBatcher, child:Sprite3D, textureAtlasID:String, scrollRectOwner:Sprite3DContainer):SpriteBatcher
+		{
+			var batcherCreated:Boolean = false;
+			if (candidateBatcher != null &&
+				(
+					candidateBatcher.textureAtlasID != textureAtlasID ||
+					candidateBatcher.shader !== child.shader ||
+					candidateBatcher.blendMode !== child._blendMode ||
+					candidateBatcher.scrollRectOwner !== scrollRectOwner
+				))
+			{
+				candidateBatcher = null;
+			}
+			
+			if (candidateBatcher == null)
+			{
+				candidateBatcher = new SpriteBatcher(this);
+				candidateBatcher.shader = child.shader;
+				candidateBatcher.blendMode = child._blendMode;
+				candidateBatcher.textureAtlasID = textureAtlasID;
+				candidateBatcher.scrollRectOwner = scrollRectOwner;
+				batcherCreated = true;
+			}
+			
+			if (!batcherCreated && _lastBatchedChild != null)
+			{
+				candidateBatcher.addChildAfter(_lastBatchedChild, child);
+			}
+			else
+			{
+				candidateBatcher.addChild(child);
+			}
+			child.addedToScene = true;
+			
+			return candidateBatcher;
 		}
 		
 		public function getScreenshot():BitmapData
@@ -352,150 +532,127 @@ package molehill.core.render
 			
 			renderScene();
 			
-			return (_renderEngine as MolehillRenderEngine).getScreenshot();
+			return (_renderEngine as RenderEngine).getScreenshot();
 		}
 		
-		internal function staticContainerChanged(container:Sprite3DContainer):void
+		private var _scrollRectOwner:Sprite3DContainer;
+		private function setScrollRectOwner(node:TreeNode, scrollRectOwner:Sprite3DContainer):void
 		{
-			_hashStaticBatchersChanged[container] = true;
+			while (node != null)
+			{
+				var batchingInfo:BatchingInfo = node.value as BatchingInfo;
+				if (node.hasChildren && batchingInfo.child is Sprite3DContainer && (batchingInfo.child as Sprite3DContainer).scrollRect == null)
+				{
+					setScrollRectOwner(node.firstChild, scrollRectOwner);
+				}
+				else if (!node.hasChildren && batchingInfo.batcher != null)
+				{
+					batchingInfo.batcher.scrollRectOwner = scrollRectOwner;
+				}
+			
+				node = node.nextSibling;
+			}
 		}
 		
-		private var _hashStaticBatchers:Dictionary;
-		private var _hashStaticBatchersChanged:Dictionary;
+		private function resetChangeFlags(treeNode:TreeNode):void
+		{
+			treeNode = treeNode.firstChild;
+			
+			while (treeNode != null)
+			{
+				if (treeNode.value is IVertexBatcher)
+				{
+					treeNode = treeNode.nextSibling;
+					continue;
+				}
+				
+				if (treeNode.hasChildren)
+				{
+					var container:Sprite3DContainer = treeNode.value as Sprite3DContainer;
+					container.treeStructureChanged = false;
+					container.textureAtlasChanged = false;
+					resetChangeFlags(treeNode);
+				}
+				
+				treeNode = treeNode.nextSibling;
+			}
+		}
+		
 		private function renderScene():void
 		{
 			var i:int = 0;
 			var spriteBatcher:SpriteBatcher;
 			if (_needUpdateBatchers)
 			{
-				_listSpriteBatchers = new Vector.<IVertexBatcher>();
-				
-				_hashStaticBatchers = new Dictionary();
-				_hashStaticBatchersChanged = new Dictionary();
-				
-				prepareBatchers(_renderTreeRoot);
-			}
-			
-			for (var field:Object in _hashStaticBatchersChanged)
-			{
-				var container:Sprite3DContainer = field as Sprite3DContainer;
-				if (!_hashStaticBatchersChanged[container])
+				_lastBatchedChild = null;
+				_currentBatcher = null;
+				if (_listSpriteBatchers != null && _listSpriteBatchers.length > 0)
 				{
-					continue;
+					_hashBatchersOldToNew = new Dictionary();
+					_hashBatchersNewToOld = new Dictionary();
+					
+					//traceTrees();
+					
+					performBatchersCheck(localTreeRoot, _bacthingTree);
+					/*
+					if (!compareTrees())
+					{
+						traceTrees();
+					}
+					*/
 				}
-				
-				_hashStaticBatchersChanged[container] = false;
-				spriteBatcher = _hashStaticBatchers[container] as SpriteBatcher;
-				if (spriteBatcher == null)
+				else
 				{
-					continue;
-				}
-				
-				while (spriteBatcher.numSprites > 0)
-				{
-					spriteBatcher.removeChild(
-						spriteBatcher.getLastChild()
+					resetChangeFlags(localTreeRoot);
+					
+					_doBatching = true;
+					
+					_listSpriteBatchers = new Vector.<IVertexBatcher>();
+					_bacthingTree = new TreeNode(
+						new BatchingInfo(this)
 					);
-				}
-				
-				for (i = 0; i < container.numChildren; i++)
-				{
-					var child:Sprite3D = container.getChildAt(i);
-					spriteBatcher.addChild(child);
+					prepareBatchers(localTreeRoot, _bacthingTree, null);
 				}
 			}
-			
 			_needUpdateBatchers = false;
-			
-			//_lastTexture = null;
 			
 			_renderEngine.clear();
 			
-			//(_renderEngine as MolehillRenderEngine).renderToMainCamera();
 			var tm:TextureManager = TextureManager.getInstance();
 			var passedVertices:uint = 0;
-			
-			var renderEngine:IRenderEngine = Scene3DManager.getInstance().renderEngine;
-			
-			var left:int = -cameraX;
-			var top:int = -cameraY;
-			var right:int = left + renderEngine.getViewportWidth();
-			var bottom:int = top + renderEngine.getViewportHeight();
 			
 			for (i = 0; i < _listSpriteBatchers.length; i++)
 			{
 				var batcher:IVertexBatcher = _listSpriteBatchers[i];
-				/*
-				if (batcher.preRenderFunction != null)
-				{
-				batcher.preRenderFunction();
-				}
-				*/
 				var verticesData:ByteArray = batcher.getVerticesData();
 				if (batcher.numTriangles == 0)
 				{
 					continue;
 				}
 				
-				if (tm.getTextureByAtlasID(batcher.textureAtlasID) == null)
+				// can be sprite with flat fill
+				if (batcher.textureAtlasID != null && !tm.isAtlasCreated(batcher.textureAtlasID))
 				{
 					continue;
 				}
 				
 				spriteBatcher = batcher as SpriteBatcher;
-				if (spriteBatcher != null &&
-					(spriteBatcher.right < left ||
-					spriteBatcher.left > right ||
-					spriteBatcher.bottom < top ||
-					spriteBatcher.top > bottom))
+				
+				var left:int = batcher.scrollRect.x;
+				var top:int = batcher.scrollRect.y;
+				var right:int = left + _renderEngine.getViewportWidth();
+				var bottom:int = top + _renderEngine.getViewportHeight();
+				
+				if (batcher.right < left ||
+					batcher.left > right ||
+					batcher.bottom < top ||
+					batcher.top > bottom)
 				{
 					continue;
 				}
 				
-				_renderEngine.setPreRenderFunction(batcher.preRenderFunction);
-				_renderEngine.setPostRenderFunction(batcher.postRenderFunction);
-				_renderEngine.bindTexture(batcher.textureAtlasID);
-				_renderEngine.setVertexBufferData(verticesData);
-				_renderEngine.setIndexBufferData(batcher.getIndicesData(passedVertices));
-				_renderEngine.setBlendMode(batcher.blendMode);
-				
-				passedVertices = _renderEngine.drawTriangles(batcher.numTriangles);
-				/*
-				if (batcher.postRenderFunction != null)
-				{
-				batcher.postRenderFunction();
-				}
-				*/
+				_renderEngine.drawBatcher(batcher);
 			}
-			
-			/*
-			(_renderEngine as MolehillRenderEngine).renderToSecondCamera();
-			for (i = 0; i < _listSpriteBatchers.length; i++)
-			{
-			batcher = _listSpriteBatchers[i];
-			
-			if (batcher is Mesh)
-			{
-			continue;
-			}
-			
-			if (batcher.preRenderFunction != null)
-			{
-			batcher.preRenderFunction();
-			}
-			
-			_renderEngine.bindTexture(batcher.textureAtlasID);
-			_renderEngine.setVertexBufferData(batcher.getVerticesData());
-			_renderEngine.setIndexBufferData(batcher.getIndicesData());
-			_renderEngine.drawTriangles(batcher.numTriangles);
-			
-			if (batcher.postRenderFunction != null)
-			{
-			batcher.postRenderFunction();
-			}
-			
-			}
-			*/
 		}
 		
 		public var renderInfo:String = "";
@@ -509,7 +666,7 @@ package molehill.core.render
 				if (_renderEngine != null)
 				{
 					renderInfo =
-						"Render mode: " + (_renderEngine as MolehillRenderEngine).renderMode;
+						"Render mode: " + (_renderEngine as RenderEngine).renderMode;
 				}
 				return;
 			}
@@ -518,12 +675,14 @@ package molehill.core.render
 			
 			_renderEngine.present();
 			
+			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
+			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
 			renderInfo =
-				"Render mode: " + (_renderEngine as MolehillRenderEngine).renderMode +
+				"Render mode: " + (_renderEngine as RenderEngine).renderMode +
 				"\nDraw calls: " +
-				(_renderEngine as MolehillRenderEngine).drawCalls +
-				"\nTotal tris: " + (_renderEngine as MolehillRenderEngine).totalTris +
-				"\nTexture atlases: " + TextureManager.getInstance().numAtlases +
+				(_renderEngine as RenderEngine).drawCalls +
+				"\nTotal tris: " + (_renderEngine as RenderEngine).totalTris +
+				"\nTexture atlases: " + (numBitmapAtlases + numCompressedAtlases).toString() + " (" + numBitmapAtlases + " bitmaps, " + numCompressedAtlases + " compressed)" +
 				"\nRendering to " + _renderEngine.getViewportWidth() + " x " + _renderEngine.getViewportHeight();
 		}
 	}

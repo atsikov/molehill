@@ -36,5 +36,11 @@ package molehill.core.texture
 			var log2Height:uint = _rawATFData.readByte();
 			return Math.pow(2, log2Height);
 		}
+		
+		public function get numTextures():uint
+		{
+			_rawATFData.position = 9;
+			return _rawATFData.readByte();
+		}
 	}
 }

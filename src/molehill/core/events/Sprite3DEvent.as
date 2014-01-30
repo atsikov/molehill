@@ -1,49 +1,17 @@
 package molehill.core.events
 {
 	import flash.events.Event;
-
+	
 	public class Sprite3DEvent extends Event
 	{
-		public static const MOUSE_UP:String 	= "mouseUp";
-		public static const MOUSE_DOWN:String 	= "mouseDown";
-		public static const MOUSE_MOVE:String 	= "mouseMove";
-		
-		public static const MOUSE_OVER:String 	= "mouseOver";
-		public static const MOUSE_OUT:String 	= "mouseOut";
-		
-		public function Sprite3DEvent(type:String, stageX:Number, stageY:Number, localX:Number, localY:Number)
+		public function Sprite3DEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=false)
 		{
-			_stageX = stageX;
-			_stageY = stageY;
-			_localX = localX;
-			_localY = localY;
-			
-			super(type);
+			super(type, bubbles, cancelable);
 		}
 		
-		private var _stageX:Number;
-		public function get stageX():Number
+		override public function clone():Event
 		{
-			return _stageX;
+			return this;
 		}
-
-		private var _stageY:Number;
-		public function get stageY():Number
-		{
-			return _stageY;
-		}
-
-		private var _localX:Number;
-		public function get localX():Number
-		{
-			return _localX;
-		}
-		
-		private var _localY:Number;
-		public function get localY():Number
-		{
-			return _localY;
-		}
-		
 	}
 }

@@ -10,7 +10,7 @@ package molehill.core.texture
 		private var _root:TextureAtlasDataNode;
 		private var _maxWidth:int = 0;
 		private var _maxHeight:int = 0;
-		private var _atlasData:TextureAtlasData;
+		protected var _atlasData:TextureAtlasData;
 		public function TextureAtlasBitmapData(maxWidth:int, maxHeight:int)
 		{
 			_maxWidth = maxWidth;
@@ -144,7 +144,7 @@ package molehill.core.texture
 			return newNode;
 		}
 
-		public function get atlasData():TextureAtlasData
+		public function get textureAtlasData():TextureAtlasData
 		{
 			return _atlasData;
 		}

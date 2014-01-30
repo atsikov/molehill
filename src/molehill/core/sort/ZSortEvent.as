@@ -4,7 +4,7 @@ package molehill.core.sort
 	
 	public class ZSortEvent extends Event
 	{
-		public static const MOVE:String = 'move';
+		public static const MOVE:String = 'ZSortMove';
 		
 		public function ZSortEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false)
 		{
