@@ -1,5 +1,6 @@
 package molehill.core.render
 {
+	import easy.collections.BinarySearchTree;
 	import easy.collections.TreeNode;
 	
 	import flash.geom.Point;
@@ -11,10 +12,21 @@ package molehill.core.render
 	public class Sprite3DContainer extends InteractiveSprite3D
 	{
 		private var _listChildren:Vector.<Sprite3D>
+		
+		private var _childCoordsTLx:BinarySearchTree;
+		private var _childCoordsTLy:BinarySearchTree;
+		private var _childCoordsBRx:BinarySearchTree;
+		private var _childCoordsBRy:BinarySearchTree;
+		
 		public function Sprite3DContainer()
 		{
 			_listChildren = new Vector.<Sprite3D>();
 			localTreeRoot = new TreeNode(this);
+
+			_childCoordsTLx = new BinarySearchTree();
+			_childCoordsTLy = new BinarySearchTree();
+			_childCoordsBRx = new BinarySearchTree();
+			_childCoordsBRy = new BinarySearchTree();
 		}
 		
 		override public function set blendMode(value:String):void
@@ -88,6 +100,11 @@ package molehill.core.render
 				_scene._needUpdateBatchers = true;
 			}
 			
+			child.parentTLxNode = _childCoordsTLx.insertElement(child, child.x);
+			child.parentTLyNode = _childCoordsTLy.insertElement(child, child.y);
+			child.parentBRxNode = _childCoordsBRx.insertElement(child, child.x + child.width);
+			child.parentBRyNode = _childCoordsBRy.insertElement(child, child.y + child.height);
+			
 			child.updateParentShiftAndScale();
 			//updateNumTotalChildren(child);
 			
@@ -145,6 +162,11 @@ package molehill.core.render
 			{
 				_scene._needUpdateBatchers = true;
 			}
+			
+			child.parentTLxNode = _childCoordsTLx.insertElement(child, child.x);
+			child.parentTLyNode = _childCoordsTLy.insertElement(child, child.y);
+			child.parentBRxNode = _childCoordsBRx.insertElement(child, child.x + child.width);
+			child.parentBRyNode = _childCoordsBRy.insertElement(child, child.y + child.height);
 			
 			child.updateParentShiftAndScale();
 			updateNumTotalChildren(child);
@@ -298,6 +320,16 @@ package molehill.core.render
 			}
 			treeStructureChanged = true;
 			
+			_childCoordsTLx.removeNode(child.parentTLxNode);
+			_childCoordsTLy.removeNode(child.parentTLyNode);
+			_childCoordsBRx.removeNode(child.parentBRxNode);
+			_childCoordsBRy.removeNode(child.parentBRyNode);
+			
+			child.parentTLxNode = null;
+			child.parentTLyNode = null;
+			child.parentBRxNode = null;
+			child.parentBRyNode = null;
+			
 			updateAllDimensions();
 			
 			updateNumTotalChildren(child, false);
@@ -332,6 +364,16 @@ package molehill.core.render
 				_numSimpleChildren--;
 			}
 			treeStructureChanged = true;
+			
+			_childCoordsTLx.removeNode(child.parentTLxNode);
+			_childCoordsTLy.removeNode(child.parentTLyNode);
+			_childCoordsBRx.removeNode(child.parentBRxNode);
+			_childCoordsBRy.removeNode(child.parentBRyNode);
+			
+			child.parentTLxNode = null;
+			child.parentTLyNode = null;
+			child.parentBRxNode = null;
+			child.parentBRyNode = null;
 			
 			updateAllDimensions();
 			
