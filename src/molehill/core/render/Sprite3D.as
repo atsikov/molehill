@@ -2,6 +2,8 @@ package molehill.core.render
 {
 	import avmplus.getQualifiedClassName;
 	
+	import easy.collections.BinarySearchTreeNode;
+	
 	import flash.events.EventDispatcher;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -921,6 +923,22 @@ package molehill.core.render
 			_cutout = value;
 		}
 		
+		internal var parentTLxNode:BinarySearchTreeNode;
+		internal var parentTLyNode:BinarySearchTreeNode;
+		internal var parentBRxNode:BinarySearchTreeNode;
+		internal var parentBRyNode:BinarySearchTreeNode;
+		
+		protected var _boundRect:Rectangle;
+		public function get boundRect():Rectangle
+		{
+			if (_boundRect == null)
+			{
+				_boundRect = new Rectangle();
+			}
+			
+			return _boundRect;
+		}
+		
 		/**
 		 * 
 		 * While located in UIComponent3D container sprites with isBackground set to true will be moved to the bottom while rendering.
@@ -941,7 +959,7 @@ package molehill.core.render
 		override public function toString():String
 		{
 			var className:String = getQualifiedClassName(this);
-			return StringUtils.getObjectAddress(this) + " texture: " + textureID;
+			return className + " @ " + StringUtils.getObjectAddress(this) + " texture: " + textureID;
 		}
 	}
 }
