@@ -223,6 +223,8 @@ package molehill.core.render
 		
 		private function updateAllDimensions(node:TreeNode = null):void
 		{
+			return;
+			
 			if (localTreeRoot == null)
 			{
 				_containerX = int.MAX_VALUE;
