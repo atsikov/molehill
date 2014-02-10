@@ -13,20 +13,28 @@ package molehill.core.render
 	{
 		private var _listChildren:Vector.<Sprite3D>
 		
-		private var _childCoordsTLx:BinarySearchTree;
-		private var _childCoordsTLy:BinarySearchTree;
-		private var _childCoordsBRx:BinarySearchTree;
-		private var _childCoordsBRy:BinarySearchTree;
+		private var _childCoordsX0:BinarySearchTree;
+		private var _childCoordsY0:BinarySearchTree;
+		private var _childCoordsX1:BinarySearchTree;
+		private var _childCoordsY1:BinarySearchTree;
+		private var _childCoordsX2:BinarySearchTree;
+		private var _childCoordsY2:BinarySearchTree;
+		private var _childCoordsX3:BinarySearchTree;
+		private var _childCoordsY3:BinarySearchTree;
 		
 		public function Sprite3DContainer()
 		{
 			_listChildren = new Vector.<Sprite3D>();
 			localTreeRoot = new TreeNode(this);
 
-			_childCoordsTLx = new BinarySearchTree();
-			_childCoordsTLy = new BinarySearchTree();
-			_childCoordsBRx = new BinarySearchTree();
-			_childCoordsBRy = new BinarySearchTree();
+			_childCoordsX0 = new BinarySearchTree();
+			_childCoordsY0 = new BinarySearchTree();
+			_childCoordsX1 = new BinarySearchTree();
+			_childCoordsY1 = new BinarySearchTree();
+			_childCoordsX2 = new BinarySearchTree();
+			_childCoordsY2 = new BinarySearchTree();
+			_childCoordsX3 = new BinarySearchTree();
+			_childCoordsY3 = new BinarySearchTree();
 		}
 		
 		override public function set blendMode(value:String):void
@@ -100,10 +108,17 @@ package molehill.core.render
 				_scene._needUpdateBatchers = true;
 			}
 			
-			child.parentTLxNode = _childCoordsTLx.insertElement(child, child.x);
-			child.parentTLyNode = _childCoordsTLy.insertElement(child, child.y);
-			child.parentBRxNode = _childCoordsBRx.insertElement(child, child.x + child.width);
-			child.parentBRyNode = _childCoordsBRy.insertElement(child, child.y + child.height);
+			child.parentX0Node = _childCoordsX0.insertElement(child, child._x0);
+			child.parentY0Node = _childCoordsY0.insertElement(child, child._y0);
+			
+			child.parentX1Node = _childCoordsX1.insertElement(child, child._x1);
+			child.parentY1Node = _childCoordsY1.insertElement(child, child._y1);
+			
+			child.parentX2Node = _childCoordsX2.insertElement(child, child._x2);
+			child.parentY2Node = _childCoordsY2.insertElement(child, child._y2);
+			
+			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
+			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
 			child.updateParentShiftAndScale();
 			//updateNumTotalChildren(child);
@@ -163,10 +178,17 @@ package molehill.core.render
 				_scene._needUpdateBatchers = true;
 			}
 			
-			child.parentTLxNode = _childCoordsTLx.insertElement(child, child.x);
-			child.parentTLyNode = _childCoordsTLy.insertElement(child, child.y);
-			child.parentBRxNode = _childCoordsBRx.insertElement(child, child.x + child.width);
-			child.parentBRyNode = _childCoordsBRy.insertElement(child, child.y + child.height);
+			child.parentX0Node = _childCoordsX0.insertElement(child, child._x0);
+			child.parentY0Node = _childCoordsY0.insertElement(child, child._y0);
+			
+			child.parentX1Node = _childCoordsX1.insertElement(child, child._x1);
+			child.parentY1Node = _childCoordsY1.insertElement(child, child._y1);
+			
+			child.parentX2Node = _childCoordsX2.insertElement(child, child._x2);
+			child.parentY2Node = _childCoordsY2.insertElement(child, child._y2);
+			
+			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
+			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
 			child.updateParentShiftAndScale();
 			updateNumTotalChildren(child);
@@ -180,45 +202,7 @@ package molehill.core.render
 		private var _containerBottom:int = 0;
 		internal function updateDimensions(child:Sprite3D):void
 		{
-			if (child is Sprite3DContainer)
-			{
-				var container:Sprite3DContainer = child as Sprite3DContainer;
-				if (container._containerX < _containerX)
-				{
-					_containerX = container._containerX;
-				}
-				if (container._containerY < _containerY)
-				{
-					_containerY = container._containerY;
-				}
-				if (container._containerRight < _containerRight)
-				{
-					_containerRight = container._containerRight;
-				}
-				if (container._containerBottom > _containerBottom)
-				{
-					_containerBottom = container._containerBottom;
-				}
-			}
-			else
-			{
-				if (child._shiftX + child._parentShiftX < _containerX)
-				{
-					_containerX = child._shiftX + child._parentShiftX;
-				}
-				if (child._shiftY + child._parentShiftY < _containerY)
-				{
-					_containerY = child._shiftY + child._parentShiftY;
-				}
-				if (child._shiftX + child._parentShiftX + child._cachedWidth > _containerRight)
-				{
-					_containerRight = child._shiftX + child._cachedWidth + child._parentShiftX;
-				}
-				if (child._shiftY + child._parentShiftY + child._cachedHeight > _containerBottom)
-				{
-					_containerBottom = child._shiftY + child._cachedHeight + child._parentShiftY;
-				}
-			}
+			
 		}
 		
 		private function updateAllDimensions(node:TreeNode = null):void
@@ -322,15 +306,23 @@ package molehill.core.render
 			}
 			treeStructureChanged = true;
 			
-			_childCoordsTLx.removeNode(child.parentTLxNode);
-			_childCoordsTLy.removeNode(child.parentTLyNode);
-			_childCoordsBRx.removeNode(child.parentBRxNode);
-			_childCoordsBRy.removeNode(child.parentBRyNode);
+			_childCoordsX0.removeNode(child.parentX0Node);
+			_childCoordsY0.removeNode(child.parentY0Node);
+			_childCoordsX1.removeNode(child.parentX1Node);
+			_childCoordsY1.removeNode(child.parentY1Node);
+			_childCoordsX2.removeNode(child.parentX2Node);
+			_childCoordsY2.removeNode(child.parentY2Node);
+			_childCoordsX3.removeNode(child.parentX3Node);
+			_childCoordsY3.removeNode(child.parentY3Node);
 			
-			child.parentTLxNode = null;
-			child.parentTLyNode = null;
-			child.parentBRxNode = null;
-			child.parentBRyNode = null;
+			child.parentX0Node = null;
+			child.parentY0Node = null;
+			child.parentX1Node = null;
+			child.parentY1Node = null;
+			child.parentX2Node = null;
+			child.parentY2Node = null;
+			child.parentX3Node = null;
+			child.parentY3Node = null;
 			
 			updateAllDimensions();
 			
@@ -367,15 +359,23 @@ package molehill.core.render
 			}
 			treeStructureChanged = true;
 			
-			_childCoordsTLx.removeNode(child.parentTLxNode);
-			_childCoordsTLy.removeNode(child.parentTLyNode);
-			_childCoordsBRx.removeNode(child.parentBRxNode);
-			_childCoordsBRy.removeNode(child.parentBRyNode);
+			_childCoordsX0.removeNode(child.parentX0Node);
+			_childCoordsY0.removeNode(child.parentY0Node);
+			_childCoordsX1.removeNode(child.parentX1Node);
+			_childCoordsY1.removeNode(child.parentY1Node);
+			_childCoordsX2.removeNode(child.parentX2Node);
+			_childCoordsY2.removeNode(child.parentY2Node);
+			_childCoordsX3.removeNode(child.parentX3Node);
+			_childCoordsY3.removeNode(child.parentY3Node);
 			
-			child.parentTLxNode = null;
-			child.parentTLyNode = null;
-			child.parentBRxNode = null;
-			child.parentBRyNode = null;
+			child.parentX0Node = null;
+			child.parentY0Node = null;
+			child.parentX1Node = null;
+			child.parentY1Node = null;
+			child.parentX2Node = null;
+			child.parentY2Node = null;
+			child.parentX3Node = null;
+			child.parentY3Node = null;
 			
 			updateAllDimensions();
 			
@@ -604,6 +604,233 @@ package molehill.core.render
 				_scrollRect.y = value.y;
 				_scrollRect.width = value.width;
 				_scrollRect.height = value.height;
+			}
+		}
+		
+		// cached parent properties
+		override internal function set parentShiftX(value:Number):void
+		{
+			super.parentShiftX = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentShiftX = value + _shiftX * _scaleX;
+			}
+		}
+		
+		override internal function set parentShiftY(value:Number):void
+		{
+			super.parentShiftY = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentShiftY = value + _shiftY * _scaleY;
+			}
+		}
+		
+		override internal function set parentShiftZ(value:Number):void
+		{
+			super.parentShiftZ = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentShiftZ = value + _shiftZ;
+			}
+		}
+		
+		override internal function set parentScaleX(value:Number):void
+		{
+			super.parentScaleX = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentScaleX = value * _scaleX;
+			}
+		}
+		
+		override internal function set parentScaleY(value:Number):void
+		{
+			super.parentScaleY = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentScaleY = value * _scaleY;
+			}
+		}
+		
+		override internal function set parentRed(value:Number):void
+		{
+			super.parentRed = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentRed = value * _redMultiplier;
+			}
+		}
+		
+		override internal function set parentGreen(value:Number):void
+		{
+			super.parentGreen = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentGreen = value * _greenMultiplier;
+			}
+		}
+		
+		override internal function set parentBlue(value:Number):void
+		{
+			super.parentBlue = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentBlue = value * _blueMultiplier;
+			}
+		}
+		
+		override internal function set parentAlpha(value:Number):void
+		{
+			super.parentAlpha = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentAlpha = value * _alpha;
+			}
+		}
+		
+		override internal function set parentRotation(value:Number):void
+		{
+			super.parentRotation = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentRotation = value + _rotation;
+			}
+		}
+		// ----
+		
+		// self properties
+		override public function set x(value:Number):void
+		{
+			super.x = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentShiftX = _parentShiftX + _shiftX * _scaleX;
+			}
+		}
+		
+		override public function set y(value:Number):void
+		{
+			super.y = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentShiftY = _parentShiftY + _shiftY * _scaleY;
+			}
+		}
+		
+		override public function set scaleX(value:Number):void
+		{
+			super.scaleX = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentScaleX = _parentScaleX * _scaleX;
+			}
+		}
+		
+		override public function set scaleY(value:Number):void
+		{
+			super.scaleY = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentScaleY = _parentScaleY * _scaleY;
+			}
+		}
+		
+		override public function moveTo(x:Number, y:Number, z:Number=0):void
+		{
+			super.moveTo(x, y, z);
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentShiftX = _parentShiftX + _shiftX * _scaleX;
+				_listChildren[i].parentShiftY = _parentShiftY + _shiftY * _scaleY;
+			}
+		}
+		
+		override public function setScale(scaleX:Number, scaleY:Number):void
+		{
+			super.setScale(scaleX, scaleY);
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentScaleX = _parentScaleX * _scaleX;
+				_listChildren[i].parentScaleY = _parentScaleY * _scaleY;
+			}
+		}
+		
+		override public function set redMultiplier(value:Number):void
+		{
+			super.redMultiplier = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentRed = _parentRed * _redMultiplier;
+			}
+		}
+		
+		override public function set greenMultiplier(value:Number):void
+		{
+			super.greenMultiplier = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentGreen = _parentGreen * _greenMultiplier;
+			}
+		}
+		
+		override public function set blueMultiplier(value:Number):void
+		{
+			super.blueMultiplier = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentBlue = _parentBlue * _blueMultiplier;
+			}
+		}
+		
+		override public function set alpha(value:Number):void
+		{
+			super.alpha = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentAlpha = _parentAlpha * _alpha;
+			}
+		}
+		
+		override public function set darkenColor(value:uint):void
+		{
+			super.darkenColor = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentRed = _parentRed * _redMultiplier;
+				_listChildren[i].parentGreen = _parentGreen * _greenMultiplier;
+				_listChildren[i].parentBlue = _parentBlue * _blueMultiplier;
+			}
+		}
+		
+		override public function set rotation(value:Number):void
+		{
+			super.rotation = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].parentRotation = _parentRotation + _rotation;
 			}
 		}
 	}

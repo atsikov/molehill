@@ -105,6 +105,8 @@ package molehill.core.render
 			mask = _mask;
 			cutout = _cutout;
 			
+			_parent
+			
 			if (_scene != null)
 			{
 				onAddedToScene();
@@ -331,79 +333,93 @@ package molehill.core.render
 		}
 		
 		internal var _parentShiftX:Number = 0;
+		internal function set parentShiftX(value:Number):void
+		{
+			_parentShiftX = value;
+		}
+
 		internal var _parentShiftY:Number = 0;
+		internal function set parentShiftY(value:Number):void
+		{
+			_parentShiftY = value;
+		}
+
 		internal var _parentShiftZ:Number = 0;
+		internal function set parentShiftZ(value:Number):void
+		{
+			_parentShiftZ = value;
+		}
+
 		
 		internal var _parentScaleX:Number = 1;
+		internal function set parentScaleX(value:Number):void
+		{
+			_parentScaleX = value;
+		}
+
 		internal var _parentScaleY:Number = 1;
-		internal var _parentScaleZ:Number = 1;
-		
+		internal function set parentScaleY(value:Number):void
+		{
+			_parentScaleY = value;
+		}
+
 		internal var _parentRed:Number = 1;
+		internal function set parentRed(value:Number):void
+		{
+			_parentRed = value;
+		}
+
 		internal var _parentGreen:Number = 1;
+		internal function set parentGreen(value:Number):void
+		{
+			_parentGreen = value;
+		}
+		
 		internal var _parentBlue:Number = 1;
+		internal function set parentBlue(value:Number):void
+		{
+			_parentBlue = value;
+		}
+		
 		internal var _parentAlpha:Number = 1;
+		internal function set parentAlpha(value:Number):void
+		{
+			_parentAlpha = value;
+		}
 		
 		internal var _parentRotation:Number = 0;
+		internal function set parentRotation(value:Number):void
+		{
+			_parentRotation = value;
+		}
 		
 		internal function updateParentShiftAndScale():void
 		{
-			var currentParent:Sprite3D = _parent;
-			while (currentParent != null)
-			{
-				if (currentParent.hasChanged)
-				{
-					break;
-				}
-				
-				currentParent = currentParent.parent;
-			}
-			
-			if (currentParent == null)
+			if (_parent == null || !_parent.hasChanged)
 			{
 				return;
 			}
 			
-			_parentScaleX = 1;
-			_parentScaleY = 1;
-			_parentScaleZ = 1;
+			_parentShiftX += _parent._shiftX;
+			_parentShiftY += _parent._shiftY;
+			_parentShiftZ += _parent._shiftZ;
 			
-			_parentShiftX = 0;
-			_parentShiftY = 0;
-			_parentShiftZ = 0;
+			_parentScaleX *= _parent._scaleX;
+			_parentScaleY *= _parent._scaleY;
 			
-			_parentRed = 1;
-			_parentGreen = 1;
-			_parentBlue = 1;
-			_parentAlpha = 1;
+			_parentRed *= _parent._redMultiplier;
+			_parentGreen *= _parent._greenMultiplier;
+			_parentBlue *= _parent._blueMultiplier;
+			_parentAlpha *= _parent._alpha;
 			
-			_parentRotation = 0;
+			_parentRotation += _parent._rotation;
 			
-			currentParent = _parent;
-			while (currentParent != null)
-			{
-				_parentShiftX += currentParent._shiftX;
-				_parentShiftY += currentParent._shiftY;
-				_parentShiftZ += currentParent._shiftZ;
-				
-				_parentScaleX *= currentParent._scaleX;
-				_parentScaleY *= currentParent._scaleY;
-				
-				_parentRed *= currentParent._redMultiplier;
-				_parentGreen *= currentParent._greenMultiplier;
-				_parentBlue *= currentParent._blueMultiplier;
-				_parentAlpha *= currentParent._alpha;
-				
-				_parentRotation += currentParent._rotation;
-				
-				(currentParent as Sprite3DContainer).updateDimensions(this);
-				
-				currentParent = currentParent._parent;
-			}
+			_parent.updateDimensions(this);
 		}
 		
 		internal function updateValues():void
 		{
-			updateParentShiftAndScale();
+			//updateParentShiftAndScale();
 			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
@@ -416,7 +432,7 @@ package molehill.core.render
 				scaledWidth = _width * _parentScaleX * _scaleX;
 				scaledHeight = _height * _parentScaleY * _scaleY;
 				
-				var rad:Number = (_rotation+ _parentRotation) / 180 * Math.PI;
+				var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
 				cos = Math.cos(rad);
 				sin = Math.sin(rad);
 				
@@ -459,6 +475,11 @@ package molehill.core.render
 			_z3 = _shiftZ;
 		}
 		
+		public function applySize():void
+		{
+			
+		}
+		
 		private var _matrix:Object = {'a': 1, 'b': 0, 'c': 0, 'd': 1, 'tx': 0, 'ty': 0};
 		private var _fromMatrix:Boolean = false;
 		public function applyMatrix(a:Number, b:Number, c:Number, d:Number, tx:Number, ty:Number):void
@@ -487,7 +508,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		private var _rotation:Number = 0;
+		internal var _rotation:Number = 0;
 		public function get rotation():Number
 		{
 			return _rotation;
@@ -581,8 +602,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		private var _scaleX:Number = 1;
-
+		internal var _scaleX:Number = 1;
 		public function get scaleX():Number
 		{
 			return _scaleX;
@@ -598,8 +618,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		private var _scaleY:Number = 1;
-
+		internal var _scaleY:Number = 1;
 		public function get scaleY():Number
 		{
 			return _scaleY;
@@ -923,10 +942,14 @@ package molehill.core.render
 			_cutout = value;
 		}
 		
-		internal var parentTLxNode:BinarySearchTreeNode;
-		internal var parentTLyNode:BinarySearchTreeNode;
-		internal var parentBRxNode:BinarySearchTreeNode;
-		internal var parentBRyNode:BinarySearchTreeNode;
+		internal var parentX0Node:BinarySearchTreeNode;
+		internal var parentY0Node:BinarySearchTreeNode;
+		internal var parentX1Node:BinarySearchTreeNode;
+		internal var parentY1Node:BinarySearchTreeNode;
+		internal var parentX2Node:BinarySearchTreeNode;
+		internal var parentY2Node:BinarySearchTreeNode;
+		internal var parentX3Node:BinarySearchTreeNode;
+		internal var parentY3Node:BinarySearchTreeNode;
 		
 		protected var _boundRect:Rectangle;
 		public function get boundRect():Rectangle
