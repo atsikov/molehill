@@ -1,4 +1,4 @@
-package molehill.core.render
+package molehill.core.sprite
 {
 	import avmplus.getQualifiedClassName;
 	
@@ -7,9 +7,9 @@ package molehill.core.render
 	import flash.events.EventDispatcher;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.utils.getQualifiedClassName;
 	
 	import molehill.core.Scene3DManager;
+	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.mask.CutoutObjectShader;
@@ -20,6 +20,10 @@ package molehill.core.render
 	import molehill.core.texture.TextureManager;
 	
 	import utils.StringUtils;
+	import molehill.core.render.BlendMode;
+	import molehill.core.render.Scene3D;
+	
+	use namespace molehill_internal;
 	
 	public class Sprite3D extends EventDispatcher implements IZSortDisplayObject
 	{
@@ -56,50 +60,50 @@ package molehill.core.render
 		/**
 		 * X Top-Left
 		 **/
-		internal var _x0:Number = 0;
+		molehill_internal var _x0:Number = 0;
 		/**
 		 * X Bottom-Left
 		 **/
-		internal var _x1:Number = 0;
+		molehill_internal var _x1:Number = 0;
 		/**
 		 * X Bottom-Right
 		 **/
-		internal var _x2:Number = 1;
+		molehill_internal var _x2:Number = 1;
 		/**
 		 * X Top-Right
 		 **/
-		internal var _x3:Number = 1;
+		molehill_internal var _x3:Number = 1;
 
 		
 		/**
 		 * Y Top-Left
 		 **/
-		internal var _y0:Number = 1;
+		molehill_internal var _y0:Number = 1;
 		/**
 		 * Y Bottom-Left
 		 **/
-		internal var _y1:Number = 0;
+		molehill_internal var _y1:Number = 0;
 		/**
 		 * Y Bottom-Right
 		 **/
-		internal var _y2:Number = 0;
+		molehill_internal var _y2:Number = 0;
 		/**
 		 * Y Top-Right
 		 **/
-		internal var _y3:Number = 1;
+		molehill_internal var _y3:Number = 1;
 		
-		internal var _z0:Number = 0;
-		internal var _z1:Number = 0;
-		internal var _z2:Number = 0;
-		internal var _z3:Number = 0;
+		molehill_internal var _z0:Number = 0;
+		molehill_internal var _z1:Number = 0;
+		molehill_internal var _z2:Number = 0;
+		molehill_internal var _z3:Number = 0;
 		
-		internal var _scene:Scene3D;
+		molehill_internal var _scene:Scene3D;
 		public function getScene():Scene3D
 		{
 			return _scene;
 		}
 		
-		internal function setScene(value:Scene3D):void
+		molehill_internal function setScene(value:Scene3D):void
 		{
 			_scene = value;
 			mask = _mask;
@@ -123,7 +127,7 @@ package molehill.core.render
 			resetSprite();
 		}
 		
-		internal var _blendMode:String;
+		molehill_internal var _blendMode:String;
 
 		public function get blendMode():String
 		{
@@ -179,13 +183,13 @@ package molehill.core.render
 			return 0;
 		}
 		
-		internal var _parent:Sprite3DContainer;
+		molehill_internal var _parent:Sprite3DContainer;
 		public function get parent():Sprite3DContainer
 		{
 			return _parent;
 		}
 		
-		internal var _alpha:Number = 1;
+		molehill_internal var _alpha:Number = 1;
 		public function get alpha():Number
 		{
 			return _alpha;
@@ -231,7 +235,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _redMultiplier:Number = 1;
+		molehill_internal var _redMultiplier:Number = 1;
 		public function get redMultiplier():Number
 		{
 			return _redMultiplier;
@@ -254,7 +258,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _greenMultiplier:Number = 1;
+		molehill_internal var _greenMultiplier:Number = 1;
 		public function get greenMultiplier():Number
 		{
 			return _greenMultiplier;
@@ -277,7 +281,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _blueMultiplier:Number = 1;
+		molehill_internal var _blueMultiplier:Number = 1;
 		public function get blueMultiplier():Number
 		{
 			return _blueMultiplier;
@@ -332,68 +336,68 @@ package molehill.core.render
 			return _textureID != "" && _textureID != null;
 		}
 		
-		internal var _parentShiftX:Number = 0;
-		internal function set parentShiftX(value:Number):void
+		molehill_internal var _parentShiftX:Number = 0;
+		molehill_internal function set parentShiftX(value:Number):void
 		{
 			_parentShiftX = value;
 		}
 
-		internal var _parentShiftY:Number = 0;
-		internal function set parentShiftY(value:Number):void
+		molehill_internal var _parentShiftY:Number = 0;
+		molehill_internal function set parentShiftY(value:Number):void
 		{
 			_parentShiftY = value;
 		}
 
-		internal var _parentShiftZ:Number = 0;
-		internal function set parentShiftZ(value:Number):void
+		molehill_internal var _parentShiftZ:Number = 0;
+		molehill_internal function set parentShiftZ(value:Number):void
 		{
 			_parentShiftZ = value;
 		}
 
 		
-		internal var _parentScaleX:Number = 1;
-		internal function set parentScaleX(value:Number):void
+		molehill_internal var _parentScaleX:Number = 1;
+		molehill_internal function set parentScaleX(value:Number):void
 		{
 			_parentScaleX = value;
 		}
 
-		internal var _parentScaleY:Number = 1;
-		internal function set parentScaleY(value:Number):void
+		molehill_internal var _parentScaleY:Number = 1;
+		molehill_internal function set parentScaleY(value:Number):void
 		{
 			_parentScaleY = value;
 		}
 
-		internal var _parentRed:Number = 1;
-		internal function set parentRed(value:Number):void
+		molehill_internal var _parentRed:Number = 1;
+		molehill_internal function set parentRed(value:Number):void
 		{
 			_parentRed = value;
 		}
 
-		internal var _parentGreen:Number = 1;
-		internal function set parentGreen(value:Number):void
+		molehill_internal var _parentGreen:Number = 1;
+		molehill_internal function set parentGreen(value:Number):void
 		{
 			_parentGreen = value;
 		}
 		
-		internal var _parentBlue:Number = 1;
-		internal function set parentBlue(value:Number):void
+		molehill_internal var _parentBlue:Number = 1;
+		molehill_internal function set parentBlue(value:Number):void
 		{
 			_parentBlue = value;
 		}
 		
-		internal var _parentAlpha:Number = 1;
-		internal function set parentAlpha(value:Number):void
+		molehill_internal var _parentAlpha:Number = 1;
+		molehill_internal function set parentAlpha(value:Number):void
 		{
 			_parentAlpha = value;
 		}
 		
-		internal var _parentRotation:Number = 0;
-		internal function set parentRotation(value:Number):void
+		molehill_internal var _parentRotation:Number = 0;
+		molehill_internal function set parentRotation(value:Number):void
 		{
 			_parentRotation = value;
 		}
 		
-		internal function updateParentShiftAndScale():void
+		molehill_internal function updateParentShiftAndScale():void
 		{
 			if (_parent == null || !_parent.hasChanged)
 			{
@@ -417,7 +421,7 @@ package molehill.core.render
 			_parent.updateDimensions(this);
 		}
 		
-		internal function updateValues():void
+		molehill_internal function updateValues():void
 		{
 			//updateParentShiftAndScale();
 			
@@ -494,9 +498,9 @@ package molehill.core.render
 			_fromMatrix = true;
 		}
 		
-		internal var _shiftX:Number = 0;
-		internal var _shiftY:Number = 0;
-		internal var _shiftZ:Number = 0;
+		molehill_internal var _shiftX:Number = 0;
+		molehill_internal var _shiftY:Number = 0;
+		molehill_internal var _shiftZ:Number = 0;
 		public function moveTo(x:Number, y:Number, z:Number = 0):void
 		{
 			_shiftX = x;
@@ -508,7 +512,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _rotation:Number = 0;
+		molehill_internal var _rotation:Number = 0;
 		public function get rotation():Number
 		{
 			return _rotation;
@@ -524,7 +528,7 @@ package molehill.core.render
 		}
 	
 		protected var _width:Number;
-		internal var _cachedWidth:Number = 0;
+		molehill_internal var _cachedWidth:Number = 0;
 		public function get width():Number
 		{
 			return _cachedWidth;
@@ -541,7 +545,7 @@ package molehill.core.render
 		}
 		
 		protected var _height:Number;
-		internal var _cachedHeight:Number = 0;
+		molehill_internal var _cachedHeight:Number = 0;
 		public function get height():Number
 		{
 			if (_cachedHeight == 0)
@@ -562,7 +566,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _visible:Boolean = true;
+		molehill_internal var _visible:Boolean = true;
 		public function get visible():Boolean 
 		{
 			var currentParent:Sprite3DContainer = _parent;
@@ -602,7 +606,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _scaleX:Number = 1;
+		molehill_internal var _scaleX:Number = 1;
 		public function get scaleX():Number
 		{
 			return _scaleX;
@@ -618,7 +622,7 @@ package molehill.core.render
 			hasChanged = true;
 		}
 		
-		internal var _scaleY:Number = 1;
+		molehill_internal var _scaleY:Number = 1;
 		public function get scaleY():Number
 		{
 			return _scaleY;
@@ -700,15 +704,15 @@ package molehill.core.render
 			return _textureRegion;
 		}
 		
-		internal var _textureU0:Number = 0;
-		internal var _textureU1:Number = 0;
-		internal var _textureU2:Number = 0;
-		internal var _textureU3:Number = 0;
+		molehill_internal var _textureU0:Number = 0;
+		molehill_internal var _textureU1:Number = 0;
+		molehill_internal var _textureU2:Number = 0;
+		molehill_internal var _textureU3:Number = 0;
 		
-		internal var _textureW0:Number = 0;
-		internal var _textureW1:Number = 0;
-		internal var _textureW2:Number = 0;
-		internal var _textureW3:Number = 0;
+		molehill_internal var _textureW0:Number = 0;
+		molehill_internal var _textureW1:Number = 0;
+		molehill_internal var _textureW2:Number = 0;
+		molehill_internal var _textureW3:Number = 0;
 		
 		public function set textureRegion(value:Rectangle):void
 		{
@@ -813,7 +817,7 @@ package molehill.core.render
 				(d >= localMouseY);
 		}
 		
-		internal function hitTestCoords(localX:Number, localY:Number):Boolean
+		molehill_internal function hitTestCoords(localX:Number, localY:Number):Boolean
 		{
 			if (_scene == null)
 			{
@@ -832,10 +836,10 @@ package molehill.core.render
 				(d >= localMouseY);
 		}
 		
-		internal var _textureChanged:Boolean = false;
+		molehill_internal var _textureChanged:Boolean = false;
 		
-		internal var _visibilityChanged:Boolean = false;
-		internal function resetVisibilityChanged():void
+		molehill_internal var _visibilityChanged:Boolean = false;
+		molehill_internal function resetVisibilityChanged():void
 		{
 			_visibilityChanged = false;
 			
@@ -848,17 +852,17 @@ package molehill.core.render
 		}
 	
 		private var _hasChanged:Boolean = true;
-		internal function get hasChanged():Boolean
+		molehill_internal function get hasChanged():Boolean
 		{
 			return _hasChanged;
 		}
 		
-		internal function set hasChanged(value:Boolean):void
+		molehill_internal function set hasChanged(value:Boolean):void
 		{
 			_hasChanged = value;
 		}
 		
-		internal var addedToScene:Boolean = false;
+		molehill_internal var addedToScene:Boolean = false;
 		private var _shader:Shader3D;
 		public function get shader():Shader3D
 		{
@@ -942,14 +946,14 @@ package molehill.core.render
 			_cutout = value;
 		}
 		
-		internal var parentX0Node:BinarySearchTreeNode;
-		internal var parentY0Node:BinarySearchTreeNode;
-		internal var parentX1Node:BinarySearchTreeNode;
-		internal var parentY1Node:BinarySearchTreeNode;
-		internal var parentX2Node:BinarySearchTreeNode;
-		internal var parentY2Node:BinarySearchTreeNode;
-		internal var parentX3Node:BinarySearchTreeNode;
-		internal var parentY3Node:BinarySearchTreeNode;
+		molehill_internal var parentX0Node:BinarySearchTreeNode;
+		molehill_internal var parentY0Node:BinarySearchTreeNode;
+		molehill_internal var parentX1Node:BinarySearchTreeNode;
+		molehill_internal var parentY1Node:BinarySearchTreeNode;
+		molehill_internal var parentX2Node:BinarySearchTreeNode;
+		molehill_internal var parentY2Node:BinarySearchTreeNode;
+		molehill_internal var parentX3Node:BinarySearchTreeNode;
+		molehill_internal var parentY3Node:BinarySearchTreeNode;
 		
 		protected var _boundRect:Rectangle;
 		public function get boundRect():Rectangle

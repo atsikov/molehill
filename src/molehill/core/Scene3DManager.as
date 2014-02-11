@@ -6,8 +6,8 @@ package molehill.core
 	import flash.events.Event;
 	
 	import molehill.core.render.Scene3D;
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.RenderEngine;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3DCache;
 	import molehill.core.texture.TextureManager;
 

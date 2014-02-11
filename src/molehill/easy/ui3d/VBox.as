@@ -4,7 +4,7 @@ package molehill.easy.ui3d
 	import flash.events.Event;
 	import flash.geom.Rectangle;
 	
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3DContainer;
 	
 	public class VBox extends Sprite3DContainer
 	{

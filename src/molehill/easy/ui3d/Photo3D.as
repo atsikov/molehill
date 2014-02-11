@@ -17,8 +17,8 @@ package molehill.easy.ui3d
 	import flash.net.URLRequest;
 	import flash.system.LoaderContext;
 	
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.core.texture.TextureAtlasData;

@@ -5,7 +5,7 @@ package molehill.easy.ui3d.effects
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
-	import molehill.core.render.Sprite3D;
+	import molehill.core.sprite.Sprite3D;
 
 	public class Effect
 	{

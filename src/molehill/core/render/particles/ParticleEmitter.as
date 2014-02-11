@@ -1,4 +1,4 @@
-package molehill.core.render
+package molehill.core.render.particles
 {
 	import flash.display.Sprite;
 	import flash.display3D.Context3D;
@@ -13,9 +13,17 @@ package molehill.core.render
 	import flash.utils.Timer;
 	import flash.utils.getTimer;
 	
+	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.ParticleEmitterShader;
 	import molehill.core.texture.TextureManager;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.render.IVertexBatcher;
+	import molehill.core.render.OrderedVertexBuffer;
+	import molehill.core.render.Scene3D;
+	
+	use namespace molehill_internal;
 
 	public class ParticleEmitter extends Sprite3D implements IVertexBatcher
 	{
@@ -74,7 +82,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function setScene(value:Scene3D):void
+		override molehill_internal function setScene(value:Scene3D):void
 		{
 			super.setScene(value);
 			

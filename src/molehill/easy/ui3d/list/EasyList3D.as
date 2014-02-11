@@ -12,8 +12,8 @@ package molehill.easy.ui3d.list
 	import flash.events.MouseEvent;
 	import flash.utils.Dictionary;
 	
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	
 	import resources.IDisposable;
 	

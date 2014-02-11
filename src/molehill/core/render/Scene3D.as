@@ -9,10 +9,17 @@ package molehill.core.render
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	
+	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.ObjectUtils;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.render.engine.RenderEngine;
+	import molehill.core.text.TextField3D;
+	
+	use namespace molehill_internal;
 
 	public class Scene3D extends Sprite3DContainer
 	{
@@ -58,7 +65,7 @@ package molehill.core.render
 			trace('================================');
 		}
 		
-		internal var _needUpdateBatchers:Boolean = false;
+		molehill_internal var _needUpdateBatchers:Boolean = false;
 		private var _listSpriteBatchers:Vector.<IVertexBatcher>;
 		private var _enterFrameListener:Sprite;
 		

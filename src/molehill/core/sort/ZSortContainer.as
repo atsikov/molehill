@@ -6,8 +6,8 @@ package molehill.core.sort
 	import flash.display.Shape;
 	import flash.events.Event;
 	
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	
 
 	public class ZSortContainer extends Sprite3DContainer

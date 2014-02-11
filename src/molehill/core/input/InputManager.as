@@ -12,8 +12,8 @@ package molehill.core.input
 	import molehill.core.events.Input3DEvent;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.Scene3D;
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	
 	public class InputManager
 	{

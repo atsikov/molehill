@@ -1,4 +1,4 @@
-package molehill.core.render
+package molehill.core.sprite
 {
 	import easy.collections.BinarySearchTree;
 	import easy.collections.TreeNode;
@@ -7,7 +7,13 @@ package molehill.core.render
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	
+	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3D;
+	import molehill.core.render.BlendMode;
+	import molehill.core.render.InteractiveSprite3D;
+	import molehill.core.render.Scene3D;
+	
+	use namespace molehill_internal;
 
 	public class Sprite3DContainer extends InteractiveSprite3D
 	{
@@ -200,7 +206,7 @@ package molehill.core.render
 		private var _containerY:int = 0;
 		private var _containerRight:int = 0;
 		private var _containerBottom:int = 0;
-		internal function updateDimensions(child:Sprite3D):void
+		molehill_internal function updateDimensions(child:Sprite3D):void
 		{
 			
 		}
@@ -398,7 +404,7 @@ package molehill.core.render
 		}
 		
 		// number of Sprite3D instances, for batch update purposes only
-		internal function get numSimpleChildren():uint
+		molehill_internal function get numSimpleChildren():uint
 		{
 			return _numSimpleChildren;
 		}
@@ -448,7 +454,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set hasChanged(value:Boolean):void
+		override molehill_internal function set hasChanged(value:Boolean):void
 		{
 			for each (var child:Sprite3D in _listChildren)
 			{
@@ -463,9 +469,9 @@ package molehill.core.render
 			super.hasChanged = value;
 		}
 		
-		internal var textureAtlasChanged:Boolean = false;
-		internal var treeStructureChanged:Boolean = false;
-		internal var scrollRectAdded:Boolean = false;
+		molehill_internal var textureAtlasChanged:Boolean = false;
+		molehill_internal var treeStructureChanged:Boolean = false;
+		molehill_internal var scrollRectAdded:Boolean = false;
 		
 		override public function hitTestPoint(point:Point):Boolean
 		{
@@ -492,7 +498,7 @@ package molehill.core.render
 			return false;
 		}
 		
-		override internal function hitTestCoords(localX:Number, localY:Number):Boolean
+		override molehill_internal function hitTestCoords(localX:Number, localY:Number):Boolean
 		{
 			for each (var child:Sprite3D in _listChildren)
 			{
@@ -553,7 +559,7 @@ package molehill.core.render
 			return childrenUnderPoint;
 		}
 		
-		override internal function setScene(value:Scene3D):void
+		override molehill_internal function setScene(value:Scene3D):void
 		{
 			super.setScene(value);
 			for each (var child:Sprite3D in _listChildren)
@@ -562,7 +568,7 @@ package molehill.core.render
 			}
 		}
 		
-		internal var localTreeRoot:TreeNode;
+		molehill_internal var localTreeRoot:TreeNode;
 		
 		override public function set isBackground(value:Boolean):void
 		{
@@ -608,7 +614,7 @@ package molehill.core.render
 		}
 		
 		// cached parent properties
-		override internal function set parentShiftX(value:Number):void
+		override molehill_internal function set parentShiftX(value:Number):void
 		{
 			super.parentShiftX = value;
 			
@@ -618,7 +624,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentShiftY(value:Number):void
+		override molehill_internal function set parentShiftY(value:Number):void
 		{
 			super.parentShiftY = value;
 			
@@ -628,7 +634,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentShiftZ(value:Number):void
+		override molehill_internal function set parentShiftZ(value:Number):void
 		{
 			super.parentShiftZ = value;
 			
@@ -638,7 +644,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentScaleX(value:Number):void
+		override molehill_internal function set parentScaleX(value:Number):void
 		{
 			super.parentScaleX = value;
 			
@@ -648,7 +654,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentScaleY(value:Number):void
+		override molehill_internal function set parentScaleY(value:Number):void
 		{
 			super.parentScaleY = value;
 			
@@ -658,7 +664,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentRed(value:Number):void
+		override molehill_internal function set parentRed(value:Number):void
 		{
 			super.parentRed = value;
 			
@@ -668,7 +674,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentGreen(value:Number):void
+		override molehill_internal function set parentGreen(value:Number):void
 		{
 			super.parentGreen = value;
 			
@@ -678,7 +684,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentBlue(value:Number):void
+		override molehill_internal function set parentBlue(value:Number):void
 		{
 			super.parentBlue = value;
 			
@@ -688,7 +694,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentAlpha(value:Number):void
+		override molehill_internal function set parentAlpha(value:Number):void
 		{
 			super.parentAlpha = value;
 			
@@ -698,7 +704,7 @@ package molehill.core.render
 			}
 		}
 		
-		override internal function set parentRotation(value:Number):void
+		override molehill_internal function set parentRotation(value:Number):void
 		{
 			super.parentRotation = value;
 			

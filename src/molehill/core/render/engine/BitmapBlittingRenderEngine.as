@@ -11,7 +11,7 @@ package molehill.core.render.engine
 	import flash.geom.Rectangle;
 	
 	import molehill.core.texture.TextureManager;
-	import molehill.core.render.Sprite3D;
+	import molehill.core.sprite.Sprite3D;
 	
 	public class BitmapBlittingRenderEngine implements IRenderEngine
 	{

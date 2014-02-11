@@ -1,4 +1,4 @@
-package molehill.core.render
+package molehill.core.render.particles
 {
 	internal class ParticleData
 	{
