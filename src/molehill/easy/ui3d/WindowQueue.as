@@ -4,7 +4,7 @@ package molehill.easy.ui3d
 	import flash.events.EventDispatcher;
 	import flash.utils.Dictionary;
 	
-	import molehill.core.render.Sprite3D;
+	import molehill.core.sprite.Sprite3D;
 	import molehill.easy.ui3d.effects.WindowEffectsSet;
 
 	public class WindowQueue extends EventDispatcher

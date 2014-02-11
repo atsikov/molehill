@@ -6,8 +6,8 @@ package molehill.easy.ui3d
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	

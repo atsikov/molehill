@@ -1,13 +1,14 @@
-package molehill.core.render
+package molehill.core.sprite
 {
 	
 	import flash.geom.Rectangle;
 	
-	import molehill.core.sprite.SpriteAnimationData;
-	import molehill.core.sprite.SpriteData;
+	import molehill.core.molehill_internal;
 	import molehill.core.texture.SpriteSheetData;
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
+	
+	use namespace molehill_internal;
 
 	public class AnimatedSprite3D extends Sprite3D
 	{

@@ -10,7 +10,7 @@ package molehill.easy.ui3d.effects
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
-	import molehill.core.render.Sprite3D;
+	import molehill.core.sprite.Sprite3D;
 	
 	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;

@@ -1,4 +1,4 @@
-package molehill.core.render
+package molehill.core.render.engine
 {
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
@@ -10,18 +10,19 @@ package molehill.core.render
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.Texture;
 	import flash.geom.Matrix3D;
-	import flash.geom.Point;
-	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
+	import molehill.core.molehill_internal;
+	import molehill.core.render.BlendMode;
+	import molehill.core.render.IVertexBatcher;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.BaseShader;
 	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
 	import molehill.core.texture.TextureManager;
 	
-	import utils.StringUtils;
+	use namespace molehill_internal;
 	
 	public class RenderEngine
 	{

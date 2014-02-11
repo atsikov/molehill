@@ -1,6 +1,7 @@
 package molehill.core.render
 {
 	import utils.StringUtils;
+	import molehill.core.sprite.Sprite3D;
 
 	internal final class BatchingInfo
 	{

@@ -2,7 +2,7 @@ package molehill.easy.ui3d.list
 {
 	import easy.ui.IEasyItemRenderer;
 	
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3DContainer;
 
 	public class EasyList3DItemRenderer extends Sprite3DContainer implements IEasyItemRenderer
 	{

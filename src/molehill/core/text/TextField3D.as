@@ -1,12 +1,12 @@
-package molehill.core.render
+package molehill.core.text
 {
 	import flash.geom.Point;
 	
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
-	import molehill.core.text.Font3DManager;
-	import molehill.core.text.TextField3DFormat;
 	import molehill.core.texture.TextureManager;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 
 	public class TextField3D extends Sprite3DContainer
 	{

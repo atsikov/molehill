@@ -7,8 +7,8 @@ package molehill.easy.ui3d
 	
 	import molehill.core.events.Input3DEvent;
 	import molehill.core.render.InteractiveSprite3D;
-	import molehill.core.render.Sprite3D;
-	import molehill.core.render.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.easy.ui3d.effects.WindowEffectsSet;
@@ -297,8 +297,8 @@ import easy.ui.ISnapshotable;
 
 import flash.utils.Dictionary;
 
-import molehill.core.render.Sprite3D;
-import molehill.core.render.Sprite3DContainer;
+import molehill.core.sprite.Sprite3D;
+import molehill.core.sprite.Sprite3DContainer;
 import molehill.easy.ui3d.effects.WindowEffectsSet;
 
 class PopUpExecutor

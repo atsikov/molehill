@@ -5,9 +5,13 @@ package molehill.core.render
 	
 	import molehill.core.events.Input3DEvent;
 	import molehill.core.input.InputManager;
+	import molehill.core.molehill_internal;
 	import molehill.core.texture.NormalizedAlphaChannel;
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
+	import molehill.core.sprite.Sprite3D;
+	
+	use namespace molehill_internal;
 
 	public class InteractiveSprite3D extends Sprite3D
 	{

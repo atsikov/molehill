@@ -5,7 +5,7 @@ package molehill.easy.ui3d.effects
 	
 	import flash.display.DisplayObject;
 	
-	import molehill.core.render.Sprite3D;
+	import molehill.core.sprite.Sprite3D;
 	
 	import org.opentween.OpenTween;
 	

@@ -1,4 +1,4 @@
-package molehill.core.render
+package molehill.core.sprite
 {
 	import flash.display.Sprite;
 	import flash.events.Event;

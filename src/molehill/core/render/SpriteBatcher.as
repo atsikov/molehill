@@ -13,7 +13,13 @@ package molehill.core.render
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
+	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3D;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.sprite.AnimatedSprite3D;
+	
+	use namespace molehill_internal;
 	
 	/**
 	 * 

@@ -6,6 +6,7 @@ package molehill.core.render
 	import flash.utils.ByteArray;
 	
 	import molehill.core.render.shader.Shader3D;
+	import molehill.core.sprite.Sprite3DContainer;
 
 	public interface IVertexBatcher
 	{

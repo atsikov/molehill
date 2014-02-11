@@ -4,7 +4,6 @@ package molehill.core.sprite
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	
-	import molehill.core.render.Sprite3D;
 	
 	import utils.ObjectUtils;
 

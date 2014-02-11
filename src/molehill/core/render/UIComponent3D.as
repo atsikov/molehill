@@ -1,5 +1,8 @@
 package molehill.core.render
 {
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+
 	/**
 	 * 
 	 *  This class is using certain batching to move all text fields to the top layer.

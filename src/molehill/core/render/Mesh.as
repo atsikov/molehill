@@ -7,6 +7,8 @@ package molehill.core.render
 	import flash.utils.Endian;
 	
 	import molehill.core.texture.TextureManager;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 
 	public class Mesh extends Sprite3D implements IVertexBatcher
 	{
