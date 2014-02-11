@@ -10,14 +10,14 @@ package molehill.core.render
 	import flash.utils.Dictionary;
 	
 	import molehill.core.molehill_internal;
+	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3D;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.text.TextField3D;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.ObjectUtils;
-	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
-	import molehill.core.render.engine.RenderEngine;
-	import molehill.core.text.TextField3D;
 	
 	use namespace molehill_internal;
 
@@ -285,7 +285,7 @@ package molehill.core.render
 			while (node != null)
 			{
 				var sprite:Sprite3D = node.value as Sprite3D;
-				if (sprite is UIComponent3D)
+				/*if (sprite is UIComponent3D)
 				{
 					prepareUIComponentBuffers();
 					parseUIComponent((sprite as Sprite3DContainer).localTreeRoot);
@@ -293,7 +293,7 @@ package molehill.core.render
 					
 					currentBatcher = null;
 				}
-				else if (node.hasChildren)
+				else */if (node.hasChildren)
 				{
 					if (batcherTreeNode.firstChild == null)
 					{

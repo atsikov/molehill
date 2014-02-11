@@ -8,10 +8,10 @@ package molehill.core.sprite
 	import flash.utils.Dictionary;
 	
 	import molehill.core.molehill_internal;
-	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.shader.Shader3D;
 	
 	use namespace molehill_internal;
 
@@ -126,8 +126,12 @@ package molehill.core.sprite
 			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
-			child.updateParentShiftAndScale();
-			//updateNumTotalChildren(child);
+			updateContainerSize();
+			
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 			
 			return child;
 		}
@@ -196,8 +200,12 @@ package molehill.core.sprite
 			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
-			child.updateParentShiftAndScale();
-			updateNumTotalChildren(child);
+			updateContainerSize();
+			
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 			
 			return child;
 		}
@@ -384,9 +392,12 @@ package molehill.core.sprite
 			child.parentX3Node = null;
 			child.parentY3Node = null;
 			
-			updateAllDimensions();
+			updateContainerSize();
 			
-			updateNumTotalChildren(child, false);
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 			
 			return child;
 		}
@@ -437,9 +448,12 @@ package molehill.core.sprite
 			child.parentX3Node = null;
 			child.parentY3Node = null;
 			
-			updateAllDimensions();
+			updateContainerSize();
 			
-			updateNumTotalChildren(child, false);
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 			
 			return child;
 		}
@@ -512,15 +526,14 @@ package molehill.core.sprite
 		{
 			for each (var child:Sprite3D in _listChildren)
 			{
-				if (!(child is Sprite3DContainer) && child._hasChanged)
-				{
-					continue;
-				}
-				
 				child.hasChanged = value;
 			}
 			
 			super.hasChanged = value;
+		}
+		
+		override molehill_internal function updateValues():void
+		{
 		}
 		
 		molehill_internal var textureAtlasChanged:Boolean = false;
@@ -772,104 +785,104 @@ package molehill.core.sprite
 		// self properties
 		override public function set x(value:Number):void
 		{
-			super.x = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = _parentShiftX + _shiftX * _scaleX;
+				_listChildren[i].parentShiftX = _parentShiftX + value * _scaleX;
 			}
+			
+			super.x = value;
 		}
 		
 		override public function set y(value:Number):void
 		{
-			super.y = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = _parentShiftY + _shiftY * _scaleY;
+				_listChildren[i].parentShiftY = _parentShiftY + value * _scaleY;
 			}
+			
+			super.y = value;
 		}
 		
 		override public function set scaleX(value:Number):void
 		{
-			super.scaleX = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentScaleX = _parentScaleX * _scaleX;
+				_listChildren[i].parentScaleX = _parentScaleX * value;
 			}
+			
+			super.scaleX = value;
 		}
 		
 		override public function set scaleY(value:Number):void
 		{
-			super.scaleY = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentScaleY = _parentScaleY * _scaleY;
+				_listChildren[i].parentScaleY = _parentScaleY * value;
 			}
+			
+			super.scaleY = value;
 		}
 		
 		override public function moveTo(x:Number, y:Number, z:Number=0):void
 		{
-			super.moveTo(x, y, z);
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = _parentShiftX + _shiftX * _scaleX;
-				_listChildren[i].parentShiftY = _parentShiftY + _shiftY * _scaleY;
+				_listChildren[i].parentShiftX = _parentShiftX + x * _scaleX;
+				_listChildren[i].parentShiftY = _parentShiftY + y * _scaleY;
 			}
+			
+			super.moveTo(x, y, z);
 		}
 		
 		override public function setScale(scaleX:Number, scaleY:Number):void
 		{
-			super.setScale(scaleX, scaleY);
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentScaleX = _parentScaleX * _scaleX;
-				_listChildren[i].parentScaleY = _parentScaleY * _scaleY;
+				_listChildren[i].parentScaleX = _parentScaleX * scaleX;
+				_listChildren[i].parentScaleY = _parentScaleY * scaleY;
 			}
+			
+			super.setScale(scaleX, scaleY);
 		}
 		
 		override public function set redMultiplier(value:Number):void
 		{
-			super.redMultiplier = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentRed = _parentRed * _redMultiplier;
+				_listChildren[i].parentRed = _parentRed * value;
 			}
+			
+			super.redMultiplier = value;
 		}
 		
 		override public function set greenMultiplier(value:Number):void
 		{
-			super.greenMultiplier = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentGreen = _parentGreen * _greenMultiplier;
+				_listChildren[i].parentGreen = _parentGreen * value;
 			}
+			
+			super.greenMultiplier = value;
 		}
 		
 		override public function set blueMultiplier(value:Number):void
 		{
-			super.blueMultiplier = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentBlue = _parentBlue * _blueMultiplier;
+				_listChildren[i].parentBlue = _parentBlue * value;
 			}
+			
+			super.blueMultiplier = value;
 		}
 		
 		override public function set alpha(value:Number):void
 		{
-			super.alpha = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentAlpha = _parentAlpha * _alpha;
+				_listChildren[i].parentAlpha = _parentAlpha * value;
 			}
+			
+			super.alpha = value;
 		}
 		
 		override public function set darkenColor(value:uint):void
@@ -886,12 +899,12 @@ package molehill.core.sprite
 		
 		override public function set rotation(value:Number):void
 		{
-			super.rotation = value;
-			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentRotation = _parentRotation + _rotation;
+				_listChildren[i].parentRotation = _parentRotation + value;
 			}
+			
+			super.rotation = value;
 		}
 	}
 }
