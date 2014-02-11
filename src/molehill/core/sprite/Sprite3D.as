@@ -425,11 +425,6 @@ package molehill.core.sprite
 		{
 			//updateParentShiftAndScale();
 			
-			if (_parent != null)
-			{
-				_parent.updateDimensions(this);
-			}
-			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
 			var cos:Number;
@@ -482,6 +477,11 @@ package molehill.core.sprite
 			_z1 = _shiftZ; 
 			_z2 = _shiftZ; 
 			_z3 = _shiftZ;
+			
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 		}
 		
 		public function applySize():void
