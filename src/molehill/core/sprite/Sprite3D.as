@@ -399,7 +399,7 @@ package molehill.core.sprite
 		
 		molehill_internal function updateParentShiftAndScale():void
 		{
-			if (_parent == null || !_parent.hasChanged)
+			if (_parent == null || !_parent._hasChanged)
 			{
 				return;
 			}
@@ -424,6 +424,11 @@ package molehill.core.sprite
 		molehill_internal function updateValues():void
 		{
 			//updateParentShiftAndScale();
+			
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
@@ -481,7 +486,11 @@ package molehill.core.sprite
 		
 		public function applySize():void
 		{
-			
+			updateValues();
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 		}
 		
 		private var _matrix:Object = {'a': 1, 'b': 0, 'c': 0, 'd': 1, 'tx': 0, 'ty': 0};
@@ -851,15 +860,18 @@ package molehill.core.sprite
 			}
 		}
 	
-		private var _hasChanged:Boolean = true;
+		molehill_internal var _hasChanged:Boolean = true;
+		/*
 		molehill_internal function get hasChanged():Boolean
 		{
 			return _hasChanged;
 		}
-		
+		*/
 		molehill_internal function set hasChanged(value:Boolean):void
 		{
 			_hasChanged = value;
+			
+			updateValues();
 		}
 		
 		molehill_internal var addedToScene:Boolean = false;

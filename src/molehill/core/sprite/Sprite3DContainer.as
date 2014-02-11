@@ -208,7 +208,61 @@ package molehill.core.sprite
 		private var _containerBottom:int = 0;
 		molehill_internal function updateDimensions(child:Sprite3D):void
 		{
+			_childCoordsX0.updateNodeWeight(child.parentX0Node, child._x0);
+			_childCoordsY0.updateNodeWeight(child.parentY0Node, child._y0);
+			_childCoordsX1.updateNodeWeight(child.parentX1Node, child._x1);
+			_childCoordsY1.updateNodeWeight(child.parentY1Node, child._y1);
+			_childCoordsX2.updateNodeWeight(child.parentX2Node, child._x2);
+			_childCoordsY2.updateNodeWeight(child.parentY2Node, child._y2);
+			_childCoordsX3.updateNodeWeight(child.parentX3Node, child._x3);
+			_childCoordsY3.updateNodeWeight(child.parentY3Node, child._y3);
 			
+			updateContainerSize();
+			
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
+		}
+		
+		private function updateContainerSize():void
+		{
+			_containerX = Math.min(
+				_childCoordsX0.getMinWeight(),
+				_childCoordsX1.getMinWeight(),
+				_childCoordsX2.getMinWeight(),
+				_childCoordsX3.getMinWeight()
+			);
+			_containerY = Math.min(
+				_childCoordsY0.getMinWeight(),
+				_childCoordsY1.getMinWeight(),
+				_childCoordsY2.getMinWeight(),
+				_childCoordsY3.getMinWeight()
+			);
+			_containerRight = Math.max(
+				_childCoordsX0.getMaxWeight(),
+				_childCoordsX1.getMaxWeight(),
+				_childCoordsX2.getMaxWeight(),
+				_childCoordsX3.getMaxWeight()
+			);
+			_containerBottom = Math.max(
+				_childCoordsY0.getMaxWeight(),
+				_childCoordsY1.getMaxWeight(),
+				_childCoordsY2.getMaxWeight(),
+				_childCoordsY3.getMaxWeight()
+			);
+			
+			_x0 = _containerX;
+			_y0 = _containerY;
+			
+			_x1 = _containerX;
+			_y1 = _containerBottom;
+			
+			_x2 = _containerRight
+			_y2 = _containerBottom
+			
+			_x3 = _containerRight
+			_y3 = _containerY;
 		}
 		
 		private function updateAllDimensions(node:TreeNode = null):void
@@ -458,7 +512,7 @@ package molehill.core.sprite
 		{
 			for each (var child:Sprite3D in _listChildren)
 			{
-				if (!(child is Sprite3DContainer) && child.hasChanged)
+				if (!(child is Sprite3DContainer) && child._hasChanged)
 				{
 					continue;
 				}

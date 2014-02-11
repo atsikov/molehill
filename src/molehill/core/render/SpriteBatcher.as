@@ -464,7 +464,7 @@ package molehill.core.render
 				while (cursor != null)
 				{
 					sprite = cursor.data as Sprite3D;
-					if (sprite.hasChanged || sprite._textureChanged)
+					if (sprite._hasChanged || sprite._textureChanged)
 					{
 						hasChanges = true;
 					}
@@ -523,9 +523,9 @@ package molehill.core.render
 				{
 					nextIndexNum = _numVisibleSprites * Sprite3D.NUM_ELEMENTS_PER_SPRITE;
 					
-					if (sprite.hasChanged || _needUpdateBuffers)
+					if (sprite._hasChanged || _needUpdateBuffers)
 					{
-						sprite.updateValues();
+						//sprite.updateValues();
 						
 						_vertexBufferData.position = (nextIndexNum + v0) * 4;
 						_vertexBufferData.writeFloat(sprite._x0);
