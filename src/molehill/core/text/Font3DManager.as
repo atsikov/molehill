@@ -82,10 +82,18 @@ package molehill.core.text
 			loader.load(new URLRequest(url));
 		}
 		
+		public function loadBitmapFontFromByteArray(bytes:ByteArray):void
+		{
+			parseFontBytes(bytes);
+		}
+		
 		private function onBitmapFontLoaded(event:Event):void
 		{
 			var bytes:ByteArray = (event.currentTarget as URLLoader).data;
-			
+		}
+		
+		private function parseFontBytes(bytes:ByteArray):void
+		{
 			bytes.position = 0;
 			
 			var imageBytes:ByteArray;

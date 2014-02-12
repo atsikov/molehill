@@ -30,6 +30,7 @@ package molehill.core.texture
 					}
 				}
 			}
+			atlasData._listSizes.sort();
 			
 			return atlasData;
 		}

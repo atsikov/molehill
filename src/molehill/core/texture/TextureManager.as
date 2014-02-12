@@ -328,6 +328,7 @@ package molehill.core.texture
 					_hashAtlasIDByTextureID[textureID] = fontBitmap.textureAtlasData.atlasID;
 					_hashTexturesByTextureID[textureID] = texture;
 					_hashAtlasDataByTextureID[textureID] = fontBitmap.textureAtlasData;
+					_hashAtlasBitmapByTextureID[textureID] = fontBitmap;
 				}
 				
 				_hashTextureTypeByTexture[texture] = false;
