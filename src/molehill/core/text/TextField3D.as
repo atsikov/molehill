@@ -4,9 +4,10 @@ package molehill.core.text
 	
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
-	import molehill.core.texture.TextureManager;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureData;
+	import molehill.core.texture.TextureManager;
 
 	public class TextField3D extends Sprite3DContainer
 	{
@@ -79,6 +80,7 @@ package molehill.core.text
 			_textWidth = 0;
 			_textHeight = 0;
 			
+			var childIndex:int = 0;
 			for (var i:int = 0; i < textLength; i++)
 			{
 				var charCode:int = _text.charCodeAt(i);
@@ -103,9 +105,9 @@ package molehill.core.text
 				}
 				
 				var child:Sprite3D;
-				if (i < numChildren)
+				if (childIndex < numChildren)
 				{
-					child = super.getChildAt(i);
+					child = super.getChildAt(childIndex);
 				}
 				else
 				{
@@ -119,15 +121,15 @@ package molehill.core.text
 					textureID = child.textureID;
 				}
 				
-				child.textureRegion = TextureManager.getInstance().getTextureRegion(child.textureID);
-				child.width = TextureManager.getInstance().getTextureDataByID(child.textureID).width * scale;
-				child.height = TextureManager.getInstance().getTextureDataByID(child.textureID).height * scale;
-				
-				child.x = lineWidth;
-				child.y = lineY;
+				var charTextureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureName);
+				child.textureRegion = TextureManager.getInstance().getTextureRegion(textureName);
+				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
+				child.moveTo(lineWidth, lineY);
 				
 				lineWidth += Math.ceil(child.width);
 				lineHeight = Math.max(lineHeight, Math.ceil(child.height));
+				
+				childIndex++;
 			}
 			
 			if (_textWidth < lineWidth)
