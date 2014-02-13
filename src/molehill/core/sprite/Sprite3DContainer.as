@@ -210,10 +210,10 @@ package molehill.core.sprite
 			return child;
 		}
 		
-		private var _containerX:int = 0;
-		private var _containerY:int = 0;
-		private var _containerRight:int = 0;
-		private var _containerBottom:int = 0;
+		protected var _containerX:int = 0;
+		protected var _containerY:int = 0;
+		protected var _containerRight:int = 0;
+		protected var _containerBottom:int = 0;
 		molehill_internal function updateDimensions(child:Sprite3D):void
 		{
 			_childCoordsX0.updateNodeWeight(child.parentX0Node, child._x0);

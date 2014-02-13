@@ -267,8 +267,6 @@ package molehill.core.render.engine
 			_numVertexFloats += numNewVertices;
 			_numIndexShorts += numNewIndices;
 			
-			totalTris += batcher.numTriangles;
-			
 			return _numVertexFloats;
 		}
 		
@@ -414,6 +412,8 @@ package molehill.core.render.engine
 					
 					var currentIndexBuffer:IndexBuffer3D = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
 					_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
+					
+					totalTris += chunkData.numTriangles;
 				}
 				catch (e:Error)
 				{
