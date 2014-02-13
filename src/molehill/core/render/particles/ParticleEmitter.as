@@ -37,8 +37,6 @@ package molehill.core.render.particles
 			_indicesData = new ByteArray();
 			_indicesData.endian = Endian.LITTLE_ENDIAN;
 			
-			_listGenerationTimes = new Vector.<uint>();
-			
 			_listParticles = new Vector.<ParticleData>();
 			
 			_cacheParticleData = new Vector.<ParticleData>();
@@ -88,7 +86,14 @@ package molehill.core.render.particles
 			
 			if (value != null)
 			{
+				_lastGenerationTime = 0;
+				_lastRemoveTime = 0;
+				_listGenerationTimes = new Vector.<uint>();
 				_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+			}
+			else
+			{
+				_enterFrameListener.removeEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
 			}
 		}
 		

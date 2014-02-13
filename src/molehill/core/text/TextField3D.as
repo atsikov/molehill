@@ -2,12 +2,15 @@ package molehill.core.text
 {
 	import flash.geom.Point;
 	
+	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
+	
+	use namespace molehill_internal;
 
 	public class TextField3D extends Sprite3DContainer
 	{
@@ -142,6 +145,24 @@ package molehill.core.text
 			{
 				_cacheSprites.push(super.removeChildAt(textLength - 1));
 			}
+			
+			_containerRight = _containerX + _textWidth;
+			_containerBottom = _containerY + _textHeight;
+			
+			_y1 = _containerBottom;
+			
+			_x2 = _containerRight
+			_y2 = _containerBottom
+			
+			_x3 = _containerRight
+		}
+		
+		override molehill_internal function updateDimensions(child:Sprite3D):void
+		{
+			if (_parent != null)
+			{
+				_parent.updateDimensions(this);
+			}
 		}
 		
 		private static var _hashChars:Object = new Object();
@@ -222,5 +243,32 @@ package molehill.core.text
 			
 			return objects;
 		}
+		
+		override molehill_internal function set parentShiftX(value:Number):void
+		{
+			_containerX = value;
+			_containerRight = _containerX + _textWidth;
+			
+			_x0 = _containerX;
+			_x1 = _containerX;
+			_x2 = _containerRight
+			_x3 = _containerRight
+			
+			super.parentShiftX = value;
+		}
+		
+		override molehill_internal function set parentShiftY(value:Number):void
+		{
+			_containerY = value;
+			_containerBottom = _containerY + _textHeight;
+			
+			_y0 = _containerY;
+			_y1 = _containerBottom;
+			_y2 = _containerBottom
+			_y3 = _containerY;
+			
+			super.parentShiftY = value;
+		}
+		
 	}
 }

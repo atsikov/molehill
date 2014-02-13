@@ -10,6 +10,8 @@ package molehill.core.sprite
 	
 	import molehill.core.Scene3DManager;
 	import molehill.core.molehill_internal;
+	import molehill.core.render.BlendMode;
+	import molehill.core.render.Scene3D;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.mask.CutoutObjectShader;
@@ -20,8 +22,6 @@ package molehill.core.sprite
 	import molehill.core.texture.TextureManager;
 	
 	import utils.StringUtils;
-	import molehill.core.render.BlendMode;
-	import molehill.core.render.Scene3D;
 	
 	use namespace molehill_internal;
 	
