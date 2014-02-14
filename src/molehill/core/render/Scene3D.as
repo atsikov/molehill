@@ -324,7 +324,7 @@ package molehill.core.render
 						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
 						if (!(currentBatcher is SpriteBatcher) || 
 							(currentBatcher != null &&
-							(currentBatcher as SpriteBatcher).numSprites == MAX_SPRITES_PER_BATCHER)
+							(currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER)
 						)
 						{
 							currentBatcher = null;
