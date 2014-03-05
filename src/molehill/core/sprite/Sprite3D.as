@@ -109,8 +109,6 @@ package molehill.core.sprite
 			mask = _mask;
 			cutout = _cutout;
 			
-			_parent
-			
 			if (_scene != null)
 			{
 				onAddedToScene();
@@ -397,34 +395,8 @@ package molehill.core.sprite
 			_parentRotation = value;
 		}
 		
-		molehill_internal function updateParentShiftAndScale():void
-		{
-			if (_parent == null || !_parent._hasChanged)
-			{
-				return;
-			}
-			
-			_parentShiftX += _parent._shiftX;
-			_parentShiftY += _parent._shiftY;
-			_parentShiftZ += _parent._shiftZ;
-			
-			_parentScaleX *= _parent._scaleX;
-			_parentScaleY *= _parent._scaleY;
-			
-			_parentRed *= _parent._redMultiplier;
-			_parentGreen *= _parent._greenMultiplier;
-			_parentBlue *= _parent._blueMultiplier;
-			_parentAlpha *= _parent._alpha;
-			
-			_parentRotation += _parent._rotation;
-			
-			_parent.updateDimensions(this);
-		}
-		
 		molehill_internal function updateValues():void
 		{
-			//updateParentShiftAndScale();
-			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
 			var cos:Number;
@@ -814,8 +786,8 @@ package molehill.core.sprite
 		
 		public function hitTestPoint(point:Point):Boolean
 		{
-			var localMouseX:Number = point.x;
-			var localMouseY:Number = point.y;
+			var localMouseX:Number = point.x - _parentShiftX;
+			var localMouseY:Number = point.y - _parentShiftY;
 			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
 			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
 			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
@@ -826,15 +798,15 @@ package molehill.core.sprite
 				(d >= localMouseY);
 		}
 		
-		molehill_internal function hitTestCoords(localX:Number, localY:Number):Boolean
+		molehill_internal function hitTestCoords(globalX:Number, globalY:Number):Boolean
 		{
 			if (_scene == null)
 			{
 				return false;
 			}
 			
-			var localMouseX:Number = localX;
-			var localMouseY:Number = localY;
+			var localMouseX:Number = globalX - _parentShiftX;
+			var localMouseY:Number = globalY - _parentShiftY;
 			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
 			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
 			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
@@ -999,6 +971,24 @@ package molehill.core.sprite
 		{
 			var className:String = getQualifiedClassName(this);
 			return className + " @ " + StringUtils.getObjectAddress(this) + " texture: " + textureID;
+		}
+		
+		/**
+		 * Translates coordinates from local to global coordinate system.
+		 * <b>Modifies passed parameter!</b>
+		 **/
+		public function localToGlobal(point:Point):void
+		{
+			point.offset(_parentShiftX + _shiftX * _parentScaleX * _scaleX, _parentShiftY + _shiftY * _parentScaleY * _scaleY);
+		}
+		
+		/**
+		 * Translates coordinates from global to local coordinate system.
+		 * <b>Modifies passed parameter!</b>
+		 **/
+		public function globalToLocal(point:Point):void
+		{
+			point.offset(-_parentShiftX - _shiftX * _parentScaleX * _scaleX, -_parentShiftY - _shiftY * _parentScaleY * _scaleY);
 		}
 	}
 }

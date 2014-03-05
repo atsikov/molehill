@@ -4,12 +4,12 @@ package molehill.easy.ui3d
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
-	import flash.ui.Mouse;
 	import flash.ui.MouseCursor;
 	import flash.utils.clearInterval;
 	import flash.utils.setInterval;
 	
 	import molehill.core.events.Input3DEvent;
+	import molehill.core.input.MouseCursorManager;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
@@ -60,7 +60,7 @@ package molehill.easy.ui3d
 		
 		protected function onSpriteMouseOver(event:Input3DEvent):void
 		{
-			Mouse.cursor = MouseCursor.BUTTON;
+			MouseCursorManager.getInstance().setCursor(MouseCursor.BUTTON);
 			
 			if (_isBlinking)
 			{
@@ -74,7 +74,7 @@ package molehill.easy.ui3d
 		
 		private function onSpriteMouseOut(event:Input3DEvent):void
 		{
-			Mouse.cursor = MouseCursor.AUTO;
+			MouseCursorManager.getInstance().setCursor(MouseCursor.AUTO);
 			
 			if (_isBlinking)
 			{

@@ -43,9 +43,6 @@ package molehill.core.render
 		
 		private function isPixelTransparent(localX:int, localY:int):Boolean
 		{
-			localX -= _parentShiftX + _shiftX;
-			localY -= _parentShiftY + _shiftY;
-			
 			var textureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureID);
 			var alphaData:NormalizedAlphaChannel = textureData.getNormalizedAlpha();
 			

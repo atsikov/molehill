@@ -84,6 +84,7 @@ package molehill.core.text
 			_textHeight = 0;
 			
 			var childIndex:int = 0;
+			
 			for (var i:int = 0; i < textLength; i++)
 			{
 				var charCode:int = _text.charCodeAt(i);
@@ -234,14 +235,15 @@ package molehill.core.text
 		
 		override public function getObjectsUnderPoint(point:Point, list:Vector.<Sprite3D>=null):Vector.<Sprite3D>
 		{
-			var objects:Vector.<Sprite3D> = super.getObjectsUnderPoint(point);
-			if (objects.length > 0)
+			var listLength:int = list == null ? 0 : list.length;
+			list = super.getObjectsUnderPoint(point, list);
+			if (list.length > listLength)
 			{
-				objects.splice(0, objects.length);
-				objects.push(this);
+				list.splice(listLength, list.length - listLength);
+				list.push(this);
 			}
 			
-			return objects;
+			return list;
 		}
 		
 		override molehill_internal function set parentShiftX(value:Number):void

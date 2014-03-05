@@ -275,17 +275,20 @@ package molehill.core.input
 						parent = parent.parent;
 					}
 					
-					if (parent == null)
+					if (parent != null)
 					{
-						continue;
+						candidate = parent;
 					}
-					
-					candidate = parent;
+					else
+					{
+						//continue;
+					}
 				}
 				
-				
-				localShiftX = 0;
-				localShiftY = 0;
+				var localPoint:Point = new Point(_mouseStageX, _mouseStageY);
+ 				candidate.globalToLocal(localPoint);
+				localShiftX = localPoint.x;
+				localShiftY = localPoint.y;
 				
 				parent = candidate is Sprite3DContainer ? candidate as Sprite3DContainer : candidate.parent;
 				while (parent != null)
@@ -300,81 +303,84 @@ package molehill.core.input
 				}
 				
 				var eventTypes:Array = _hashTypeByListeners[candidate];
-				for (var j:int = 0; j < eventTypes.length; j++)
+				if (eventTypes != null)
 				{
-					var eventType:String = eventTypes[j];
-					switch (eventType)
+					for (var j:int = 0; j < eventTypes.length; j++)
 					{
-						case Input3DEvent.MOUSE_OVER:
-							if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
-							{
-								if ((candidate as InteractiveSprite3D).onMouseOver(
-									_mouseStageX,
-									_mouseStageY,
-									_mouseStageX + localShiftX,
-									_mouseStageY + localShiftY
-								))
+						var eventType:String = eventTypes[j];
+						switch (eventType)
+						{
+							case Input3DEvent.MOUSE_OVER:
+								if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
 								{
-									_objectsUnderMouse[candidate] = true;
+									if ((candidate as InteractiveSprite3D).onMouseOver(
+										_mouseStageX,
+										_mouseStageY,
+										localShiftX,
+										localShiftY
+									))
+									{
+										_objectsUnderMouse[candidate] = true;
+									}
 								}
-							}
-							break;
-						case Input3DEvent.CLICK:
-							if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
-							{
-								if ((candidate as InteractiveSprite3D).onMouseClick(
-									_mouseStageX,
-									_mouseStageY,
-									_mouseStageX + localShiftX,
-									_mouseStageY + localShiftY
-								))
+								break;
+							case Input3DEvent.CLICK:
+								if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
 								{
-									_objectsUnderMouse[candidate] = true;
+									if ((candidate as InteractiveSprite3D).onMouseClick(
+										_mouseStageX,
+										_mouseStageY,
+										localShiftX,
+										localShiftY
+									))
+									{
+										_objectsUnderMouse[candidate] = true;
+									}
 								}
-							}
-							break;
-						case Input3DEvent.MOUSE_UP:
-							if (_mouseKeyStateChanged && !_mouseKeyPressed)
-							{
-								if ((candidate as InteractiveSprite3D).onMouseUp(
-									_mouseStageX,
-									_mouseStageY,
-									_mouseStageX + localShiftX,
-									_mouseStageY + localShiftY
-								))
+								break;
+							case Input3DEvent.MOUSE_UP:
+								if (_mouseKeyStateChanged && !_mouseKeyPressed)
 								{
-									_objectsUnderMouse[candidate] = true;
+									if ((candidate as InteractiveSprite3D).onMouseUp(
+										_mouseStageX,
+										_mouseStageY,
+										localShiftX,
+										localShiftY
+									))
+									{
+										_objectsUnderMouse[candidate] = true;
+									}
 								}
-							}
-							break;
-						case Input3DEvent.MOUSE_DOWN:
-							if (_mouseKeyStateChanged && _mouseKeyPressed)
-							{
-								if ((candidate as InteractiveSprite3D).onMouseDown(
-									_mouseStageX,
-									_mouseStageY,
-									_mouseStageX + localShiftX,
-									_mouseStageY + localShiftY
-								))
+								break;
+							case Input3DEvent.MOUSE_DOWN:
+								if (_mouseKeyStateChanged && _mouseKeyPressed)
 								{
-									_objectsUnderMouse[candidate] = true;
+									if ((candidate as InteractiveSprite3D).onMouseDown(
+										_mouseStageX,
+										_mouseStageY,
+										localShiftX,
+										localShiftY
+									))
+									{
+										_objectsUnderMouse[candidate] = true;
+									}
 								}
-							}
-							break;
-						case Input3DEvent.MOUSE_MOVE:
-							if (_mouseCoordsChanged)
-							{
-								if ((candidate as InteractiveSprite3D).onMouseMove(
-									_mouseStageX,
-									_mouseStageY,
-									_mouseStageX + localShiftX,
-									_mouseStageY + localShiftY
-								))
+								break;
+							case Input3DEvent.MOUSE_MOVE:
+								if (_mouseCoordsChanged)
 								{
-									_objectsUnderMouse[candidate] = true;
+									if ((candidate as InteractiveSprite3D).onMouseMove(
+										_mouseStageX,
+										_mouseStageY,
+										localShiftX,
+										localShiftY
+									))
+									{
+										_objectsUnderMouse[candidate] = true;
+									}
 								}
-							}
-							break;
+								break;
+						}
 					}
 				}
 				
