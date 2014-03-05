@@ -127,6 +127,7 @@ package molehill.core.sprite
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
 			updateContainerSize();
+			updateChildParentValues(child);
 			
 			if (_parent != null)
 			{
@@ -201,6 +202,7 @@ package molehill.core.sprite
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
 			updateContainerSize();
+			updateChildParentValues(child);
 			
 			if (_parent != null)
 			{
@@ -208,6 +210,23 @@ package molehill.core.sprite
 			}
 			
 			return child;
+		}
+		
+		protected function updateChildParentValues(child:Sprite3D):void
+		{
+			child.parentShiftX = _parentShiftX + _shiftX * _scaleX * _parentScaleX;
+			child.parentShiftY = _parentShiftY + _shiftY * _scaleY * _parentScaleY;
+			child.parentShiftZ = _parentShiftZ + _shiftZ;
+			
+			child.parentScaleX = _parentScaleX * _scaleX;
+			child.parentScaleY = _parentScaleY * _scaleY;
+			
+			child.parentRotation = _parentRotation + _rotation;
+			
+			child.parentAlpha = _parentAlpha * _alpha;
+			child.parentRed = _parentRed * _redMultiplier;
+			child.parentGreen = _parentGreen * _greenMultiplier;
+			child.parentBlue = _parentBlue * _blueMultiplier;
 		}
 		
 		protected var _containerX:int = 0;
@@ -545,10 +564,10 @@ package molehill.core.sprite
 			var pointX:Number = point.x;
 			var pointY:Number = point.y;
 			
-			if (pointX - _shiftX * _parentScaleX < _containerX ||
-				pointY - _shiftY * _parentScaleY < _containerY ||
-				pointX - _shiftX * _parentScaleX > _containerRight ||
-				pointY - _shiftY * _parentScaleY > _containerBottom
+			if (pointX < _containerX ||
+				pointY < _containerY ||
+				pointX > _containerRight ||
+				pointY > _containerBottom
 			)
 			{
 				return false;
@@ -556,7 +575,7 @@ package molehill.core.sprite
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
-				if (child.hitTestCoords(pointX - _shiftX * _parentScaleX, pointY - _shiftY * _parentScaleY))
+				if (child.hitTestCoords(pointX, pointY))
 				{
 					return true;
 				}
@@ -565,11 +584,20 @@ package molehill.core.sprite
 			return false;
 		}
 		
-		override molehill_internal function hitTestCoords(localX:Number, localY:Number):Boolean
+		override molehill_internal function hitTestCoords(globalX:Number, globalY:Number):Boolean
 		{
+			if (globalX < _containerX ||
+				globalY < _containerY ||
+				globalX > _containerRight ||
+				globalY > _containerBottom
+			)
+			{
+				return false;
+			}
+			
 			for each (var child:Sprite3D in _listChildren)
 			{
-				if (child.hitTestCoords(localX - _shiftX, localY - _shiftY))
+				if (child.hitTestCoords(globalX, globalY))
 				{
 					return true;
 				}
@@ -581,9 +609,14 @@ package molehill.core.sprite
 		public function getObjectsUnderPoint(point:Point, list:Vector.<Sprite3D> = null):Vector.<Sprite3D>
 		{
 			var childrenUnderPoint:Vector.<Sprite3D> = list == null ? new Vector.<Sprite3D>() : list;
-			
-			point.x -= _shiftX * _parentScaleX;
-			point.y -= _shiftY * _parentScaleY;
+			if (point.x < _containerX ||
+				point.y < _containerY ||
+				point.x > _containerRight ||
+				point.y > _containerBottom
+			)
+			{
+				return childrenUnderPoint;
+			}
 			
 			for (var i:int = 0; i < _listChildren.length; i++)
 			{
@@ -602,11 +635,7 @@ package molehill.core.sprite
 						point.y += container.scrollRect.y;
 					}
 					
-					if (container.hitTestPoint(point))
-					{
-						//childrenUnderPoint.push(container);
-						container.getObjectsUnderPoint(point, childrenUnderPoint);
-					}
+					container.getObjectsUnderPoint(point, childrenUnderPoint);
 					
 					if (container.scrollRect != null)
 					{
@@ -619,9 +648,6 @@ package molehill.core.sprite
 					childrenUnderPoint.push(child);
 				}
 			}
-			
-			point.x += _shiftX * _parentScaleX;
-			point.y += _shiftY * _parentScaleY;
 			
 			return childrenUnderPoint;
 		}
@@ -687,7 +713,7 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = value + _shiftX * _scaleX;
+				_listChildren[i].parentShiftX = value + _shiftX * _scaleX * _parentScaleX;
 			}
 		}
 		
@@ -697,7 +723,7 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = value + _shiftY * _scaleY;
+				_listChildren[i].parentShiftY = value + _shiftY * _scaleY * _parentScaleX;
 			}
 		}
 		
@@ -827,8 +853,8 @@ package molehill.core.sprite
 		{
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = _parentShiftX + x * _scaleX;
-				_listChildren[i].parentShiftY = _parentShiftY + y * _scaleY;
+				_listChildren[i].parentShiftX = _parentShiftX + x * _scaleX * _parentScaleX;
+				_listChildren[i].parentShiftY = _parentShiftY + y * _scaleY * _parentScaleY;
 			}
 			
 			super.moveTo(x, y, z);
