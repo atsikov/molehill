@@ -996,6 +996,16 @@ package molehill.core.sprite
 		public function localToGlobal(point:Point):void
 		{
 			point.offset(_parentShiftX + _shiftX * _parentScaleX * _scaleX, _parentShiftY + _shiftY * _parentScaleY * _scaleY);
+			
+			var parent:Sprite3DContainer = _parent;
+			while (parent != null)
+			{
+				if (parent.scrollRect != null)
+				{
+					point.offset(-parent.scrollRect.x, -parent.scrollRect.y);
+				}
+				parent = parent.parent;
+			}
 		}
 		
 		/**
@@ -1005,6 +1015,16 @@ package molehill.core.sprite
 		public function globalToLocal(point:Point):void
 		{
 			point.offset(-_parentShiftX - _shiftX * _parentScaleX * _scaleX, -_parentShiftY - _shiftY * _parentScaleY * _scaleY);
+			
+			var parent:Sprite3DContainer = _parent;
+			while (parent != null)
+			{
+				if (parent.scrollRect != null)
+				{
+					point.offset(parent.scrollRect.x, parent.scrollRect.y);
+				}
+				parent = parent.parent;
+			}
 		}
 	}
 }
