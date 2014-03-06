@@ -19,16 +19,5 @@ package molehill.core.text
 		{
 			
 		}
-		
-		internal var _silentChange:Boolean = false;
-		override molehill_internal function set hasChanged(value:Boolean):void
-		{
-			if (_silentChange)
-			{
-				return;
-			}
-			
-			super.hasChanged = value;
-		}
 	}
 }
