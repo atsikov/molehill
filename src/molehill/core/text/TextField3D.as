@@ -265,7 +265,7 @@ package molehill.core.text
 		
 		override molehill_internal function set parentShiftX(value:Number):void
 		{
-			_containerX = value;
+			_containerX = _shiftX + value;
 			_containerRight = _containerX + _textWidth;
 			
 			_x0 = _containerX;
@@ -278,7 +278,7 @@ package molehill.core.text
 		
 		override molehill_internal function set parentShiftY(value:Number):void
 		{
-			_containerY = value;
+			_containerY = _shiftY + value;
 			_containerBottom = _containerY + _textHeight;
 			
 			_y0 = _containerY;
@@ -289,5 +289,11 @@ package molehill.core.text
 			super.parentShiftY = value;
 		}
 		
+		override molehill_internal function set hasChanged(value:Boolean):void
+		{
+			super.hasChanged = value;
+			
+			updateDimensions(this);
+		}
 	}
 }
