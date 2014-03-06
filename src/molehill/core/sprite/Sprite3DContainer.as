@@ -214,8 +214,8 @@ package molehill.core.sprite
 		
 		protected function updateChildParentValues(child:Sprite3D):void
 		{
-			child.parentShiftX = _parentShiftX + _shiftX * _scaleX * _parentScaleX;
-			child.parentShiftY = _parentShiftY + _shiftY * _scaleY * _parentScaleY;
+			child.parentShiftX = _parentShiftX + _shiftX * _parentScaleX;
+			child.parentShiftY = _parentShiftY + _shiftY * _parentScaleY;
 			child.parentShiftZ = _parentShiftZ + _shiftZ;
 			
 			child.parentScaleX = _parentScaleX * _scaleX;
@@ -713,7 +713,7 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = value + _shiftX * _scaleX * _parentScaleX;
+				_listChildren[i].parentShiftX = value + _shiftX * _parentScaleX;
 			}
 		}
 		
@@ -723,7 +723,7 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = value + _shiftY * _scaleY * _parentScaleX;
+				_listChildren[i].parentShiftY = value + _shiftY * _parentScaleX;
 			}
 		}
 		
@@ -853,8 +853,8 @@ package molehill.core.sprite
 		{
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = _parentShiftX + x * _scaleX * _parentScaleX;
-				_listChildren[i].parentShiftY = _parentShiftY + y * _scaleY * _parentScaleY;
+				_listChildren[i].parentShiftX = _parentShiftX + x * _parentScaleX;
+				_listChildren[i].parentShiftY = _parentShiftY + y * _parentScaleY;
 			}
 			
 			super.moveTo(x, y, z);
