@@ -18,7 +18,7 @@ package molehill.core.text
 		{
 			super();
 			
-			_cacheSprites = new Vector.<Sprite3D>();
+			_cacheSprites = new Vector.<TextField3DCharacter>();
 
 			shader = Shader3DFactory.getInstance().getShaderInstance(BaseShaderPremultAlpha);
 		}
@@ -61,15 +61,15 @@ package molehill.core.text
 			updateLayout();
 		}
 		
-		private var _cacheSprites:Vector.<Sprite3D>;
-		private function getCharacterSprite():Sprite3D
+		private var _cacheSprites:Vector.<TextField3DCharacter>;
+		private function getCharacterSprite():TextField3DCharacter
 		{
 			if (_cacheSprites.length > 0)
 			{
 				return _cacheSprites.pop();
 			}
 			
-			return new Sprite3D();
+			return new TextField3DCharacter();
 		}
 		
 		private function updateLayout():void
@@ -82,6 +82,8 @@ package molehill.core.text
 			
 			_textWidth = 0;
 			_textHeight = 0;
+			
+			_notifyParentOnChange = false;
 			
 			var childIndex:int = 0;
 			
@@ -108,27 +110,33 @@ package molehill.core.text
 					textureName = getTextureForChar(_fontName, _fontTextureSize, charCode);
 				}
 				
-				var child:Sprite3D;
+				var child:TextField3DCharacter;
 				if (childIndex < numChildren)
 				{
-					child = super.getChildAt(childIndex);
+					child = super.getChildAt(childIndex) as TextField3DCharacter;
 				}
 				else
 				{
 					child = getCharacterSprite();
 					super.addChild(child);
 				}
+				
+				child._silentChange = true;
+				
 				child.textureID = textureName;
 				
 				if (i == 0)
 				{
-					textureID = child.textureID;
+					textureID = textureName;
 				}
 				
 				var charTextureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureName);
 				child.textureRegion = TextureManager.getInstance().getTextureRegion(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
 				child.moveTo(lineWidth, lineY);
+				
+				child._silentChange = false;
+				child.hasChanged = true;
 				
 				lineWidth += Math.ceil(child.width);
 				lineHeight = Math.max(lineHeight, Math.ceil(child.height));
@@ -152,14 +160,23 @@ package molehill.core.text
 			
 			_y1 = _containerBottom;
 			
-			_x2 = _containerRight
-			_y2 = _containerBottom
+			_x2 = _containerRight;
+			_y2 = _containerBottom;
 			
-			_x3 = _containerRight
+			_x3 = _containerRight;
+		
+			_notifyParentOnChange = true;
+			updateDimensions(this);
 		}
 		
+		private var _notifyParentOnChange:Boolean = true;
 		override molehill_internal function updateDimensions(child:Sprite3D):void
 		{
+			if (!_notifyParentOnChange)
+			{
+				return;
+			}
+			
 			if (_parent != null)
 			{
 				_parent.updateDimensions(this);

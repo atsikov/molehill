@@ -401,6 +401,10 @@ package molehill.core.sprite
 			var scaledHeight:Number;
 			var cos:Number;
 			var sin:Number;
+			var parentCos:Number;
+			var parentSin:Number;
+			var dx0:Number;
+			var dy0:Number;
 			var dx:Number;
 			var dy:Number;
 			if (!_fromMatrix)
@@ -412,8 +416,15 @@ package molehill.core.sprite
 				cos = Math.cos(rad);
 				sin = Math.sin(rad);
 				
-				dx = _parentShiftX + _shiftX * _parentScaleX;
-				dy = _parentShiftY + _shiftY * _parentScaleY;
+				rad = _parentRotation / 180 * Math.PI;
+				parentCos = Math.cos(rad);
+				parentSin = Math.sin(rad);
+				
+				dx0 = _shiftX * _parentScaleX;
+				dy0 = _shiftY * _parentScaleY;
+				
+				dx = _parentShiftX + dx0 * parentCos - dy0 * parentSin;
+				dy = _parentShiftY + dx0 * parentSin + dy0 * parentCos;
 				
 				_x0 = -scaledHeight * sin + dx;
 				_y0 = scaledHeight * cos + dy;
@@ -450,6 +461,11 @@ package molehill.core.sprite
 			_z2 = _shiftZ; 
 			_z3 = _shiftZ;
 			
+			updateParent();
+		}
+		
+		protected function updateParent():void
+		{
 			if (_parent != null)
 			{
 				_parent.updateDimensions(this);
