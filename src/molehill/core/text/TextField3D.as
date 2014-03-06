@@ -293,7 +293,10 @@ package molehill.core.text
 		{
 			super.hasChanged = value;
 			
-			updateDimensions(this);
+			if (_hasChanged)
+			{
+				updateDimensions(this);
+			}
 		}
 	}
 }

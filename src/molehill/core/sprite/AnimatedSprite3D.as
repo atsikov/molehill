@@ -137,6 +137,7 @@ package molehill.core.sprite
 				return;
 			}
 			
+			_silentChange = true;
 			var spriteSheetData:SpriteSheetData = TextureManager.getInstance().getSpriteSheetData(textureID);
 			if (spriteSheetData != null)
 			{
@@ -174,6 +175,8 @@ package molehill.core.sprite
 					visible = false;
 				}
 			}
+			_silentChange = false;
+			hasChanged = true;
 		}
 	}
 }

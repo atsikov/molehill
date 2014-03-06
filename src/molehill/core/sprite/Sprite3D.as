@@ -855,11 +855,20 @@ package molehill.core.sprite
 			return _hasChanged;
 		}
 		*/
+		molehill_internal var _silentChange:Boolean = false;
 		molehill_internal function set hasChanged(value:Boolean):void
 		{
+			if (_silentChange)
+			{
+				return;
+			}
+			
 			_hasChanged = value;
 			
-			updateValues();
+			if (_hasChanged)
+			{
+				updateValues();
+			}
 		}
 		
 		molehill_internal var addedToScene:Boolean = false;
