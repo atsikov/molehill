@@ -75,7 +75,7 @@ package molehill.core.render
 		
 		private var _hashBatchersOldToNew:Dictionary;
 		private var _hashBatchersNewToOld:Dictionary;
-		private function performBatchersCheck(treeNode:TreeNode, batchingTree:TreeNode, scrollRectOwner:Sprite3DContainer = null):void
+		private function checkBatchingTree(treeNode:TreeNode, batchingTree:TreeNode, scrollRectOwner:Sprite3DContainer = null):void
 		{
 			var batchNode:TreeNode
 			if (treeNode == null)
@@ -191,7 +191,7 @@ package molehill.core.render
 						batchingTree.addAsFirstNode(batchNode);
 					}
 					
-					performBatchersCheck(treeNode.firstChild, batchingTree.firstChild, (treeNode.value as Sprite3DContainer).scrollRect != null ? treeNode.value as Sprite3DContainer : scrollRectOwner);
+					checkBatchingTree(treeNode.firstChild, batchingTree.firstChild, (treeNode.value as Sprite3DContainer).scrollRect != null ? treeNode.value as Sprite3DContainer : scrollRectOwner);
 					
 					// scroll rect changed
 					if (container.scrollRectAdded)
@@ -600,7 +600,7 @@ package molehill.core.render
 					
 					//traceTrees();
 					
-					performBatchersCheck(localTreeRoot, _bacthingTree);
+					checkBatchingTree(localTreeRoot, _bacthingTree);
 					/*
 					if (!compareTrees())
 					{
