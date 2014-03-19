@@ -5,6 +5,7 @@ package molehill.core.texture
 
 	public class TextureAtlasData
 	{
+		private static const ADDITIONAL_RAW_FIELDS:Array = ['originalWidth', 'originalHeight', 'blankOffsetX', 'blankOffsetY'];
 		public static function fromRawData(rawData:Object):TextureAtlasData
 		{
 			var atlasData:TextureAtlasData = new TextureAtlasData(rawData.width, rawData.height);
@@ -12,14 +13,26 @@ package molehill.core.texture
 			var texturesInfo:Object = rawData.info;
 			for (var textureID:String in texturesInfo)
 			{
+				var rawTextureData:Object = texturesInfo[textureID];
+				
 				atlasData.addTextureDesc(
 					textureID,
-					texturesInfo[textureID].left,
-					texturesInfo[textureID].top,
-					texturesInfo[textureID].width,
-					texturesInfo[textureID].height,
-					SpriteSheetData.fromRawData(texturesInfo[textureID].spriteSheetData)
+					rawTextureData.left,
+					rawTextureData.top,
+					rawTextureData.width,
+					rawTextureData.height,
+					SpriteSheetData.fromRawData(rawTextureData.spriteSheetData)
 				);
+				
+				var textureData:TextureData = atlasData.getTextureData(textureID);
+				for (var i:int = 0; i < ADDITIONAL_RAW_FIELDS.length; i++)
+				{
+					var field:String = ADDITIONAL_RAW_FIELDS[i];
+					if (rawTextureData[field] != null)
+					{
+						textureData[field] = rawTextureData[field];
+					}
+				}
 			}
 			
 			return atlasData;
@@ -111,6 +124,17 @@ package molehill.core.texture
 			for each (var textureData:Object in texturesRawData)
 			{
 				delete textureData['textureRegion'];
+				
+				if (textureData['originalWidth'] == textureData['width'] &&
+					textureData['originalHeight'] == textureData['height'] &&
+					textureData['blankOffsetX'] == 0 &&
+					textureData['blankOffsetY'] == 0)
+				{
+					delete textureData['originalWidth'];
+					delete textureData['originalHeight'];
+					delete textureData['blankOffsetX'];
+					delete textureData['blankOffsetY'];
+				}
 			}
 			var rawData:Object = {
 				'width': _atlasWidth,

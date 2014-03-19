@@ -25,6 +25,9 @@ package molehill.core.texture
 			_width = width;
 			_height = height;
 			_spriteSheetData = spriteSheetData;
+			
+			_originalWidth = width;
+			_originalHeight = height;
 		}
 
 		public function get textureID():String
@@ -55,6 +58,50 @@ package molehill.core.texture
 		public function get height():uint
 		{
 			return _height;
+		}
+
+		private var _originalWidth:uint;
+		public function get originalWidth():uint
+		{
+			return _originalWidth;
+		}
+		
+		public function set originalWidth(value:uint):void
+		{
+			_originalWidth = value;
+		}
+		
+		private var _originalHeight:uint;
+		public function get originalHeight():uint
+		{
+			return _originalHeight;
+		}
+		
+		public function set originalHeight(value:uint):void
+		{
+			_originalHeight = value;
+		}
+		
+		private var _blankOffsetX:uint;
+		public function get blankOffsetX():uint
+		{
+			return _blankOffsetX;
+		}
+
+		public function set blankOffsetX(value:uint):void
+		{
+			_blankOffsetX = value;
+		}
+
+		private var _blankOffsetY:uint;
+		public function get blankOffsetY():uint
+		{
+			return _blankOffsetY;
+		}
+
+		public function set blankOffsetY(value:uint):void
+		{
+			_blankOffsetY = value;
 		}
 
 		public function get spriteSheetData():SpriteSheetData

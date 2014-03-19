@@ -31,7 +31,8 @@ package molehill.core.texture
 			frameHeight:int,
 			totalFrames:int,
 			framesPerRow:int,
-			listFramesInfo:Array
+			listFramesInfo:Array,
+			listFrameOffsets:Array = null
 		)
 		{
 			_frameWidth = frameWidth;
