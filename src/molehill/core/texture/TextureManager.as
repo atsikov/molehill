@@ -16,6 +16,49 @@ package molehill.core.texture
 
 	public class TextureManager extends EventDispatcher
 	{
+		public static function createTexture(textureData:*, ... params):Texture
+		{
+			var tm:TextureManager = getInstance();
+			var texture:Texture;
+			if (textureData is BitmapData)
+			{
+				if (params[1] == null)
+				{
+					texture = tm.createTextureFromBitmapData(textureData, params[0]);
+				}
+				else if (params[2] == null)
+				{
+					texture = tm.createTextureFromBitmapData(textureData, params[0], params[1]);
+				}
+				else
+				{
+					texture = tm.createTextureFromBitmapData(textureData, params[0], params[1], params[2]);
+				}
+			}
+			else if (textureData is ARFTextureData)
+			{
+				texture = tm.createCompressedTextureFromARF(textureData);
+			}
+			else if (textureData is BRFTextureData)
+			{
+				texture = tm.createTextureFromBRF(textureData);
+			}
+			else if (textureData is FontBRFTextureData)
+			{
+				texture = tm.createFontTextureFromBitmapData(textureData);
+			}
+			else if (textureData == null)
+			{
+				throw new Error("TextureManager::createTexture(): Parameter textureData cannot be null!")
+			}
+			else
+			{
+				throw new Error("TextureManager::createTexture(): Unknown texture format!")
+			}
+			
+			return texture;
+		}
+		
 		private static var _instance:TextureManager;
 		public static function getInstance():TextureManager
 		{
