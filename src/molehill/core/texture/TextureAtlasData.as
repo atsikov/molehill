@@ -145,6 +145,17 @@ package molehill.core.texture
 			return rawData;
 		}
 		
+		public function listTexturesNames():Array
+		{
+			var listNames:Array = new Array();
+			for (var textureName:String in _hashTextures)
+			{
+				listNames.push(textureName);
+			}
+			listNames.sort();
+			return listNames;
+		}
+		
 		public function renameTexture(oldName:String, newName:String):void
 		{
 			if (_hashTextures[oldName] == null)
