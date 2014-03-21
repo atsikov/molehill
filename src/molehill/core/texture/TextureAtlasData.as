@@ -54,6 +54,7 @@ package molehill.core.texture
 		internal function addTextureDesc(textureID:String, left:uint, top:uint, width:int, height:int, spriteSheetData:SpriteSheetData = null):void
 		{
 			_hashTextures[textureID] = new TextureData(textureID, left, top, width, height, spriteSheetData);
+			_listTextureNames = null;
 		}
 		
 		public function getTextureData(textureID:String):TextureData
@@ -145,15 +146,20 @@ package molehill.core.texture
 			return rawData;
 		}
 		
-		public function listTexturesNames():Array
+		private var _listTextureNames:Array;
+		public function get listTexturesNames():Array
 		{
-			var listNames:Array = new Array();
-			for (var textureName:String in _hashTextures)
+			if (_listTextureNames == null)
 			{
-				listNames.push(textureName);
+				_listTextureNames = new Array();
+				for (var textureName:String in _hashTextures)
+				{
+					_listTextureNames.push(textureName);
+				}
+				_listTextureNames.sort();
 			}
-			listNames.sort();
-			return listNames;
+			
+			return _listTextureNames;
 		}
 		
 		public function renameTexture(oldName:String, newName:String):void

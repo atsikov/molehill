@@ -126,8 +126,10 @@ package molehill.core.sprite
 			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
-			updateContainerSize();
 			updateChildParentValues(child);
+			child.updateValues();
+			
+			updateContainerSize();
 			
 			if (_parent != null)
 			{
