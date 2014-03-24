@@ -32,7 +32,7 @@ package molehill.core.sprite
 		
 		// Fields
 		
-		private var _totalFrames:uint
+		private var _totalFrames:uint = int.MAX_VALUE;
 		public function get totalFrames():uint
 		{
 			return _totalFrames;
@@ -58,20 +58,6 @@ package molehill.core.sprite
 		public function set regionsInRow(value:int):void
 		{
 			_regionsInRow = value;
-		}
-		
-		override public function set textureID(value:String):void
-		{
-			super.textureID = value;
-			
-			updateFrame();
-		}
-		
-		override public function setSize(width:Number, height:Number):void
-		{
-			super.setSize(width, height);
-			
-			updateFrame();
 		}
 		
 		// Public Methods
@@ -121,7 +107,7 @@ package molehill.core.sprite
 			updateFrame();
 			
 			_currentFrame++;
-			if (_currentFrame == int.MAX_VALUE)
+			if (_currentFrame == _totalFrames)
 			{
 				_currentFrame = 0;
 			}
@@ -129,7 +115,7 @@ package molehill.core.sprite
 			_textureChanged = true;
 		}
 		
-		private function updateFrame():void
+		protected function updateFrame():void
 		{
 			if (!TextureManager.getInstance().isTextureCreated(textureID))
 			{
