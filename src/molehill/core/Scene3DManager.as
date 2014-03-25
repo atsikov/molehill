@@ -41,10 +41,8 @@ package molehill.core
 		/**
 		 *  Inintialization 
 		 **/
-		private var _waitingForContext:Boolean = false;
 		private var _tryForConstrained:Boolean = false;
 		private var _stage:Stage;
-		
 		private var _initCallback:Function;
 		private var _contextLossCallback:Function;
 		public function initContext(stage:Stage, initCallback:Function, contextLossCallback:Function, onlyConstrained:Boolean = false, tryForConstrained:Boolean = false):void
