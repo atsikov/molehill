@@ -172,9 +172,19 @@ package molehill.core.render.engine
 			}
 		}
 		
+		private var _clearR:Number = 0.5;
+		private var _clearG:Number = 0.5;
+		private var _clearB:Number = 0.5;
+		public function setClearColor(value:uint):void
+		{
+			_clearR = (value >>> 16) / 0xFF;
+			_clearG = ((value & 0xFFFF) >>> 8) / 0xFF;
+			_clearB = (value & 0xFF) / 0xFF;
+		}
+		
 		public function clear():void
 		{
-			_context3D.clear(0.5, 0.5, 0.5, 1, 1, 0);
+			_context3D.clear(_clearR, _clearG, _clearB, 1, 1, 0);
 			
 			drawCalls = 0;
 			totalTris = 0;

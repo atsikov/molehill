@@ -528,8 +528,8 @@ package molehill.core.render
 						//sprite.updateValues();
 						
 						_vertexBufferData.position = (nextIndexNum + v0) * 4;
-						_vertexBufferData.writeFloat(sprite._x0);
-						_vertexBufferData.writeFloat(sprite._y0);
+						_vertexBufferData.writeFloat(sprite._vertexX0);
+						_vertexBufferData.writeFloat(sprite._vertexY0);
 						_vertexBufferData.writeFloat(sprite._z0);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -537,8 +537,8 @@ package molehill.core.render
 						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
 						
 						_vertexBufferData.position = (nextIndexNum + v1) * 4;
-						_vertexBufferData.writeFloat(sprite._x1);
-						_vertexBufferData.writeFloat(sprite._y1);
+						_vertexBufferData.writeFloat(sprite._vertexX1);
+						_vertexBufferData.writeFloat(sprite._vertexY1);
 						_vertexBufferData.writeFloat(sprite._z1);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -546,8 +546,8 @@ package molehill.core.render
 						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
 						
 						_vertexBufferData.position = (nextIndexNum + v2) * 4;
-						_vertexBufferData.writeFloat(sprite._x2);
-						_vertexBufferData.writeFloat(sprite._y2);
+						_vertexBufferData.writeFloat(sprite._vertexX2);
+						_vertexBufferData.writeFloat(sprite._vertexY2);
 						_vertexBufferData.writeFloat(sprite._z2);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -555,8 +555,8 @@ package molehill.core.render
 						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
 						
 						_vertexBufferData.position = (nextIndexNum + v3) * 4;
-						_vertexBufferData.writeFloat(sprite._x3);
-						_vertexBufferData.writeFloat(sprite._y3);
+						_vertexBufferData.writeFloat(sprite._vertexX3);
+						_vertexBufferData.writeFloat(sprite._vertexY3);
 						_vertexBufferData.writeFloat(sprite._z3);
 						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
 						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
@@ -565,15 +565,15 @@ package molehill.core.render
 						
 						var topCandidate:Number;
 						var bottomCandidate:Number;
-						if (sprite._y0 > sprite._y1)
+						if (sprite._vertexY0 > sprite._vertexY1)
 						{
-							topCandidate = sprite._y1;
-							bottomCandidate = sprite._y0;
+							topCandidate = sprite._vertexY0;
+							bottomCandidate = sprite._vertexY1;
 						}
 						else
 						{
-							topCandidate = sprite._y0;
-							bottomCandidate = sprite._y1;
+							topCandidate = sprite._vertexY0;
+							bottomCandidate = sprite._vertexY1;
 						}
 						
 						if (_top > topCandidate)
@@ -585,13 +585,13 @@ package molehill.core.render
 							_bottom = bottomCandidate;
 						}
 						
-						if (_left > sprite._x0)
+						if (_left > sprite._vertexX0)
 						{
-							_left = sprite._x0;
+							_left = sprite._vertexX0;
 						}
-						if (_right < sprite._x2)
+						if (_right < sprite._vertexX2)
 						{
-							_right = sprite._x2;
+							_right = sprite._vertexX2;
 						}
 						
 						sprite.hasChanged = false;

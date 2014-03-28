@@ -15,7 +15,7 @@ package molehill.core.sprite
 		public static function createFromTexture(textureID:String):AnimatedSprite3D
 		{
 			var sprite:AnimatedSprite3D = new AnimatedSprite3D();
-			sprite.textureID = textureID;
+			sprite.setTexture(textureID);
 			
 			var spriteSheetData:SpriteSheetData = TextureManager.getInstance().getSpriteSheetData(textureID);
 			sprite.setSize(spriteSheetData.frameWidth, spriteSheetData.frameHeight);

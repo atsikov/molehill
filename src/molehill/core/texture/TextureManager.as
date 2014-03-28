@@ -578,7 +578,7 @@ package molehill.core.texture
 		public function getAtlases():Array
 		{
 			var tmp:Array = new Array();
-			for (var atlas:Object in _hashTexturesByAtlasBitmap)
+			for each (var atlas:Object in _hashAtlasDataByAtlasID)
 			{
 				tmp.push(atlas);
 			}

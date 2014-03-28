@@ -123,11 +123,11 @@ package molehill.core.text
 				
 				child._silentChange = true;
 				
-				child.textureID = textureName;
+				child.setTexture(textureName);
 				
 				if (i == 0)
 				{
-					textureID = textureName;
+					setTexture(textureName);
 				}
 				
 				var charTextureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureName);

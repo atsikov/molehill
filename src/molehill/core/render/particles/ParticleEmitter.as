@@ -97,12 +97,6 @@ package molehill.core.render.particles
 			}
 		}
 		
-		override public function set textureID(value:String):void
-		{
-			super.textureID = value;
-			_textureAtlasID = TextureManager.getInstance().getAtlasDataByTextureID(textureID).atlasID;
-		}
-		
 		private var _listParticles:Vector.<ParticleData>
 		private var _hashParticlesByEndTime:Vector.<ParticleData>
 		private var _numAddedParticles:int = 0;

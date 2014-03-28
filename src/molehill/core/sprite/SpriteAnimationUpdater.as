@@ -65,36 +65,48 @@ package molehill.core.sprite
 		}
 		
 		private var _listAnimations:Vector.<AnimatedSprite3D> = new Vector.<AnimatedSprite3D>();
+		private var _listCustomAnimations:Vector.<CustomAnimatedSprite3D> = new Vector.<CustomAnimatedSprite3D>();
 		internal function addAnimation(value:AnimatedSprite3D):void
 		{
-			if (_listAnimations.indexOf(value) != -1)
+			if (_listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value) != -1)
 			{
 				return;
 			}
 			
-			_listAnimations.push(value);
-			
-			if (_listAnimations.length == 1)
+			if (value is CustomAnimatedSprite3D)
 			{
-				startUpdates();
+				_listCustomAnimations.push(value);
 			}
+			else
+			{
+				_listAnimations.push(value);
+			}
+			
+			startUpdates();
 		}
 		
 		internal function hasAnimation(value:AnimatedSprite3D):Boolean
 		{
-			return _listAnimations.indexOf(value) != -1;
+			return _listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value) != -1;
 		}
 		
 		internal function removeAnimation(value:AnimatedSprite3D):void
 		{
-			if (_listAnimations.indexOf(value) == -1)
+			if (_listAnimations.indexOf(value) == -1 || _listCustomAnimations.indexOf(value) == -1)
 			{
 				return;
 			}
 			
-			_listAnimations.splice(_listAnimations.indexOf(value), 1);
+			if (value is CustomAnimatedSprite3D)
+			{
+				_listCustomAnimations.splice(_listCustomAnimations.indexOf(value), 1);
+			}
+			else
+			{
+				_listAnimations.splice(_listAnimations.indexOf(value), 1);
+			}
 			
-			if (_listAnimations.length == 0)
+			if (_listAnimations.length == 0 && _listCustomAnimations.length == 0)
 			{
 				stopUpdates();
 			}
@@ -108,7 +120,10 @@ package molehill.core.sprite
 				_enterFrameListener = new Sprite();
 			}
 			
-			_enterFrameListener.addEventListener(Event.ENTER_FRAME, onTimerEvent);
+			if (!_enterFrameListener.hasEventListener(Event.ENTER_FRAME))
+			{
+				_enterFrameListener.addEventListener(Event.ENTER_FRAME, onTimerEvent);
+			}
 		}
 		
 		private function stopUpdates():void
@@ -151,6 +166,11 @@ package molehill.core.sprite
 				}
 				
 				_timerRemainedValue -= _timePerFrame;
+			}
+			
+			for each (animation in _listCustomAnimations)
+			{
+				animation.nextFrame();
 			}
 			
 			_lastTimerValue = getTimer();

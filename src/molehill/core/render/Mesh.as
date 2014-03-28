@@ -219,10 +219,9 @@ package molehill.core.render
 			return _listIndices;
 		}
 		
-		override public function set textureID(value:String):void
+		override public function setTexture(value:String):void
 		{
-			super.textureID = value;
-			_textureAtlasID = TextureManager.getInstance().getAtlasDataByTextureID(textureID).atlasID;
+			setTextureID(value);
 		}
 		
 		// IVertexBatcher

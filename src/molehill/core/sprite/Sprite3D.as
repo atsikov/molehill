@@ -19,6 +19,7 @@ package molehill.core.sprite
 	import molehill.core.render.shader.species.mask.MaskedObjectShader;
 	import molehill.core.sort.IZSortDisplayObject;
 	import molehill.core.texture.TextureAtlasData;
+	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.StringUtils;
@@ -30,11 +31,7 @@ package molehill.core.sprite
 		public static function createFromTexture(textureID:String):Sprite3D
 		{
 			var sprite:Sprite3D = new Sprite3D();
-			sprite.textureID = textureID;
-			sprite.textureRegion = TextureManager.getInstance().getTextureRegion(textureID);
-			
-			var rect:Rectangle = TextureManager.getInstance().getBitmapRectangleByID(textureID);
-			sprite.setSize(rect.width, rect.height);
+			sprite.setTexture(textureID);
 			
 			return sprite;
 		}
@@ -50,6 +47,7 @@ package molehill.core.sprite
 		public static const NUM_ELEMENTS_PER_SPRITE:uint = NUM_ELEMENTS_PER_VERTEX * NUM_VERTICES_PER_SPRITE;
 		
 		private static var SCENE_MANAGER:Scene3DManager = Scene3DManager.getInstance();
+		private static var TEXTURE_MANAGER:TextureManager = TextureManager.getInstance();
 		
 		/**
 		 * 0--3     
@@ -96,6 +94,22 @@ package molehill.core.sprite
 		molehill_internal var _z1:Number = 0;
 		molehill_internal var _z2:Number = 0;
 		molehill_internal var _z3:Number = 0;
+		
+		molehill_internal var _vertexX0:Number = 0;
+		molehill_internal var _vertexX1:Number = 0;
+		molehill_internal var _vertexX2:Number = 0;
+		molehill_internal var _vertexX3:Number = 0;
+		
+		molehill_internal var _vertexY0:Number = 0;
+		molehill_internal var _vertexY1:Number = 0;
+		molehill_internal var _vertexY2:Number = 0;
+		molehill_internal var _vertexY3:Number = 0;
+		
+		molehill_internal var _blankOffsetX:Number = 0;
+		molehill_internal var _blankOffsetY:Number = 0;
+		
+		molehill_internal var _originalWidth:Number = 0;
+		molehill_internal var _originalHeight:Number = 0;
 		
 		molehill_internal var _scene:Scene3D;
 		public function getScene():Scene3D
@@ -308,22 +322,22 @@ package molehill.core.sprite
 			return _textureID;
 		}
 		
-		public function set textureID(value:String):void
+		public function setTextureID(textureId:String):void
 		{
-			if (_textureID == value)
+			if (_textureID == textureId)
 			{
 				return;
 			}
 			
-			var prevAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(_textureID);
-			_textureID = value;
+			var prevAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID);
+			_textureID = textureId;
 			
 			if (_scene != null)
 			{
 				_scene._needUpdateBatchers = true;
 			}
 			
-			if (_parent != null && prevAtlasData !== TextureManager.getInstance().getAtlasDataByTextureID(_textureID))
+			if (_parent != null && prevAtlasData !== TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID))
 			{
 				_parent.textureAtlasChanged = true;
 			}
@@ -332,6 +346,26 @@ package molehill.core.sprite
 		public function get hasTexture():Boolean
 		{
 			return _textureID != "" && _textureID != null;
+		}
+		
+		public function setTexture(textureId:String):void
+		{
+			setTextureID(textureId);
+			
+			var textureData:TextureData = TEXTURE_MANAGER.getTextureDataByID(textureId);
+			var textureRegion:Rectangle = TEXTURE_MANAGER.getTextureRegion(textureId);
+			this.textureRegion = textureRegion;
+			
+			_blankOffsetX = textureData.blankOffsetX;
+			_blankOffsetY = textureData.blankOffsetY;
+			
+			_originalWidth = textureData.originalWidth;
+			_originalHeight = textureData.originalHeight;
+			
+			_width = textureData.width;
+			_height = textureData.height;
+			
+			setSize(textureData.originalWidth, textureData.originalHeight);
 		}
 		
 		molehill_internal var _parentShiftX:Number = 0;
@@ -409,34 +443,101 @@ package molehill.core.sprite
 			var dy:Number;
 			if (!_fromMatrix)
 			{
-				scaledWidth = _width * _parentScaleX * _scaleX;
-				scaledHeight = _height * _parentScaleY * _scaleY;
-				
-				var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
-				cos = Math.cos(rad);
-				sin = Math.sin(rad);
-				
-				rad = _parentRotation / 180 * Math.PI;
-				parentCos = Math.cos(rad);
-				parentSin = Math.sin(rad);
-				
-				dx0 = _shiftX * _parentScaleX;
-				dy0 = _shiftY * _parentScaleY;
-				
-				dx = _parentShiftX + dx0 * parentCos - dy0 * parentSin;
-				dy = _parentShiftY + dx0 * parentSin + dy0 * parentCos;
-				
-				_x0 = -scaledHeight * sin + dx;
-				_y0 = scaledHeight * cos + dy;
-				
-				_x1 = dx;
-				_y1 = dy;
-				
-				_x2 = scaledWidth * cos + dx;
-				_y2 = scaledWidth * sin + dy;
-				
-				_x3 = scaledWidth * cos - scaledHeight * sin + dx;
-				_y3 = scaledWidth * sin + scaledHeight * cos + dy;
+				if (_blankOffsetX == 0 && _blankOffsetY == 0)
+				{
+					scaledWidth = _width * _parentScaleX * _scaleX;
+					scaledHeight = _height * _parentScaleY * _scaleY;
+					
+					var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
+					cos = Math.cos(rad);
+					sin = Math.sin(rad);
+					
+					rad = _parentRotation / 180 * Math.PI;
+					parentCos = Math.cos(rad);
+					parentSin = Math.sin(rad);
+					
+					dx0 = _shiftX * _parentScaleX;
+					dy0 = _shiftY * _parentScaleY;
+					
+					dx = _parentShiftX + dx0 * parentCos - dy0 * parentSin;
+					dy = _parentShiftY + dx0 * parentSin + dy0 * parentCos;
+					
+					_x0 = -scaledHeight * sin + dx;
+					_y0 = scaledHeight * cos + dy;
+					
+					_vertexX0 = _x0;
+					_vertexY0 = _y0;
+					
+					_x1 = dx;
+					_y1 = dy;
+					
+					_vertexX1 = _x1;
+					_vertexY1 = _y1;
+					
+					_x2 = scaledWidth * cos + dx;
+					_y2 = scaledWidth * sin + dy;
+					
+					_vertexX2 = _x2;
+					_vertexY2 = _y2;
+					
+					_x3 = scaledWidth * cos - scaledHeight * sin + dx;
+					_y3 = scaledWidth * sin + scaledHeight * cos + dy;
+
+					_vertexX3 = _x3;
+					_vertexY3 = _y3;
+				}
+				else
+				{
+					var scaledOrigWidth:Number = _originalWidth * _parentScaleX * _scaleX;
+					var scaledOrigHeight:Number = _originalHeight * _parentScaleY * _scaleY;
+					
+					scaledWidth = _width * _parentScaleX * _scaleX;
+					scaledHeight = _height * _parentScaleY * _scaleY;
+					
+					rad = (_rotation + _parentRotation) / 180 * Math.PI;
+					cos = Math.cos(rad);
+					sin = Math.sin(rad);
+					
+					rad = _parentRotation / 180 * Math.PI;
+					parentCos = Math.cos(rad);
+					parentSin = Math.sin(rad);
+					
+					var dx0Orig:Number = _shiftX * _parentScaleX;
+					var dy0Orig:Number = _shiftY * _parentScaleY;
+					
+					dx0 = dx0Orig + _blankOffsetX * _parentScaleX;
+					dy0 = dy0Orig + _blankOffsetY * _parentScaleY;
+					
+					dx = _parentShiftX + dx0 * parentCos - dy0 * parentSin;
+					dy = _parentShiftY + dx0 * parentSin + dy0 * parentCos;
+					
+					var dxOrig:Number = _parentShiftX + dx0Orig * parentCos - dy0Orig * parentSin;
+					var dyOrig:Number = _parentShiftY + dx0Orig * parentSin + dy0Orig * parentCos;
+					
+					_x0 = -scaledOrigWidth * sin + dxOrig;
+					_y0 = scaledOrigHeight * cos + dyOrig;
+					
+					_vertexX0 = -scaledHeight * sin + dx;
+					_vertexY0 = scaledHeight * cos + dy;
+					
+					_x1 = dxOrig;
+					_y1 = dyOrig;
+					
+					_vertexX1 = dx;
+					_vertexY1 = dy;
+					
+					_x2 = scaledOrigWidth * cos + dxOrig;
+					_y2 = scaledOrigWidth * sin + dyOrig;
+					
+					_vertexX2 = scaledWidth * cos + dx;
+					_vertexY2 = scaledWidth * sin + dy;
+					
+					_x3 = scaledOrigWidth * cos - scaledOrigHeight * sin + dxOrig;
+					_y3 = scaledOrigWidth * sin + scaledOrigHeight * cos + dyOrig;
+					
+					_vertexX3 = scaledWidth * cos - scaledHeight * sin + dx;
+					_vertexY3 = scaledWidth * sin + scaledHeight * cos + dy;
+				}
 			}
 			else
 			{
@@ -528,13 +629,18 @@ package molehill.core.sprite
 		molehill_internal var _cachedWidth:Number = 0;
 		public function get width():Number
 		{
+			if (_cachedWidth == 0)
+			{
+				_cachedWidth = _originalWidth * _scaleX;
+			}
+			
 			return _cachedWidth;
 		}
 		
 		public function set width(value:Number):void
 		{
-			_width = value;
-			_cachedWidth = _width * _scaleX;
+			_scaleX = _width / _originalWidth; 
+			_cachedWidth = _originalWidth * _scaleX;
 			
 			_fromMatrix = false;
 			
@@ -547,7 +653,7 @@ package molehill.core.sprite
 		{
 			if (_cachedHeight == 0)
 			{
-				_cachedHeight = _height * _scaleY;
+				_cachedHeight = _originalHeight * _scaleY;
 			}
 			
 			return _cachedHeight;
@@ -555,8 +661,8 @@ package molehill.core.sprite
 		
 		public function set height(value:Number):void
 		{
-			_height = value;
-			_cachedHeight = _height * _scaleY;
+			_scaleY = _height / _originalHeight;
+			_cachedHeight = _originalHeight * _scaleY;
 			
 			_fromMatrix = false;
 			
@@ -594,11 +700,11 @@ package molehill.core.sprite
 		
 		public function setSize(w:Number, h:Number):void
 		{
-			_width = w;
-			_height = h;
+			_scaleX = w / _originalWidth;
+			_scaleY = h / _originalHeight;
 			
-			_cachedWidth = _width * _scaleX;
-			_cachedHeight = _height * _scaleY;
+			_cachedWidth = _originalWidth * _scaleX;
+			_cachedHeight = _originalHeight * _scaleY;
 			
 			hasChanged = true;
 		}
