@@ -16,32 +16,6 @@ package molehill.easy.ui3d.list
 			super();
 		}
 		
-		override public function get width():Number
-		{
-			return columnCount * columnWidth + Math.max(0, columnCount - 1) * columnsGap;
-		}
-		override public function set width(value:Number):void
-		{
-			//nothing
-		}
-		//---
-		override public function get height():Number
-		{
-			return Math.max(
-				_height,
-				rowCount * rowHeight + Math.max(0, rowCount - 1) * rowsGap
-			);
-		}
-		override public function set height(value:Number):void
-		{
-			//nothing
-		}
-		//---
-		override public function setSize(w:Number, h:Number):void
-		{
-			//nothing
-		}
-		
 		private var _direction:String = Direction.VERTICAL;
 		public function get direction():String
 		{
@@ -365,7 +339,7 @@ package molehill.easy.ui3d.list
 				
 				dictNewStateItemRenderersByData[itemData] = itemRenderer;
 			}
-			_height = Math.max(
+			_croppedHeight = Math.max(
 				cy + rowHeight,
 				0
 			);

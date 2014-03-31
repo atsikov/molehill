@@ -26,8 +26,8 @@ package molehill.core.texture
 			_height = height;
 			_spriteSheetData = spriteSheetData;
 			
-			_originalWidth = width;
-			_originalHeight = height;
+			_croppedWidth = width;
+			_croppedHeight = height;
 		}
 
 		public function get textureID():String
@@ -60,26 +60,26 @@ package molehill.core.texture
 			return _height;
 		}
 
-		private var _originalWidth:uint;
-		public function get originalWidth():uint
+		private var _croppedWidth:uint;
+		public function get croppedWidth():uint
 		{
-			return _originalWidth;
+			return _croppedWidth;
 		}
 		
-		public function set originalWidth(value:uint):void
+		public function set croppedWidth(value:uint):void
 		{
-			_originalWidth = value;
+			_croppedWidth = value;
 		}
 		
-		private var _originalHeight:uint;
-		public function get originalHeight():uint
+		private var _croppedHeight:uint;
+		public function get croppedHeight():uint
 		{
-			return _originalHeight;
+			return _croppedHeight;
 		}
 		
-		public function set originalHeight(value:uint):void
+		public function set croppedHeight(value:uint):void
 		{
-			_originalHeight = value;
+			_croppedHeight = value;
 		}
 		
 		private var _blankOffsetX:uint;
@@ -119,7 +119,7 @@ package molehill.core.texture
 		{
 			if (_textureRegion == null)
 			{
-				_textureRegion = new Rectangle(left, top, width, height);
+				_textureRegion = new Rectangle(_left, _top, _croppedWidth, _croppedHeight);
 			}
 			
 			return _textureRegion;
@@ -134,6 +134,28 @@ package molehill.core.texture
 		public function setNormalizedAlpha(value:NormalizedAlphaChannel):void
 		{
 			_normalizedAlphaChannel = value;
+		}
+		
+		/**
+		 * Updating width and height parameters for cropped texture. Previous <b>width</b> and </b>height</b> values will be copied to <b>croppedWidth</b> and <b>croppedHeight</b>, new values will replace existing.
+		 * 
+		 * @param offsetX Width of blank field in the left part of cropped texture 
+		 * @param offsetY Height of blank field in the top part of cropped texture 
+		 * @param width Width of the texture including blank fields 
+		 * @param height Height of the texture including blank fields 
+		 **/
+		public function setBlankRectValues(offsetX:int, offsetY:int, width:int, height:int):void
+		{
+			_blankOffsetX = offsetX;
+			_blankOffsetY = offsetY;
+			
+			_croppedWidth = _width;
+			_croppedHeight = _height;
+			
+			_width = width;
+			_height = height;
+			
+			_textureRegion = null;
 		}
 	}
 }

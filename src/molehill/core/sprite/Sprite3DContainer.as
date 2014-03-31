@@ -934,5 +934,25 @@ package molehill.core.sprite
 			
 			super.rotation = value;
 		}
+		
+		override public function localToGlobal(point:Point):void
+		{
+			if (scrollRect != null)
+			{
+				point.offset(-scrollRect.x, -scrollRect.y);
+			}
+			
+			super.localToGlobal(point);
+		}
+		
+		override public function globalToLocal(point:Point):void
+		{
+			if (scrollRect != null)
+			{
+				point.offset(scrollRect.x, scrollRect.y);
+			}
+			
+			super.globalToLocal(point);
+		}
 	}
 }

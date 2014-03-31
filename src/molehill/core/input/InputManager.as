@@ -289,7 +289,7 @@ package molehill.core.input
  				candidate.globalToLocal(localPoint);
 				localShiftX = localPoint.x;
 				localShiftY = localPoint.y;
-				
+				/*
 				parent = candidate is Sprite3DContainer ? candidate as Sprite3DContainer : candidate.parent;
 				while (parent != null)
 				{
@@ -301,7 +301,7 @@ package molehill.core.input
 					
 					parent = parent.parent;
 				}
-				
+				*/
 				var eventTypes:Array = _hashTypeByListeners[candidate];
 				if (eventTypes != null)
 				{

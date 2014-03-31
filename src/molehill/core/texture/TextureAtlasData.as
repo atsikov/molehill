@@ -5,7 +5,7 @@ package molehill.core.texture
 
 	public class TextureAtlasData
 	{
-		private static const ADDITIONAL_RAW_FIELDS:Array = ['originalWidth', 'originalHeight', 'blankOffsetX', 'blankOffsetY'];
+		private static const ADDITIONAL_RAW_FIELDS:Array = ['croppedWidth', 'croppedHeight', 'blankOffsetX', 'blankOffsetY'];
 		public static function fromRawData(rawData:Object):TextureAtlasData
 		{
 			var atlasData:TextureAtlasData = new TextureAtlasData(rawData.width, rawData.height);
@@ -15,6 +15,19 @@ package molehill.core.texture
 			{
 				var rawTextureData:Object = texturesInfo[textureID];
 				
+				// -- Back compatibility
+				if (rawTextureData['originalWidth'] != null)
+				{
+					rawTextureData['croppedWidth'] = rawTextureData['width'];
+					rawTextureData['width'] = rawTextureData['originalWidth'];
+				}
+				
+				if (rawTextureData['originalHeight'] != null)
+				{
+					rawTextureData['croppedHeight'] = rawTextureData['height'];
+					rawTextureData['height'] = rawTextureData['originalHeight'];
+				}
+				
 				atlasData.addTextureDesc(
 					textureID,
 					rawTextureData.left,
@@ -23,6 +36,7 @@ package molehill.core.texture
 					rawTextureData.height,
 					SpriteSheetData.fromRawData(rawTextureData.spriteSheetData)
 				);
+				// --
 				
 				var textureData:TextureData = atlasData.getTextureData(textureID);
 				for (var i:int = 0; i < ADDITIONAL_RAW_FIELDS.length; i++)
@@ -87,8 +101,8 @@ package molehill.core.texture
 				_hashTextureRegion[textureID] = new Rectangle(
 					textureData.left / _atlasWidth,
 					textureData.top / _atlasHeight,
-					textureData.width / _atlasWidth,
-					textureData.height / _atlasHeight
+					textureData.croppedWidth / _atlasWidth,
+					textureData.croppedHeight / _atlasHeight
 				);
 			}
 			
@@ -126,13 +140,13 @@ package molehill.core.texture
 			{
 				delete textureData['textureRegion'];
 				
-				if (textureData['originalWidth'] == textureData['width'] &&
-					textureData['originalHeight'] == textureData['height'] &&
+				if (textureData['croppedWidth'] == textureData['width'] &&
+					textureData['croppedHeight'] == textureData['height'] &&
 					textureData['blankOffsetX'] == 0 &&
 					textureData['blankOffsetY'] == 0)
 				{
-					delete textureData['originalWidth'];
-					delete textureData['originalHeight'];
+					delete textureData['croppedWidth'];
+					delete textureData['croppedHeight'];
 					delete textureData['blankOffsetX'];
 					delete textureData['blankOffsetY'];
 				}

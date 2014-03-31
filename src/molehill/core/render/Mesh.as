@@ -6,9 +6,9 @@ package molehill.core.render
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
-	import molehill.core.texture.TextureManager;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureManager;
 
 	public class Mesh extends Sprite3D implements IVertexBatcher
 	{
@@ -168,6 +168,13 @@ package molehill.core.render
 			}
 		}
 		
+		override public function setTexture(textureId:String):void
+		{
+			_textureAtlasID = TextureManager.getInstance().getAtlasDataByTextureID(textureId).atlasID;
+			
+			super.setTexture(textureId);
+		}
+		
 		private var _vertexData:ByteArray;
 		public function getVerticesData():ByteArray
 		{
@@ -217,10 +224,6 @@ package molehill.core.render
 			}
 			
 			return _listIndices;
-		}
-		
-		override public function set textureRegion(value:Rectangle):void
-		{
 		}
 		
 		// IVertexBatcher

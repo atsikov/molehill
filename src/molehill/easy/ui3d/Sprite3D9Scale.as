@@ -24,6 +24,9 @@ package molehill.easy.ui3d
 		private var _bitmapBR:Sprite3D;
 		
 		private var _scaleRect:Rectangle;
+		
+		private var _totalWidth:Number = 0;
+		private var _totalHeight:Number = 0;
 		public function Sprite3D9Scale(bgTextureID:String, scaleRect:Rectangle)
 		{
 			super();
@@ -151,16 +154,16 @@ package molehill.easy.ui3d
 			addChild(_bitmapB);
 			addChild(_bitmapBR);
 			
-			_width = textureData.width;
-			_height = textureData.height;
+			_totalWidth = textureData.width;
+			_totalHeight = textureData.height;
 			
 			resize();
 		}
 		
 		public function resize():void
 		{
-			_bitmapT.width = _bitmapC.width = _bitmapB.width = _width - _bitmapTL.width - _bitmapTR.width;
-			_bitmapL.height = _bitmapC.height = _bitmapR.height = _height - _bitmapTL.height - _bitmapBL.height;
+			_bitmapT.width = _bitmapC.width = _bitmapB.width = _totalWidth - _bitmapTL.width - _bitmapTR.width;
+			_bitmapL.height = _bitmapC.height = _bitmapR.height = _totalHeight - _bitmapTL.height - _bitmapBL.height;
 			
 			_bitmapT.x = _bitmapC.x = _bitmapB.x = _bitmapTL.width;
 			_bitmapTR.x = _bitmapR.x = _bitmapBR.x = _bitmapTL.width + _bitmapT.width;
@@ -170,22 +173,22 @@ package molehill.easy.ui3d
 		
 		override public function get width():Number
 		{
-			return _width;
+			return _totalWidth;
 		}
 		
 		override public function set width(value:Number):void
 		{
-			_width = value;
+			_totalWidth = value;
 		}
 		
 		override public function get height():Number
 		{
-			return _height;
+			return _totalHeight;
 		}
 		
 		override public function set height(value:Number):void
 		{
-			_height = value;
+			_totalHeight = value;
 		}
 	}
 }
