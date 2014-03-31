@@ -219,9 +219,8 @@ package molehill.core.render
 			return _listIndices;
 		}
 		
-		override public function setTexture(value:String):void
+		override public function set textureRegion(value:Rectangle):void
 		{
-			setTextureID(value);
 		}
 		
 		// IVertexBatcher

@@ -567,8 +567,8 @@ package molehill.core.render
 						var bottomCandidate:Number;
 						if (sprite._vertexY0 > sprite._vertexY1)
 						{
-							topCandidate = sprite._vertexY0;
-							bottomCandidate = sprite._vertexY1;
+							topCandidate = sprite._vertexY1;
+							bottomCandidate = sprite._vertexY0;
 						}
 						else
 						{

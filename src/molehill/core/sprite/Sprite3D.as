@@ -322,27 +322,6 @@ package molehill.core.sprite
 			return _textureID;
 		}
 		
-		public function setTextureID(textureId:String):void
-		{
-			if (_textureID == textureId)
-			{
-				return;
-			}
-			
-			var prevAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID);
-			_textureID = textureId;
-			
-			if (_scene != null)
-			{
-				_scene._needUpdateBatchers = true;
-			}
-			
-			if (_parent != null && prevAtlasData !== TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID))
-			{
-				_parent.textureAtlasChanged = true;
-			}
-		}
-		
 		public function get hasTexture():Boolean
 		{
 			return _textureID != "" && _textureID != null;
@@ -350,7 +329,21 @@ package molehill.core.sprite
 		
 		public function setTexture(textureId:String):void
 		{
-			setTextureID(textureId);
+			if (_textureID != textureId)
+			{
+				var prevAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID);
+				_textureID = textureId;
+				
+				if (_scene != null)
+				{
+					_scene._needUpdateBatchers = true;
+				}
+				
+				if (_parent != null && prevAtlasData !== TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID))
+				{
+					_parent.textureAtlasChanged = true;
+				}
+			}
 			
 			var textureData:TextureData = TEXTURE_MANAGER.getTextureDataByID(textureId);
 			var textureRegion:Rectangle = TEXTURE_MANAGER.getTextureRegion(textureId);
@@ -639,7 +632,7 @@ package molehill.core.sprite
 		
 		public function set width(value:Number):void
 		{
-			_scaleX = _width / _originalWidth; 
+			_scaleX = value / _originalWidth; 
 			_cachedWidth = _originalWidth * _scaleX;
 			
 			_fromMatrix = false;
@@ -661,7 +654,7 @@ package molehill.core.sprite
 		
 		public function set height(value:Number):void
 		{
-			_scaleY = _height / _originalHeight;
+			_scaleY = value / _originalHeight;
 			_cachedHeight = _originalHeight * _scaleY;
 			
 			_fromMatrix = false;
@@ -700,6 +693,12 @@ package molehill.core.sprite
 		
 		public function setSize(w:Number, h:Number):void
 		{
+			if (_originalWidth == 0 || _originalHeight == 0)
+			{
+				_originalWidth = w;
+				_originalHeight = h;
+			}
+			
 			_scaleX = w / _originalWidth;
 			_scaleY = h / _originalHeight;
 			

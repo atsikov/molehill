@@ -52,7 +52,7 @@ package molehill.easy.ui3d
 			);
 			
 			_bitmapT = new Sprite3D();
-			_bitmapT.setTextureID(bgTextureID);
+			_bitmapT.setTexture(bgTextureID);
 			_bitmapT.width = scaleRect.width;
 			_bitmapT.height = scaleRect.y;
 			_bitmapT.textureRegion = new Rectangle(
@@ -63,7 +63,7 @@ package molehill.easy.ui3d
 			);
 			
 			_bitmapTR = new Sprite3D();
-			_bitmapTR.setTextureID(bgTextureID);
+			_bitmapTR.setTexture(bgTextureID);
 			_bitmapTR.width = textureData.width - scaleRect.x - scaleRect.width;
 			_bitmapTR.height = scaleRect.y;
 			_bitmapTR.textureRegion = new Rectangle( 
@@ -75,7 +75,7 @@ package molehill.easy.ui3d
 			
 			// -------------------------------------
 			_bitmapL = new Sprite3D();
-			_bitmapL.setTextureID(bgTextureID);
+			_bitmapL.setTexture(bgTextureID);
 			_bitmapL.width = scaleRect.x;
 			_bitmapL.height = scaleRect.height;
 			_bitmapL.textureRegion = new Rectangle(
@@ -86,7 +86,7 @@ package molehill.easy.ui3d
 			);
 			
 			_bitmapC = new Sprite3D();
-			_bitmapC.setTextureID(bgTextureID);
+			_bitmapC.setTexture(bgTextureID);
 			_bitmapC.width = scaleRect.width;
 			_bitmapC.height = scaleRect.height;
 			_bitmapC.textureRegion = new Rectangle(
@@ -97,7 +97,7 @@ package molehill.easy.ui3d
 			);
 			
 			_bitmapR = new Sprite3D();
-			_bitmapR.setTextureID(bgTextureID);
+			_bitmapR.setTexture(bgTextureID);
 			_bitmapR.width = textureData.width - scaleRect.x - scaleRect.width;
 			_bitmapR.height = scaleRect.height;
 			_bitmapR.textureRegion = new Rectangle(
@@ -109,7 +109,7 @@ package molehill.easy.ui3d
 			
 			// -------------------------------------
 			_bitmapBL = new Sprite3D();
-			_bitmapBL.setTextureID(bgTextureID);
+			_bitmapBL.setTexture(bgTextureID);
 			_bitmapBL.width = scaleRect.x;
 			_bitmapBL.height = textureData.height - scaleRect.height - scaleRect.y;
 			_bitmapBL.textureRegion = new Rectangle(
@@ -120,7 +120,7 @@ package molehill.easy.ui3d
 			);
 			
 			_bitmapB = new Sprite3D();
-			_bitmapB.setTextureID(bgTextureID);
+			_bitmapB.setTexture(bgTextureID);
 			_bitmapB.width = scaleRect.width;
 			_bitmapB.height = textureData.height - scaleRect.height - scaleRect.y;
 			_bitmapB.textureRegion = new Rectangle(
@@ -131,7 +131,7 @@ package molehill.easy.ui3d
 			);
 			
 			_bitmapBR = new Sprite3D();
-			_bitmapBR.setTextureID(bgTextureID);
+			_bitmapBR.setTexture(bgTextureID);
 			_bitmapBR.width = textureData.width - scaleRect.x - scaleRect.width;
 			_bitmapBR.height = textureData.height - scaleRect.height - scaleRect.y;
 			_bitmapBR.textureRegion = new Rectangle(
