@@ -86,7 +86,7 @@ package molehill.core.text
 			_notifyParentOnChange = false;
 			
 			var childIndex:int = 0;
-			
+			var numGlyphs:int = 0;
 			for (var i:int = 0; i < textLength; i++)
 			{
 				var charCode:int = _text.charCodeAt(i);
@@ -150,9 +150,9 @@ package molehill.core.text
 			}
 			_textHeight = lineY + lineHeight;
 			
-			while (numChildren > textLength)
+			while (numChildren > childIndex)
 			{
-				_cacheSprites.push(super.removeChildAt(textLength - 1));
+				_cacheSprites.push(super.removeChildAt(childIndex - 1));
 			}
 			
 			_containerRight = _containerX + _textWidth;

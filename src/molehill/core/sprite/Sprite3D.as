@@ -484,8 +484,8 @@ package molehill.core.sprite
 					var scaledCroppedWidth:Number = _croppedWidth * _parentScaleX * _scaleX;
 					var scaledCroppedHeight:Number = _croppedHeight * _parentScaleY * _scaleY;
 					
-					var dx0Cropped:Number = dx0 + _blankOffsetX * _parentScaleX;
-					var dy0Cropped:Number = dy0 + _blankOffsetY * _parentScaleY;
+					var dx0Cropped:Number = dx0 + _blankOffsetX * _parentScaleX * _scaleX;
+					var dy0Cropped:Number = dy0 + _blankOffsetY * _parentScaleY * _scaleY;
 					
 					var dxCropped:Number = _parentShiftX + dx0Cropped * parentCos - dy0Cropped * parentSin;
 					var dyCropped:Number = _parentShiftY + dx0Cropped * parentSin + dy0Cropped * parentCos;
