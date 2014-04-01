@@ -4,21 +4,9 @@ package molehill.core.texture
 
 	public class ARFTextureData
 	{
-		public static function fromSingleATF(rawData:ByteArray, textureID:String):ARFTextureData
-		{
-			var textureData:ARFTextureData = new ARFTextureData(rawData);
-			
-			var textureAtlasData:TextureAtlasData = new TextureAtlasData(textureData.width, textureData.height);
-			textureAtlasData.addTextureDesc(textureID, 0, 0, textureData.width, textureData.height);
-			
-			textureData._textureAtlasData = textureAtlasData;
-			
-			return textureData;
-		}
-		
 		protected var _rawATFData:ByteArray;
 		private var _rawSpriteAnimationData:Object;
-		public function ARFTextureData(rawData:ByteArray)
+		public function ARFTextureData(rawData:ByteArray, textureID:String = null)
 		{
 			rawData.position = 0;
 			
@@ -53,6 +41,14 @@ package molehill.core.texture
 						break;
 				}
 				rawData.position += chunkSize;
+			}
+			
+			if (_textureAtlasData == null)
+			{
+				var textureData:ARFTextureData = new ARFTextureData(rawData);
+				
+				var textureAtlasData:TextureAtlasData = new TextureAtlasData(textureData.width, textureData.height);
+				textureAtlasData.addTextureDesc(textureID, 0, 0, textureData.width, textureData.height);
 			}
 		}
 

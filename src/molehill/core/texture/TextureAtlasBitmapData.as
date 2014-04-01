@@ -25,10 +25,8 @@ package molehill.core.texture
 			_hashNodesByTextureID = {};
 		}
 		
-		private const TEXTURE_GAP:int = 1;
-		
 		private var _hashNodesByTextureID:Object;
-		public function insert(bitmapData:BitmapData, textureID:String, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
+		public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
 		{
 			if (nextNode == null)
 			{
@@ -76,32 +74,32 @@ package molehill.core.texture
 				{
 					(nextNode.child[0] as TextureAtlasDataNode).rc = new Rectangle(
 						nextNode.rc.x,
-						nextNode.rc.y + TEXTURE_GAP + bitmapData.height,
+						nextNode.rc.y + textureGap + bitmapData.height,
 						bitmapData.width,
-						nextNode.rc.height - bitmapData.height - TEXTURE_GAP
+						nextNode.rc.height - bitmapData.height - textureGap
 					);
 					
 					(nextNode.child[1] as TextureAtlasDataNode).rc = new Rectangle(
-						nextNode.rc.x + TEXTURE_GAP + bitmapData.width,
+						nextNode.rc.x + textureGap + bitmapData.width,
 						nextNode.rc.y,
-						nextNode.rc.width - bitmapData.width - TEXTURE_GAP,
+						nextNode.rc.width - bitmapData.width - textureGap,
 						nextNode.rc.height
 					);
 				}
 				else
 				{
 					(nextNode.child[0] as TextureAtlasDataNode).rc = new Rectangle(
-						nextNode.rc.x + TEXTURE_GAP + bitmapData.width,
+						nextNode.rc.x + textureGap + bitmapData.width,
 						nextNode.rc.y,
-						nextNode.rc.width - bitmapData.width - TEXTURE_GAP,
+						nextNode.rc.width - bitmapData.width - textureGap,
 						bitmapData.height
 					);
 					
 					(nextNode.child[1] as TextureAtlasDataNode).rc = new Rectangle(
 						nextNode.rc.x,
-						nextNode.rc.y + TEXTURE_GAP + bitmapData.height,
+						nextNode.rc.y + textureGap + bitmapData.height,
 						nextNode.rc.width,
-						nextNode.rc.height - bitmapData.height - TEXTURE_GAP
+						nextNode.rc.height - bitmapData.height - textureGap
 					);
  				}
 				
@@ -135,10 +133,10 @@ package molehill.core.texture
 				return null;
 			}
 			
-			var newNode:TextureAtlasDataNode = insert(bitmapData, textureID, nextNode.child[0]);
+			var newNode:TextureAtlasDataNode = insert(bitmapData, textureID, textureGap, nextNode.child[0]);
 			if (newNode == null)
 			{
-				newNode = insert(bitmapData, textureID, nextNode.child[1]);
+				newNode = insert(bitmapData, textureID, textureGap, nextNode.child[1]);
 			}
 			
 			return newNode;

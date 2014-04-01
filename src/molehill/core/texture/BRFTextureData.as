@@ -60,7 +60,7 @@ package molehill.core.texture
 			loader.loadBytes(_rawPNGData);
 		}
 		
-		override public function insert(bitmapData:BitmapData, textureID:String, nextNode:TextureAtlasDataNode=null):TextureAtlasDataNode
+		override public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
 		{
 			return null;
 		}
