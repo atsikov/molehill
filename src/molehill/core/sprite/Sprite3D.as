@@ -12,6 +12,7 @@ package molehill.core.sprite
 	import molehill.core.molehill_internal;
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.mask.CutoutObjectShader;
@@ -346,6 +347,11 @@ package molehill.core.sprite
 			}
 			
 			var textureData:TextureData = TEXTURE_MANAGER.getTextureDataByID(textureId);
+			if (textureData == null)
+			{
+				return;
+			}
+			
 			var textureRegion:Rectangle = TEXTURE_MANAGER.getTextureRegion(textureId);
 			this.textureRegion = textureRegion;
 			
@@ -1140,6 +1146,27 @@ package molehill.core.sprite
 				}
 				parent = parent.parent;
 			}
+		}
+		
+		molehill_internal function get isOnScreen():Boolean
+		{
+			var renderEngine:RenderEngine = SCENE_MANAGER.renderEngine;
+			
+			var tl:Point = new Point();
+			globalToLocal(tl);
+			if (x + width < tl.x || y + height < tl.y)
+			{
+				return false;
+			}
+			
+			var br:Point = new Point(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
+			globalToLocal(br);
+			if (x > br.x || y > br.y)
+			{
+				return false;
+			}
+			
+			return true;
 		}
 	}
 }

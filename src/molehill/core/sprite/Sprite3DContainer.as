@@ -204,7 +204,9 @@ package molehill.core.sprite
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
 			updateContainerSize();
+			
 			updateChildParentValues(child);
+			child.updateValues();
 			
 			if (_parent != null)
 			{
@@ -555,6 +557,10 @@ package molehill.core.sprite
 		
 		override molehill_internal function updateValues():void
 		{
+			for each (var child:Sprite3D in _listChildren)
+			{
+				child.updateValues();
+			}
 		}
 		
 		molehill_internal var textureAtlasChanged:Boolean = false;
@@ -623,18 +629,34 @@ package molehill.core.sprite
 			for (var i:int = 0; i < _listChildren.length; i++)
 			{
 				var child:Sprite3D = _listChildren[i];
-				if (!child.visible)
-				{
-					continue;
-				}
-				
 				if (child is Sprite3DContainer)
 				{
 					var container:Sprite3DContainer = child as Sprite3DContainer;
+					
 					if (container.scrollRect != null)
 					{
 						point.x += container.scrollRect.x;
 						point.y += container.scrollRect.y;
+					}
+					
+					if (point.x < container._containerX ||
+						point.y < container._containerY ||
+						point.x > container._containerRight ||
+						point.y > container._containerBottom
+					)
+					{
+						if (container.scrollRect != null)
+						{
+							point.x -= container.scrollRect.x;
+							point.y -= container.scrollRect.y;
+						}
+						
+						continue;
+					}
+					
+					if (!container.visible)
+					{
+						continue;
 					}
 					
 					container.getObjectsUnderPoint(point, childrenUnderPoint);
@@ -647,6 +669,11 @@ package molehill.core.sprite
 				}
 				else if (child.hitTestPoint(point))
 				{
+					if (!child.visible)
+					{
+						continue;
+					}
+					
 					childrenUnderPoint.push(child);
 				}
 			}

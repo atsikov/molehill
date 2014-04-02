@@ -4,6 +4,10 @@ package molehill.core.sprite
 	import flash.events.Event;
 	import flash.utils.Timer;
 	import flash.utils.getTimer;
+	
+	import molehill.core.molehill_internal;
+	
+	use namespace molehill_internal;
 
 	public class SpriteAnimationUpdater
 	{
@@ -160,6 +164,11 @@ package molehill.core.sprite
 				{
 					for each (var animation:AnimatedSprite3D in _listAnimations)
 					{
+						if (!animation.isOnScreen)
+						{
+							continue;
+						}
+						
 						animation.nextFrame();
 						frameSwitched = true;
 					}
@@ -170,6 +179,11 @@ package molehill.core.sprite
 			
 			for each (animation in _listCustomAnimations)
 			{
+				if (!animation.isOnScreen)
+				{
+					continue;
+				}
+				
 				animation.nextFrame();
 			}
 			
