@@ -1,4 +1,4 @@
-package molehill.core.sprite
+package molehill.core.animation
 {
 	public class AnimationPlayMode
 	{

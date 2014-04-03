@@ -1,4 +1,4 @@
-package molehill.core.sprite
+package molehill.core.animation
 {
 	public class CustomAnimationData
 	{
@@ -11,7 +11,9 @@ package molehill.core.sprite
 			for (var i:int = 0; i < rawData['listFrames'].length; i++)
 			{
 				var rawFrameData:Object = rawData['listFrames'][i];
-				animationData.listFrames.push(rawFrameData['textureName'], rawFrameData['repeatCount']);
+				animationData.listFrames.push(
+					new CustomAnimationFrameData(rawFrameData['textureName'], rawFrameData['repeatCount'])
+				);
 			}
 			
 			return animationData;

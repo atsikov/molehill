@@ -1,8 +1,9 @@
-package molehill.core.sprite
+package molehill.core.animation
 {
 	import flash.display.DisplayObject;
 	import flash.display.MovieClip;
 	import flash.display.Shape;
+	import molehill.core.sprite.SpriteData;
 
 	public class SpriteAnimationData
 	{

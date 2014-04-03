@@ -7,6 +7,8 @@ package molehill.core.sprite
 	import molehill.core.texture.SpriteSheetData;
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
+	import molehill.core.animation.SpriteAnimationData;
+	import molehill.core.animation.SpriteAnimationUpdater;
 	
 	use namespace molehill_internal;
 
@@ -18,7 +20,13 @@ package molehill.core.sprite
 			sprite.setTexture(textureID);
 			
 			var spriteSheetData:SpriteSheetData = TextureManager.getInstance().getSpriteSheetData(textureID);
-			sprite.setSize(spriteSheetData.frameWidth, spriteSheetData.frameHeight);
+			
+			// overriding default setSize
+			sprite._width = spriteSheetData.frameWidth;
+			sprite._croppedWidth = spriteSheetData.frameWidth;
+			sprite._height = spriteSheetData.frameHeight;
+			sprite._croppedHeight = spriteSheetData.frameHeight;
+			
 			sprite.totalFrames = spriteSheetData.totalFrames;
 			sprite.regionsInRow = spriteSheetData.framesPerRow;
 			
@@ -102,7 +110,7 @@ package molehill.core.sprite
 			updateFrame();
 		}
 		
-		internal function nextFrame():void
+		molehill_internal function nextFrame():void
 		{
 			updateFrame();
 			

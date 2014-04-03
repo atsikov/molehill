@@ -1,6 +1,10 @@
 package molehill.core.sprite
 {
 	import flash.utils.getTimer;
+	
+	import molehill.core.animation.AnimationPlayMode;
+	import molehill.core.animation.CustomAnimationData;
+	import molehill.core.animation.CustomAnimationFrameData;
 
 	public class CustomAnimatedSprite3D extends AnimatedSprite3D
 	{
@@ -9,13 +13,22 @@ package molehill.core.sprite
 			super();
 		}
 		
+		private var _isPlaying:Boolean = false;
 		override public function play(frame:int=-1):void
 		{
 			_currentFrameIndex = 0;
 			_currentFrameRepeated = 0;
 			_isReversed = false;
 			
+			_isPlaying = true;
+			
 			super.play(frame);
+		}
+		
+		override public function stop(frame:int = -1):void
+		{
+			_isPlaying = false;
+			super.stop(frame);
 		}
 		
 		private var _customAnimationData:CustomAnimationData;
@@ -37,7 +50,10 @@ package molehill.core.sprite
 		{
 			if (_customAnimationData == null)
 			{
-				stop();
+				if (_isPlaying)
+				{
+					stop();
+				}
 				return;
 			}
 			
@@ -127,7 +143,7 @@ package molehill.core.sprite
 		
 		private function updateSprite():void
 		{
-			
+			setTexture(_activeFrame.textureName);
 		}
 	}
 }

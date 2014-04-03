@@ -1,4 +1,4 @@
-package molehill.core.sprite
+package molehill.core.animation
 {
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -6,6 +6,8 @@ package molehill.core.sprite
 	import flash.utils.getTimer;
 	
 	import molehill.core.molehill_internal;
+	import molehill.core.sprite.AnimatedSprite3D;
+	import molehill.core.sprite.CustomAnimatedSprite3D;
 	
 	use namespace molehill_internal;
 
@@ -70,7 +72,7 @@ package molehill.core.sprite
 		
 		private var _listAnimations:Vector.<AnimatedSprite3D> = new Vector.<AnimatedSprite3D>();
 		private var _listCustomAnimations:Vector.<CustomAnimatedSprite3D> = new Vector.<CustomAnimatedSprite3D>();
-		internal function addAnimation(value:AnimatedSprite3D):void
+		molehill_internal function addAnimation(value:AnimatedSprite3D):void
 		{
 			if (_listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value) != -1)
 			{
@@ -89,12 +91,12 @@ package molehill.core.sprite
 			startUpdates();
 		}
 		
-		internal function hasAnimation(value:AnimatedSprite3D):Boolean
+		molehill_internal function hasAnimation(value:AnimatedSprite3D):Boolean
 		{
 			return _listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value) != -1;
 		}
 		
-		internal function removeAnimation(value:AnimatedSprite3D):void
+		molehill_internal function removeAnimation(value:AnimatedSprite3D):void
 		{
 			if (_listAnimations.indexOf(value) == -1 || _listCustomAnimations.indexOf(value) == -1)
 			{

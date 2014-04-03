@@ -335,14 +335,13 @@ package molehill.core.sprite
 				var prevAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID);
 				_textureID = textureId;
 				
-				if (_scene != null)
-				{
-					_scene._needUpdateBatchers = true;
-				}
-				
 				if (_parent != null && prevAtlasData !== TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID))
 				{
 					_parent.textureAtlasChanged = true;
+					if (_scene != null)
+					{
+						_scene._needUpdateBatchers = true;
+					}
 				}
 			}
 			
@@ -1154,14 +1153,14 @@ package molehill.core.sprite
 			
 			var tl:Point = new Point();
 			globalToLocal(tl);
-			if (x + width < tl.x || y + height < tl.y)
+			if (tl.x > width || tl.y > width)
 			{
 				return false;
 			}
 			
 			var br:Point = new Point(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
 			globalToLocal(br);
-			if (x > br.x || y > br.y)
+			if (br.x < 0 || br.y < 0)
 			{
 				return false;
 			}
