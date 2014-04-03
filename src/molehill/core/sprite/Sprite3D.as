@@ -697,7 +697,7 @@ package molehill.core.sprite
 		public function set scaleX(value:Number):void
 		{
 			_scaleX = value;
-			_cachedWidth = _croppedWidth * _scaleX;
+			_cachedWidth = _width * _scaleX;
 			
 			_fromMatrix = false;
 			
@@ -713,7 +713,7 @@ package molehill.core.sprite
 		public function set scaleY(value:Number):void
 		{
 			_scaleY = value;
-			_cachedHeight = _croppedHeight * _scaleY;
+			_cachedHeight = _height * _scaleY;
 			
 			_fromMatrix = false;
 			
@@ -725,8 +725,8 @@ package molehill.core.sprite
 			_scaleX = scaleX;
 			_scaleY = scaleY;
 			
-			_cachedWidth = _croppedWidth * _scaleX;
-			_cachedHeight = _croppedHeight * _scaleY;
+			_cachedWidth = _width * _scaleX;
+			_cachedHeight = _height * _scaleY;
 			
 			_fromMatrix = false;
 			
