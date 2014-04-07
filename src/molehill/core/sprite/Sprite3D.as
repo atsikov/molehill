@@ -363,6 +363,9 @@ package molehill.core.sprite
 			_croppedWidth = textureData.croppedWidth;
 			_croppedHeight = textureData.croppedHeight;
 			
+			_cachedWidth = 0;
+			_cachedHeight = 0;
+			
 			setSize(textureData.width, textureData.height);
 		}
 		
@@ -570,6 +573,11 @@ package molehill.core.sprite
 		molehill_internal var _shiftZ:Number = 0;
 		public function moveTo(x:Number, y:Number, z:Number = 0):void
 		{
+			if (_shiftX == x && _shiftY == y && _shiftZ == z)
+			{
+				return;
+			}
+			
 			_shiftX = x;
 			_shiftY = y;
 			_shiftZ = z;
@@ -587,6 +595,11 @@ package molehill.core.sprite
 		
 		public function set rotation(value:Number):void
 		{
+			if (_rotation == value)
+			{
+				return;
+			}
+			
 			_fromMatrix = false;
 			
 			_rotation = value;
@@ -608,6 +621,11 @@ package molehill.core.sprite
 		
 		public function set width(value:Number):void
 		{
+			if (_cachedWidth == value)
+			{
+				return;
+			}
+			
 			_scaleX = value / _width; 
 			_cachedWidth = _width * _scaleX;
 			
@@ -630,6 +648,11 @@ package molehill.core.sprite
 		
 		public function set height(value:Number):void
 		{
+			if (_cachedHeight == value)
+			{
+				return;
+			}
+			
 			_scaleY = value / _height;
 			_cachedHeight = _height * _scaleY;
 			
@@ -669,6 +692,11 @@ package molehill.core.sprite
 		
 		public function setSize(w:Number, h:Number):void
 		{
+			if (_cachedWidth == w && _cachedHeight == h)
+			{
+				return;
+			}
+			
 			if (_width == 0 || _height == 0 || _textureID == null)
 			{
 				_width = w;
@@ -695,6 +723,11 @@ package molehill.core.sprite
 
 		public function set scaleX(value:Number):void
 		{
+			if (_scaleX == value)
+			{
+				return;
+			}
+			
 			_scaleX = value;
 			_cachedWidth = _width * _scaleX;
 			
@@ -711,6 +744,11 @@ package molehill.core.sprite
 
 		public function set scaleY(value:Number):void
 		{
+			if (_scaleY == value)
+			{
+				return;
+			}
+			
 			_scaleY = value;
 			_cachedHeight = _height * _scaleY;
 			
@@ -721,6 +759,11 @@ package molehill.core.sprite
 		
 		public function setScale(scaleX:Number, scaleY:Number):void
 		{
+			if (_scaleX == scaleX && _scaleY == scaleY)
+			{
+				return;
+			}
+			
 			_scaleX = scaleX;
 			_scaleY = scaleY;
 			
