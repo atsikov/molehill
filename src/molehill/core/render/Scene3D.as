@@ -23,7 +23,7 @@ package molehill.core.render
 
 	public class Scene3D extends Sprite3DContainer
 	{
-		public static const MAX_SPRITES_PER_BATCHER:uint = 256;
+		public static const MAX_SPRITES_PER_BATCHER:uint = 128;
 		
 		private var _textureManager:TextureManager;
 		public function Scene3D()

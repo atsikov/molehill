@@ -405,13 +405,14 @@ package molehill.core.render
 		}
 
 		private var _indexBufferData:ByteArray;
-		private var _lastPassedVertices:uint;
+		private var _lastPassedVertices:uint = 0;
 		public function getIndicesData(passedVertices:uint):ByteArray
 		{
+			/*
 			if (passedVertices != _lastPassedVertices)
 			{
 				_indexBufferData.position = 0;
-				var shift:int = passedVertices / 9 - _lastPassedVertices / 9;
+				var shift:int = 0; //passedVertices / 9 - _lastPassedVertices / 9;
 				for (var i:int = 0; i < _indexBufferData.length / 2; i++)
 				{
 					var index:int = _indexBufferData.readShort();
@@ -421,7 +422,7 @@ package molehill.core.render
 				
 				_lastPassedVertices = passedVertices;
 			}
-			
+			*/
 			return _indexBufferData;
 		}
 		
@@ -449,6 +450,8 @@ package molehill.core.render
 			return _right;
 		}
 		
+		private var _needUploadVertexData:Boolean = true;
+		private var _needUploadIndexData:Boolean = true;
 		private function updateBuffers():void
 		{
 			if (_numSprites == 0)
@@ -482,6 +485,9 @@ package molehill.core.render
 					return;
 				}
 			}
+			
+			_needUploadVertexData = true;
+			_needUploadIndexData = true;
 			
 			var currentNumVisibleSprites:int = _numVisibleSprites;
 			_numVisibleSprites = 0;
@@ -644,7 +650,7 @@ package molehill.core.render
 				i++;
 			}
 			
-			if (currentNumVisibleSprites != _numVisibleSprites)
+			if (currentNumVisibleSprites < _numVisibleSprites)
 			{
 				_indexBuffer = null;
 				_vertexBuffer = null;
@@ -680,9 +686,24 @@ package molehill.core.render
 		{
 			if (_vertexBuffer == null)
 			{
-				_vertexBuffer = context.createVertexBuffer(numTriangles * 2, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+				_vertexBuffer = context.createVertexBuffer(_numVisibleSprites * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
 			}
-			_vertexBuffer.uploadFromByteArray(_vertexBufferData, 0, 0, numTriangles * 2);
+			if (_needUploadVertexData)
+			{
+				/*
+				trace("Vertex Data");
+				for (var i:int = 0; i < _vertexBufferData.length; i+= 36)
+				{
+					_vertexBufferData.position = i;
+					trace("coords: " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() +
+						" | color: " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() +
+						" | texture: " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat()
+					);
+				}
+				*/
+				_vertexBuffer.uploadFromByteArray(_vertexBufferData, 0, 0, _numVisibleSprites * 4);
+				_needUploadVertexData = false;
+			}
 			
 			if (_listOrderedBuffers == null)
 			{
@@ -713,9 +734,27 @@ package molehill.core.render
 		{
 			if (_indexBuffer == null)
 			{
-				_indexBuffer = context.createIndexBuffer(numTriangles * 3);
+				_indexBuffer = context.createIndexBuffer(_numVisibleSprites * 6);
 			}
-			_indexBuffer.uploadFromByteArray(_indexBufferData, 0, 0, numTriangles * 3);
+			if (_needUploadIndexData)
+			{
+				/*
+				trace("Index Data");
+				for (var i:int = 0; i < _indexBufferData.length; i+= 12)
+				{
+					_indexBufferData.position = i;
+					trace(_indexBufferData.readUnsignedShort() + ", " +
+						_indexBufferData.readUnsignedShort() + ", " +
+						_indexBufferData.readUnsignedShort() + ", " +
+						_indexBufferData.readUnsignedShort() + ", " +
+						_indexBufferData.readUnsignedShort() + ", " +
+						_indexBufferData.readUnsignedShort()
+					);
+				}
+				*/
+				_indexBuffer.uploadFromByteArray(_indexBufferData, 0, 0, _numVisibleSprites * 6);
+				_needUploadIndexData = false;
+			}
 			
 			return _indexBuffer;
 		}

@@ -16,6 +16,7 @@ package molehill.core.render.engine
 	import molehill.core.molehill_internal;
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.IVertexBatcher;
+	import molehill.core.render.OrderedVertexBuffer;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.BaseShader;
@@ -388,16 +389,18 @@ package molehill.core.render.engine
 					}
 				}
 				
-				if (chunkData.additionalVertexBuffers != null)
+				var additionalVertexBuffers:Vector.<OrderedVertexBuffer> = chunkData.additionalVertexBuffers;
+				var numAdditionalBuffers:int = additionalVertexBuffers.length;
+				if (additionalVertexBuffers != null)
 				{
-					for (var i:int = 0; i < chunkData.additionalVertexBuffers.length; i++)
+					for (var i:int = 0; i < numAdditionalBuffers; i++)
 					{
 						//trace("setting additional vertex buffer " + StringUtils.getObjectAddress(chunkData.additionalVertexBuffers[i].buffer) + " at " + chunkData.additionalVertexBuffers[i].index);
 						_context3D.setVertexBufferAt(
-							chunkData.additionalVertexBuffers[i].index,
-							chunkData.additionalVertexBuffers[i].buffer,
-							chunkData.additionalVertexBuffers[i].bufferOffset,
-							chunkData.additionalVertexBuffers[i].bufferFormat
+							additionalVertexBuffers[i].index,
+							additionalVertexBuffers[i].buffer,
+							additionalVertexBuffers[i].bufferOffset,
+							additionalVertexBuffers[i].bufferFormat
 						);
 					}
 				}
@@ -448,9 +451,9 @@ package molehill.core.render.engine
 					}
 					
 					// in case additional buffers were placed in streams 0-2
-					_context3D.setVertexBufferAt(0, _vertexBuffer, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
-					_context3D.setVertexBufferAt(1, _vertexBuffer, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
-					_context3D.setVertexBufferAt(2, _vertexBuffer, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
+					//_context3D.setVertexBufferAt(0, _vertexBuffer, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
+					//_context3D.setVertexBufferAt(1, _vertexBuffer, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
+					//_context3D.setVertexBufferAt(2, _vertexBuffer, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
 				}
 				
 				chunkData.blendMode = null;
@@ -479,6 +482,10 @@ package molehill.core.render.engine
 			
 			_baIndexData.length = 0;
 			_baVertexData.length = 0;
+			
+			_context3D.setVertexBufferAt(0, null, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
+			_context3D.setVertexBufferAt(1, null, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
+			_context3D.setVertexBufferAt(2, null, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
 		}
 	}
 }
