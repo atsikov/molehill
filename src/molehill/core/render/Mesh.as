@@ -211,6 +211,7 @@ package molehill.core.render
 		private var _lastPassedVertices:uint = 0;
 		public function getIndicesData(passedVertices:uint):ByteArray
 		{
+			passedVertices = 0;
 			if (passedVertices != _lastPassedVertices)
 			{
 				_listIndices.position = 0;
