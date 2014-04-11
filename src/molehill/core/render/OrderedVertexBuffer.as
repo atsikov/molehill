@@ -26,6 +26,11 @@ package molehill.core.render
 			return _buffer;
 		}
 		
+		public function set buffer(value:VertexBuffer3D):void
+		{
+			_buffer = value;
+		}
+		
 		public function get bufferOffset():uint
 		{
 			return _bufferOffset;

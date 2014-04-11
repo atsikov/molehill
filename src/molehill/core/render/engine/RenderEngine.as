@@ -267,11 +267,11 @@ package molehill.core.render.engine
 				_lastChunkData = chunkData;
 			}
 			
-			_baVertexData.position = _baVertexData.length;
-			_baIndexData.position = _baIndexData.length;
+			//_baVertexData.position = _baVertexData.length;
+			//_baIndexData.position = _baIndexData.length;
 			
-			_baVertexData.writeBytes(vertexBufferData);
-			_baIndexData.writeBytes(indexBufferData);
+			//_baVertexData.writeBytes(vertexBufferData);
+			//_baIndexData.writeBytes(indexBufferData);
 			
 			var i:int;
 			_numVertexFloats += numNewVertices;
@@ -298,6 +298,7 @@ package molehill.core.render.engine
 		private var _indexBufferSize:int = 0;
 		private function flushBuffersData():void
 		{
+			/*
 			if (_baIndexData.length == 0)
 			{
 				return;
@@ -305,7 +306,7 @@ package molehill.core.render.engine
 			
 			_baVertexData.position = 0;
 			_baIndexData.position = 0;
-			
+			*/
 			if (_indexBuffer != null && _indexBufferSize < _numIndexShorts)
 			{
 				_indexBuffer.dispose();
@@ -313,8 +314,8 @@ package molehill.core.render.engine
 			}
 			if (_indexBuffer == null)
 			{
-				_indexBufferSize = _numIndexShorts;
-				_indexBuffer = _context3D.createIndexBuffer(_indexBufferSize);
+				//_indexBufferSize = _numIndexShorts;
+				//_indexBuffer = _context3D.createIndexBuffer(_indexBufferSize);
 				//trace('creating index buffer for ' + _indexBufferSize + ' indices');
 			}
 			
@@ -325,22 +326,22 @@ package molehill.core.render.engine
 			}
 			if (_vertexBuffer == null)
 			{
-				_vertexBufferSize = _numVertexFloats / _dataPerVertex;
-				_vertexBuffer = _context3D.createVertexBuffer(_vertexBufferSize, _dataPerVertex);
+				//_vertexBufferSize = _numVertexFloats / _dataPerVertex;
+				//_vertexBuffer = _context3D.createVertexBuffer(_vertexBufferSize, _dataPerVertex);
 				//trace('creating vertex buffer for ' + _vertexBufferSize + ' vertices');
 			}
 			
-			_vertexBuffer.uploadFromByteArray(_baVertexData, 0, 0, _numVertexFloats / _dataPerVertex);
+			//_vertexBuffer.uploadFromByteArray(_baVertexData, 0, 0, _numVertexFloats / _dataPerVertex);
 			//trace("uploading " + _numVertexFloats / _dataPerVertex + " vertices of " + _baVertexData.length / 36 + " in ByteArray");
 			
-			_indexBuffer.uploadFromByteArray(_baIndexData, 0, 0, _numIndexShorts);
+			//_indexBuffer.uploadFromByteArray(_baIndexData, 0, 0, _numIndexShorts);
 			//trace("uploading " + _numIndexShorts + " indices of " + _baIndexData.length / 2 + " in ByteArray");
 			
 			var shaderFactory:Shader3DFactory = Shader3DFactory.getInstance();
 			
-			_context3D.setVertexBufferAt(0, _vertexBuffer, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
-			_context3D.setVertexBufferAt(1, _vertexBuffer, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
-			_context3D.setVertexBufferAt(2, _vertexBuffer, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
+			//_context3D.setVertexBufferAt(0, _vertexBuffer, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
+			//_context3D.setVertexBufferAt(1, _vertexBuffer, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
+			//_context3D.setVertexBufferAt(2, _vertexBuffer, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
 			var tm:TextureManager = TextureManager.getInstance();
 			
 			var blendMode:String = "";

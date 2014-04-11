@@ -7,6 +7,7 @@ package molehill.core.render
 	import flash.display.Shader;
 	import flash.display.Sprite;
 	import flash.display3D.Context3D;
+	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
 	import flash.geom.Rectangle;
@@ -15,9 +16,9 @@ package molehill.core.render
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3D;
+	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
-	import molehill.core.sprite.AnimatedSprite3D;
 	
 	use namespace molehill_internal;
 	
@@ -482,6 +483,7 @@ package molehill.core.render
 				}
 			}
 			
+			var currentNumVisibleSprites:int = _numVisibleSprites;
 			_numVisibleSprites = 0;
 			
 			if (_vertexBufferData == null)
@@ -642,6 +644,12 @@ package molehill.core.render
 				i++;
 			}
 			
+			if (currentNumVisibleSprites != _numVisibleSprites)
+			{
+				_indexBuffer = null;
+				_vertexBuffer = null;
+			}
+			
 			_needUpdateBuffers = false;
 		}
 		
@@ -666,19 +674,55 @@ package molehill.core.render
 			_shader = value;
 		}
 		
+		private var _vertexBuffer:VertexBuffer3D;
+		private var _listOrderedBuffers:Vector.<OrderedVertexBuffer>;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
-			return null;
+			if (_vertexBuffer == null)
+			{
+				_vertexBuffer = context.createVertexBuffer(numTriangles * 2, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+			}
+			_vertexBuffer.uploadFromByteArray(_vertexBufferData, 0, 0, numTriangles * 2);
+			
+			if (_listOrderedBuffers == null)
+			{
+				_listOrderedBuffers = new Vector.<OrderedVertexBuffer>();
+			}
+			
+			if (_listOrderedBuffers.length == 0)
+			{
+				_listOrderedBuffers.push(
+					new OrderedVertexBuffer(0, _vertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_3),
+					new OrderedVertexBuffer(1, _vertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4),
+					new OrderedVertexBuffer(2, _vertexBuffer, Sprite3D.TEXTURE_OFFSET, Context3DVertexBufferFormat.FLOAT_2)
+				);
+				_listOrderedBuffers.fixed = true;
+			}
+			else
+			{
+				_listOrderedBuffers[0].buffer = _vertexBuffer;
+				_listOrderedBuffers[1].buffer = _vertexBuffer;
+				_listOrderedBuffers[2].buffer = _vertexBuffer;
+			}
+			
+			return _listOrderedBuffers;
 		}
 		
+		private var _indexBuffer:IndexBuffer3D;
 		public function getCustomIndexBuffer(context:Context3D):IndexBuffer3D
 		{
-			return null;
+			if (_indexBuffer == null)
+			{
+				_indexBuffer = context.createIndexBuffer(numTriangles * 3);
+			}
+			_indexBuffer.uploadFromByteArray(_indexBufferData, 0, 0, numTriangles * 3);
+			
+			return _indexBuffer;
 		}
 		
 		public function get indexBufferOffset():int
 		{
-			return -1;
+			return 0;
 		}
 	}
 }
