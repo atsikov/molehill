@@ -565,7 +565,6 @@ package molehill.core.sprite
 		
 		molehill_internal var textureAtlasChanged:Boolean = false;
 		molehill_internal var treeStructureChanged:Boolean = false;
-		molehill_internal var scrollRectAdded:Boolean = false;
 		
 		override public function hitTestPoint(point:Point):Boolean
 		{
@@ -633,10 +632,10 @@ package molehill.core.sprite
 				{
 					var container:Sprite3DContainer = child as Sprite3DContainer;
 					
-					if (container.scrollRect != null)
+					if (container.camera != null)
 					{
-						point.x += container.scrollRect.x;
-						point.y += container.scrollRect.y;
+						point.x += container.camera.scrollX;
+						point.y += container.camera.scrollY;
 					}
 					
 					if (point.x < container._containerX ||
@@ -645,10 +644,10 @@ package molehill.core.sprite
 						point.y > container._containerBottom
 					)
 					{
-						if (container.scrollRect != null)
+						if (container.camera != null)
 						{
-							point.x -= container.scrollRect.x;
-							point.y -= container.scrollRect.y;
+							point.x -= container.camera.scrollX;
+							point.y -= container.camera.scrollY;
 						}
 						
 						continue;
@@ -661,10 +660,10 @@ package molehill.core.sprite
 					
 					container.getObjectsUnderPoint(point, childrenUnderPoint);
 					
-					if (container.scrollRect != null)
+					if (container.camera != null)
 					{
-						point.x -= container.scrollRect.x;
-						point.y -= container.scrollRect.y;
+						point.x -= container.camera.scrollX;
+						point.y -= container.camera.scrollY;
 					}
 				}
 				else if (child.hitTestPoint(point))
@@ -710,29 +709,6 @@ package molehill.core.sprite
 		override public function get height():Number
 		{
 			return _containerBottom - _containerY;
-		}
-		
-		private var _scrollRect:Rectangle;
-		public function get scrollRect():Rectangle
-		{
-			return _scrollRect;
-		}
-		
-		public function set scrollRect(value:Rectangle):void
-		{
-			if (_scrollRect == null)
-			{
-				_scrollRect = value.clone();
-				_scene._needUpdateBatchers = true;
-				scrollRectAdded = true;
-			}
-			else
-			{
-				_scrollRect.x = value.x;
-				_scrollRect.y = value.y;
-				_scrollRect.width = value.width;
-				_scrollRect.height = value.height;
-			}
 		}
 		
 		// cached parent properties
@@ -964,9 +940,9 @@ package molehill.core.sprite
 		
 		override public function localToGlobal(point:Point):void
 		{
-			if (scrollRect != null)
+			if (camera != null)
 			{
-				point.offset(-scrollRect.x, -scrollRect.y);
+				point.offset(-camera.scrollX, -camera.scrollY);
 			}
 			
 			super.localToGlobal(point);
@@ -974,9 +950,9 @@ package molehill.core.sprite
 		
 		override public function globalToLocal(point:Point):void
 		{
-			if (scrollRect != null)
+			if (camera != null)
 			{
-				point.offset(scrollRect.x, scrollRect.y);
+				point.offset(camera.scrollX, camera.scrollY);
 			}
 			
 			super.globalToLocal(point);

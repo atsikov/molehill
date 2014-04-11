@@ -14,14 +14,15 @@ package molehill.core.render.particles
 	import flash.utils.getTimer;
 	
 	import molehill.core.molehill_internal;
-	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.ParticleEmitterShader;
-	import molehill.core.texture.TextureManager;
-	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.render.IVertexBatcher;
 	import molehill.core.render.OrderedVertexBuffer;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.camera.CustomCamera;
+	import molehill.core.render.shader.Shader3DFactory;
+	import molehill.core.render.shader.species.ParticleEmitterShader;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureManager;
 	
 	use namespace molehill_internal;
 
@@ -371,64 +372,61 @@ package molehill.core.render.particles
 			_textureAtlasID = value;
 		}
 		
-		private var _scrollRect:Rectangle;
-		public function get scrollRect():Rectangle
+		private var _batcherCamera:CustomCamera;
+		public function get batcherCamera():CustomCamera
 		{
-			if (_scrollRect == null)
-			{
-				_scrollRect = new Rectangle();
-			}
-			
-			return _scrollRect;
+			return _batcherCamera;
 		}
 		
-		private var _scrollRectOwner:Sprite3DContainer;
-		public function get scrollRectOwner():Sprite3DContainer
+		private var _cameraOwner:Sprite3D;
+		public function get cameraOwner():Sprite3D
 		{
-			return _scrollRectOwner;
+			return _cameraOwner;
 		}
 		
-		public function set scrollRectOwner(value:Sprite3DContainer):void
+		public function set cameraOwner(value:Sprite3D):void
 		{
-			if (_scrollRectOwner === value)
+			if (_cameraOwner === value)
 			{
 				return;
 			}
 			
-			_scrollRectOwner = value;
-			
-			if (_scrollRectOwner == null)
-			{
-				_scrollRect = null;
-				return;
-			}
-			
+			_cameraOwner = value;
 			updateScrollableContainerValues();
 		}
 		
 		private function updateScrollableContainerValues():void
 		{
-			if (_scrollRectOwner == null || _scrollRectOwner != null && _scrollRectOwner.scrollRect == null)
+			if (_cameraOwner == null || _cameraOwner.camera == null)
 			{
+				if (_batcherCamera != null)
+				{
+					_batcherCamera.reset();
+				}
+				
 				return;
 			}
 			
-			if (_scrollRect == null)
+			if (_batcherCamera == null)
 			{
-				_scrollRect = new Rectangle();
+				_batcherCamera = new CustomCamera();
 			}
 			
-			_scrollRect.x = _scrollRectOwner.scrollRect.x;
-			_scrollRect.y = _scrollRectOwner.scrollRect.y;
-			_scrollRect.width = _scrollRectOwner.width;
-			_scrollRect.height = _scrollRectOwner.height;
-			var parent:Sprite3DContainer = _scrollRectOwner.parent;
+			var referenceCamera:CustomCamera = _cameraOwner.camera;
+			
+			_batcherCamera.scrollX = referenceCamera.scrollX;
+			_batcherCamera.scrollY = referenceCamera.scrollY;
+			_batcherCamera.scale = referenceCamera.scale;
+			
+			var parent:Sprite3DContainer = _cameraOwner.parent;
 			while (parent != null)
 			{
-				if (parent.scrollRect != null)
+				referenceCamera = parent.camera;
+				if (referenceCamera != null)
 				{
-					_scrollRect.x += parent.scrollRect.x;
-					_scrollRect.y += parent.scrollRect.y;
+					_batcherCamera.scrollX += referenceCamera.scrollX;
+					_batcherCamera.scrollY += referenceCamera.scrollY;
+					_batcherCamera.scale *= referenceCamera.scale;
 				}
 				
 				parent = parent.parent;

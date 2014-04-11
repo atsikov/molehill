@@ -16,6 +16,7 @@ package molehill.core.render.engine
 		public var blendMode:String;
 		public var scrollX:Number;
 		public var scrollY:Number;
+		public var scale:Number;
 		public var additionalVertexBuffers:Vector.<OrderedVertexBuffer>;
 		public var customIndexBuffer:IndexBuffer3D;
 	}

@@ -239,12 +239,25 @@ package molehill.core.render.engine
 			
 			// setting negative scroll values to act as flash DisplayObject.scrollRect
 			_currentTexture = batcher.textureAtlasID == null ? null : _textureManager.getTextureByAtlasID(batcher.textureAtlasID);
+			
+			var batcherScrollX:Number = 0;
+			var batcherScrollY:Number = 0;
+			var batcherScale:Number = 1;
+			
+			if (batcher.batcherCamera != null)
+			{
+				batcherScrollX = batcher.batcherCamera.scrollX;
+				batcherScrollY = batcher.batcherCamera.scrollY;
+				batcherScale = batcher.batcherCamera.scale;
+			}
+			
 			if (_lastChunkData != null &&
 				_lastChunkData.texture == _currentTexture &&
 				_lastChunkData.shader == batcher.shader &&
 				_lastChunkData.blendMode == batcher.blendMode &&
-				_lastChunkData.scrollX == -batcher.scrollRect.x &&
-				_lastChunkData.scrollY == -batcher.scrollRect.y &&
+				_lastChunkData.scrollX == -batcherScrollX &&
+				_lastChunkData.scrollY == -batcherScrollY &&
+				_lastChunkData.scale == -batcherScale &&
 				_lastChunkData.additionalVertexBuffers === batcher.getAdditionalVertexBuffers(_context3D) &&
 				_lastChunkData.customIndexBuffer === batcher.getCustomIndexBuffer(_context3D))
 			{
@@ -258,8 +271,9 @@ package molehill.core.render.engine
 				chunkData.numTriangles = batcher.numTriangles;
 				chunkData.shader = batcher.shader;
 				chunkData.blendMode = batcher.blendMode;
-				chunkData.scrollX = -batcher.scrollRect.x;
-				chunkData.scrollY = -batcher.scrollRect.y;
+				chunkData.scrollX = -batcherScrollX;
+				chunkData.scrollY = -batcherScrollY;
+				chunkData.scale = -batcherScale;
 				chunkData.additionalVertexBuffers = batcher.getAdditionalVertexBuffers(_context3D);
 				chunkData.customIndexBuffer = batcher.getCustomIndexBuffer(_context3D);
 				

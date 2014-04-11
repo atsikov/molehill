@@ -2,11 +2,11 @@ package molehill.core.render
 {
 	import flash.display3D.Context3D;
 	import flash.display3D.IndexBuffer3D;
-	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	
+	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3D;
-	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.sprite.Sprite3D;
 
 	public interface IVertexBatcher
 	{
@@ -23,9 +23,9 @@ package molehill.core.render
 		function get blendMode():String;
 		function set blendMode(value:String):void;
 		
-		function get scrollRect():Rectangle;
-		function get scrollRectOwner():Sprite3DContainer;
-		function set scrollRectOwner(value:Sprite3DContainer):void;
+		function get batcherCamera():CustomCamera;
+		function get cameraOwner():Sprite3D;
+		function set cameraOwner(value:Sprite3D):void;
 		
 		function get left():Number;
 		function get right():Number;

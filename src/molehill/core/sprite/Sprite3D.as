@@ -12,6 +12,7 @@ package molehill.core.sprite
 	import molehill.core.molehill_internal;
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
@@ -1118,15 +1119,42 @@ package molehill.core.sprite
 		molehill_internal var parentX3Node:BinarySearchTreeNode;
 		molehill_internal var parentY3Node:BinarySearchTreeNode;
 		
-		protected var _boundRect:Rectangle;
-		public function get boundRect():Rectangle
+		private var _camera:CustomCamera = null;
+		/**
+		 * Scale factor applyed while rendering sprite
+		 **/
+		public function get camera():CustomCamera
 		{
-			if (_boundRect == null)
+			return _camera;
+		}
+		
+		molehill_internal var cameraChanged:Boolean = false;
+		public function set camera(value:CustomCamera):void
+		{
+			if (_camera == null)
 			{
-				_boundRect = new Rectangle();
+				_camera = value;
+				if (_scene != null)
+				{
+					cameraChanged = true;
+					_scene._needUpdateBatchers = true;
+				}
 			}
-			
-			return _boundRect;
+			else if (value == null)
+			{
+				_camera = null;
+				if (_scene != null)
+				{
+					cameraChanged = true;
+					_scene._needUpdateBatchers = true;
+				}
+			}
+			else
+			{
+				_camera.scale = value.scale;
+				_camera.scrollX = value.scrollX;
+				_camera.scrollY = value.scrollY;
+			}
 		}
 		
 		/**
@@ -1163,9 +1191,9 @@ package molehill.core.sprite
 			var parent:Sprite3DContainer = _parent;
 			while (parent != null)
 			{
-				if (parent.scrollRect != null)
+				if (parent.camera != null)
 				{
-					point.offset(-parent.scrollRect.x, -parent.scrollRect.y);
+					point.offset(-parent.camera.scrollX, -parent.camera.scrollY);
 				}
 				parent = parent.parent;
 			}
@@ -1182,9 +1210,9 @@ package molehill.core.sprite
 			var parent:Sprite3DContainer = _parent;
 			while (parent != null)
 			{
-				if (parent.scrollRect != null)
+				if (parent.camera != null)
 				{
-					point.offset(parent.scrollRect.x, parent.scrollRect.y);
+					point.offset(parent.camera.scrollX, parent.camera.scrollY);
 				}
 				parent = parent.parent;
 			}

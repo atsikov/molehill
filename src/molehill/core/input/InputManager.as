@@ -216,10 +216,10 @@ package molehill.core.input
 					parent = listener.parent;
 					while (parent != null)
 					{
-						if (parent.scrollRect != null)
+						if (parent.camera != null)
 						{
-							localShiftX += parent.scrollRect.x;
-							localShiftY += parent.scrollRect.y;
+							localShiftX += parent.camera.scrollX;
+							localShiftY += parent.camera.scrollY;
 						}
 						
 						parent = parent.parent;
@@ -412,10 +412,10 @@ package molehill.core.input
 				parent = listener.parent;
 				while (parent != null)
 				{
-					if (parent.scrollRect != null)
+					if (parent.camera != null)
 					{
-						localShiftX += parent.scrollRect.x;
-						localShiftY += parent.scrollRect.y;
+						localShiftX += parent.camera.scrollX;
+						localShiftY += parent.camera.scrollY;
 					}
 					
 					parent = parent.parent;
