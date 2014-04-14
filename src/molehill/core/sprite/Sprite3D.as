@@ -114,7 +114,7 @@ package molehill.core.sprite
 		molehill_internal var _height:Number = 0;
 		
 		molehill_internal var _scene:Scene3D;
-		public function getScene():Scene3D
+		public function get scene():Scene3D
 		{
 			return _scene;
 		}
@@ -1183,20 +1183,25 @@ package molehill.core.sprite
 		/**
 		 * Translates coordinates from local to global coordinate system.
 		 * <b>Modifies passed parameter!</b>
+		 * 
+		 * @param point Point from local coordinate space to be transfered into global space
 		 **/
 		public function localToGlobal(point:Point):void
 		{
-			point.offset(_parentShiftX + _shiftX * _parentScaleX * _scaleX, _parentShiftY + _shiftY * _parentScaleY * _scaleY);
+			point.offset(
+				_parentShiftX + _shiftX * _parentScaleX * _scaleX,
+				_parentShiftY + _shiftY * _parentScaleY * _scaleY
+			);
 			
 			var cameraOwner:Sprite3D = this;
 			while (cameraOwner != null)
 			{
 				if (cameraOwner.camera != null)
 				{
-					point.offset(-cameraOwner.camera.scrollX, -cameraOwner.camera.scrollY);
-					
 					point.x *= cameraOwner.camera.scale;
 					point.y *= cameraOwner.camera.scale;
+					
+					point.offset(-cameraOwner.camera.scrollX, -cameraOwner.camera.scrollY);
 				}
 				cameraOwner = cameraOwner.parent;
 			}
@@ -1205,23 +1210,45 @@ package molehill.core.sprite
 		/**
 		 * Translates coordinates from global to local coordinate system.
 		 * <b>Modifies passed parameter!</b>
+		 * 
+		 * @param point Point from global coordinate space to be transfered into local space
 		 **/
 		public function globalToLocal(point:Point):void
 		{
-			point.offset(-_parentShiftX - _shiftX * _parentScaleX * _scaleX, -_parentShiftY - _shiftY * _parentScaleY * _scaleY);
+			var cameraOwners:Array;
 			
 			var cameraOwner:Sprite3D = this;
 			while (cameraOwner != null)
 			{
 				if (cameraOwner.camera != null)
 				{
-					point.x /= cameraOwner.camera.scale;
-					point.y /= cameraOwner.camera.scale;
-					
-					point.offset(cameraOwner.camera.scrollX, cameraOwner.camera.scrollY);
+					if (cameraOwners == null)
+					{
+						cameraOwners = new Array();
+						
+						cameraOwners.push(cameraOwner.camera);
+					}
 				}
 				cameraOwner = cameraOwner.parent;
 			}
+			
+			if (cameraOwners != null)
+			{
+				var numCameraOwners:int = cameraOwners.length;
+				for (var i:int = 0; i < numCameraOwners; i++)
+				{
+					var currentCamera:CustomCamera = cameraOwners.pop();
+					point.offset(currentCamera.scrollX, currentCamera.scrollY);
+					
+					point.x /= currentCamera.scale;
+					point.y /= currentCamera.scale;
+				}
+			}
+			
+			point.offset(
+				-_parentShiftX - _shiftX * _parentScaleX * _scaleX,
+				-_parentShiftY - _shiftY * _parentScaleY * _scaleY
+			);
 		}
 		
 		molehill_internal function get isOnScreen():Boolean

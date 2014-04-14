@@ -198,7 +198,7 @@ package molehill.core.input
 			var nativeObjects:Array = _mouseListener.stage.getObjectsUnderPoint(mousePoint);
 			updateNativeObjectsUnderCursor(nativeObjects);
 			
-			var parent:Sprite3DContainer;
+			var parent:Sprite3D;
 			var localShiftX:Number = 0;
 			var localShiftY:Number = 0;
 			// Display List objects overlap our 3d scene
@@ -213,13 +213,16 @@ package molehill.core.input
 					localShiftX = 0;
 					localShiftY = 0;
 					
-					parent = listener.parent;
+					parent = listener;
 					while (parent != null)
 					{
 						if (parent.camera != null)
 						{
-							localShiftX += parent.camera.scrollX / parent.camera.scale;
-							localShiftY += parent.camera.scrollY / parent.camera.scale;
+							localShiftY /= parent.camera.scale;
+							localShiftY /= parent.camera.scale;
+							
+							localShiftX += parent.camera.scrollX;
+							localShiftY += parent.camera.scrollY;
 						}
 						
 						parent = parent.parent;
@@ -414,8 +417,11 @@ package molehill.core.input
 				{
 					if (parent.camera != null)
 					{
-						localShiftX += parent.camera.scrollX / parent.camera.scale;
-						localShiftY += parent.camera.scrollY / parent.camera.scale;
+						localShiftY /= parent.camera.scale;
+						localShiftY /= parent.camera.scale;
+						
+						localShiftX += parent.camera.scrollX;
+						localShiftY += parent.camera.scrollY;
 					}
 					
 					parent = parent.parent;

@@ -181,6 +181,11 @@ package molehill.core.animation
 			
 			for each (animation in _listCustomAnimations)
 			{
+				if (animation.scene == null)
+				{
+					continue;
+				}
+				
 				if (!animation.isOnScreen)
 				{
 					continue;

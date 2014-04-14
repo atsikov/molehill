@@ -118,7 +118,7 @@ package molehill.core.render.engine
 			
 			_toBitmapData = true;
 			
-			flushBuffersData();
+			doRender();
 			
 			var bd:BitmapData = new BitmapData(_viewportWidth, _viewportHeight);
 			_context3D.drawToBitmapData(bd);
@@ -203,7 +203,7 @@ package molehill.core.render.engine
 		
 		public function present():void
 		{
-			flushBuffersData();
+			doRender();
 			_context3D.present();
 		}
 		
@@ -312,7 +312,7 @@ package molehill.core.render.engine
 		
 		private var _vertexBufferSize:int = 0;
 		private var _indexBufferSize:int = 0;
-		private function flushBuffersData():void
+		private function doRender():void
 		{
 			/*
 			if (_baIndexData.length == 0)
@@ -387,8 +387,8 @@ package molehill.core.render.engine
 					//trace(_currentScrollX, _currentScrollY);
 					
 					m.identity();
-					m.appendTranslation(_currentScrollX, _currentScrollY, 0);
 					m.appendScale(_currentScale, _currentScale, 1);
+					m.appendTranslation(_currentScrollX, _currentScrollY, 0);
 					m.append(_orthoMatrix);
 					
 					_context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, m, true);

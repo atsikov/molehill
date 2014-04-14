@@ -650,8 +650,8 @@ package molehill.core.render
 				
 				if (batcher.batcherCamera != null)
 				{
-					left = batcher.batcherCamera.scrollX;
-					right = batcher.batcherCamera.scrollY;
+					left = batcher.batcherCamera.scrollX / batcher.batcherCamera.scale;
+					top = batcher.batcherCamera.scrollY / batcher.batcherCamera.scale;
 				}
 				
 				var right:int;

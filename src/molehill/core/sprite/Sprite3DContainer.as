@@ -631,11 +631,11 @@ package molehill.core.sprite
 				
 				if (child.camera != null)
 				{
-					point.x /= child.camera.scale;
-					point.y /= child.camera.scale;
-					
 					point.x += child.camera.scrollX;
 					point.y += child.camera.scrollY;
+					
+					point.x /= child.camera.scale;
+					point.y /= child.camera.scale;
 				}
 				
 				if (child is Sprite3DContainer)
@@ -650,11 +650,11 @@ package molehill.core.sprite
 					{
 						if (child.camera != null)
 						{
-							point.x -= child.camera.scrollX;
-							point.y -= child.camera.scrollY;
-							
 							point.x *= child.camera.scale;
 							point.y *= child.camera.scale;
+							
+							point.x -= child.camera.scrollX;
+							point.y -= child.camera.scrollY;
 						}
 						
 						continue;
@@ -664,11 +664,11 @@ package molehill.core.sprite
 					{
 						if (child.camera != null)
 						{
-							point.x -= child.camera.scrollX;
-							point.y -= child.camera.scrollY;
-							
 							point.x *= child.camera.scale;
 							point.y *= child.camera.scale;
+							
+							point.x -= child.camera.scrollX;
+							point.y -= child.camera.scrollY;
 						}
 						
 						continue;
@@ -682,11 +682,11 @@ package molehill.core.sprite
 					{
 						if (child.camera != null)
 						{
-							point.x -= child.camera.scrollX;
-							point.y -= child.camera.scrollY;
-							
 							point.x *= child.camera.scale;
 							point.y *= child.camera.scale;
+							
+							point.x -= child.camera.scrollX;
+							point.y -= child.camera.scrollY;
 						}
 						
 						continue;
@@ -697,11 +697,11 @@ package molehill.core.sprite
 				
 				if (child.camera != null)
 				{
-					point.x -= child.camera.scrollX;
-					point.y -= child.camera.scrollY;
-					
 					point.x *= child.camera.scale;
 					point.y *= child.camera.scale;
+					
+					point.x -= child.camera.scrollX;
+					point.y -= child.camera.scrollY;
 				}
 			}
 			
@@ -964,26 +964,6 @@ package molehill.core.sprite
 			}
 			
 			super.rotation = value;
-		}
-		
-		override public function localToGlobal(point:Point):void
-		{
-			if (camera != null)
-			{
-				point.offset(-camera.scrollX, -camera.scrollY);
-			}
-			
-			super.localToGlobal(point);
-		}
-		
-		override public function globalToLocal(point:Point):void
-		{
-			if (camera != null)
-			{
-				point.offset(camera.scrollX, camera.scrollY);
-			}
-			
-			super.globalToLocal(point);
 		}
 	}
 }

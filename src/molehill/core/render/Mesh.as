@@ -187,6 +187,8 @@ package molehill.core.render
 				return _vertexData;
 			}
 			
+			_needUploadVertexData = true;
+			
 			_vertexData = new ByteArray();
 			_vertexData.endian = Endian.LITTLE_ENDIAN;
 			
@@ -215,6 +217,8 @@ package molehill.core.render
 			passedVertices = 0;
 			if (passedVertices != _lastPassedVertices)
 			{
+				_needUploadIndexData = true;
+				
 				_listIndices.position = 0;
 				var shift:int = passedVertices / 9 - _lastPassedVertices / 9;
 				for (var i:int = 0; i < _listIndices.length / 2; i++)
@@ -336,6 +340,9 @@ package molehill.core.render
 			return _bottom;
 		}
 		
+		private var _needUploadVertexData:Boolean = true;
+		private var _needUploadIndexData:Boolean = true;
+		
 		private var _vertexBuffer:VertexBuffer3D;
 		private var _listOrderedBuffers:Vector.<OrderedVertexBuffer>;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
@@ -344,7 +351,11 @@ package molehill.core.render
 			{
 				_vertexBuffer = context.createVertexBuffer(numTriangles * 2, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
 			}
-			_vertexBuffer.uploadFromByteArray(_vertexData, 0, 0, numTriangles * 2);
+			if (_needUploadVertexData)
+			{
+				_vertexBuffer.uploadFromByteArray(_vertexData, 0, 0, numTriangles * 2);
+				_needUploadVertexData = false;
+			}
 			
 			if (_listOrderedBuffers == null)
 			{
@@ -377,7 +388,11 @@ package molehill.core.render
 			{
 				_indexBuffer = context.createIndexBuffer(numTriangles * 3);
 			}
-			_indexBuffer.uploadFromByteArray(_listIndices, 0, 0, numTriangles * 3);
+			if (_needUploadIndexData)
+			{
+				_indexBuffer.uploadFromByteArray(_listIndices, 0, 0, numTriangles * 3);
+				_needUploadIndexData = false;
+			}
 			
 			return _indexBuffer;
 		}
