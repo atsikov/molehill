@@ -218,8 +218,8 @@ package molehill.core.input
 					{
 						if (parent.camera != null)
 						{
-							localShiftX += parent.camera.scrollX;
-							localShiftY += parent.camera.scrollY;
+							localShiftX += parent.camera.scrollX / parent.camera.scale;
+							localShiftY += parent.camera.scrollY / parent.camera.scale;
 						}
 						
 						parent = parent.parent;
@@ -414,8 +414,8 @@ package molehill.core.input
 				{
 					if (parent.camera != null)
 					{
-						localShiftX += parent.camera.scrollX;
-						localShiftY += parent.camera.scrollY;
+						localShiftX += parent.camera.scrollX / parent.camera.scale;
+						localShiftY += parent.camera.scrollY / parent.camera.scale;
 					}
 					
 					parent = parent.parent;

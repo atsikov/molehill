@@ -628,15 +628,19 @@ package molehill.core.sprite
 			for (var i:int = 0; i < _listChildren.length; i++)
 			{
 				var child:Sprite3D = _listChildren[i];
+				
+				if (child.camera != null)
+				{
+					point.x /= child.camera.scale;
+					point.y /= child.camera.scale;
+					
+					point.x += child.camera.scrollX;
+					point.y += child.camera.scrollY;
+				}
+				
 				if (child is Sprite3DContainer)
 				{
 					var container:Sprite3DContainer = child as Sprite3DContainer;
-					
-					if (container.camera != null)
-					{
-						point.x += container.camera.scrollX;
-						point.y += container.camera.scrollY;
-					}
 					
 					if (point.x < container._containerX ||
 						point.y < container._containerY ||
@@ -644,10 +648,13 @@ package molehill.core.sprite
 						point.y > container._containerBottom
 					)
 					{
-						if (container.camera != null)
+						if (child.camera != null)
 						{
-							point.x -= container.camera.scrollX;
-							point.y -= container.camera.scrollY;
+							point.x -= child.camera.scrollX;
+							point.y -= child.camera.scrollY;
+							
+							point.x *= child.camera.scale;
+							point.y *= child.camera.scale;
 						}
 						
 						continue;
@@ -655,25 +662,46 @@ package molehill.core.sprite
 					
 					if (!container.visible)
 					{
+						if (child.camera != null)
+						{
+							point.x -= child.camera.scrollX;
+							point.y -= child.camera.scrollY;
+							
+							point.x *= child.camera.scale;
+							point.y *= child.camera.scale;
+						}
+						
 						continue;
 					}
 					
 					container.getObjectsUnderPoint(point, childrenUnderPoint);
-					
-					if (container.camera != null)
-					{
-						point.x -= container.camera.scrollX;
-						point.y -= container.camera.scrollY;
-					}
 				}
 				else if (child.hitTestPoint(point))
 				{
 					if (!child.visible)
 					{
+						if (child.camera != null)
+						{
+							point.x -= child.camera.scrollX;
+							point.y -= child.camera.scrollY;
+							
+							point.x *= child.camera.scale;
+							point.y *= child.camera.scale;
+						}
+						
 						continue;
 					}
 					
 					childrenUnderPoint.push(child);
+				}
+				
+				if (child.camera != null)
+				{
+					point.x -= child.camera.scrollX;
+					point.y -= child.camera.scrollY;
+					
+					point.x *= child.camera.scale;
+					point.y *= child.camera.scale;
 				}
 			}
 			

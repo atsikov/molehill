@@ -1188,14 +1188,17 @@ package molehill.core.sprite
 		{
 			point.offset(_parentShiftX + _shiftX * _parentScaleX * _scaleX, _parentShiftY + _shiftY * _parentScaleY * _scaleY);
 			
-			var parent:Sprite3DContainer = _parent;
-			while (parent != null)
+			var cameraOwner:Sprite3D = this;
+			while (cameraOwner != null)
 			{
-				if (parent.camera != null)
+				if (cameraOwner.camera != null)
 				{
-					point.offset(-parent.camera.scrollX, -parent.camera.scrollY);
+					point.offset(-cameraOwner.camera.scrollX, -cameraOwner.camera.scrollY);
+					
+					point.x *= cameraOwner.camera.scale;
+					point.y *= cameraOwner.camera.scale;
 				}
-				parent = parent.parent;
+				cameraOwner = cameraOwner.parent;
 			}
 		}
 		
@@ -1207,14 +1210,17 @@ package molehill.core.sprite
 		{
 			point.offset(-_parentShiftX - _shiftX * _parentScaleX * _scaleX, -_parentShiftY - _shiftY * _parentScaleY * _scaleY);
 			
-			var parent:Sprite3DContainer = _parent;
-			while (parent != null)
+			var cameraOwner:Sprite3D = this;
+			while (cameraOwner != null)
 			{
-				if (parent.camera != null)
+				if (cameraOwner.camera != null)
 				{
-					point.offset(parent.camera.scrollX, parent.camera.scrollY);
+					point.x /= cameraOwner.camera.scale;
+					point.y /= cameraOwner.camera.scale;
+					
+					point.offset(cameraOwner.camera.scrollX, cameraOwner.camera.scrollY);
 				}
-				parent = parent.parent;
+				cameraOwner = cameraOwner.parent;
 			}
 		}
 		

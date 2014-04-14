@@ -52,5 +52,10 @@ package molehill.core.render.camera
 			_scrollY = camera.scrollY;
 			_scale = camera.scale;
 		}
+		
+		public function isEqual(reference:CustomCamera):Boolean
+		{
+			return _scrollX == reference.scrollX && _scrollY == reference.scrollY && scale == reference.scale;
+		}
 	}
 }

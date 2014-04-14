@@ -654,8 +654,18 @@ package molehill.core.render
 					right = batcher.batcherCamera.scrollY;
 				}
 				
-				var right:int = left + _renderEngine.getViewportWidth();
-				var bottom:int = top + _renderEngine.getViewportHeight();
+				var right:int;
+				var bottom:int;
+				if (batcher.batcherCamera != null)
+				{
+					right = left + _renderEngine.getViewportWidth() / batcher.batcherCamera.scale;
+					bottom = top + _renderEngine.getViewportHeight() / batcher.batcherCamera.scale;
+				}
+				else
+				{
+					right = left + _renderEngine.getViewportWidth();
+					bottom = top + _renderEngine.getViewportHeight();
+				}
 				
 				if (batcher.right < left ||
 					batcher.left > right ||

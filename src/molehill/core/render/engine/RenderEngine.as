@@ -237,7 +237,6 @@ package molehill.core.render.engine
 			var numNewVertices:uint = vertexBufferData.length / 4;
 			var numNewIndices:uint = indexBufferData.length / 2;
 			
-			// setting negative scroll values to act as flash DisplayObject.scrollRect
 			_currentTexture = batcher.textureAtlasID == null ? null : _textureManager.getTextureByAtlasID(batcher.textureAtlasID);
 			
 			var batcherScrollX:Number = 0;
@@ -246,8 +245,9 @@ package molehill.core.render.engine
 			
 			if (batcher.batcherCamera != null)
 			{
-				batcherScrollX = batcher.batcherCamera.scrollX;
-				batcherScrollY = batcher.batcherCamera.scrollY;
+				// setting negative scroll values to act as flash DisplayObject.scrollRect
+				batcherScrollX = -batcher.batcherCamera.scrollX;
+				batcherScrollY = -batcher.batcherCamera.scrollY;
 				batcherScale = batcher.batcherCamera.scale;
 			}
 			
@@ -255,9 +255,9 @@ package molehill.core.render.engine
 				_lastChunkData.texture == _currentTexture &&
 				_lastChunkData.shader == batcher.shader &&
 				_lastChunkData.blendMode == batcher.blendMode &&
-				_lastChunkData.scrollX == -batcherScrollX &&
-				_lastChunkData.scrollY == -batcherScrollY &&
-				_lastChunkData.scale == -batcherScale &&
+				_lastChunkData.scrollX == batcherScrollX &&
+				_lastChunkData.scrollY == batcherScrollY &&
+				_lastChunkData.scale == batcherScale &&
 				_lastChunkData.additionalVertexBuffers === batcher.getAdditionalVertexBuffers(_context3D) &&
 				_lastChunkData.customIndexBuffer === batcher.getCustomIndexBuffer(_context3D))
 			{
@@ -271,9 +271,9 @@ package molehill.core.render.engine
 				chunkData.numTriangles = batcher.numTriangles;
 				chunkData.shader = batcher.shader;
 				chunkData.blendMode = batcher.blendMode;
-				chunkData.scrollX = -batcherScrollX;
-				chunkData.scrollY = -batcherScrollY;
-				chunkData.scale = -batcherScale;
+				chunkData.scrollX = batcherScrollX;
+				chunkData.scrollY = batcherScrollY;
+				chunkData.scale = batcherScale;
 				chunkData.additionalVertexBuffers = batcher.getAdditionalVertexBuffers(_context3D);
 				chunkData.customIndexBuffer = batcher.getCustomIndexBuffer(_context3D);
 				
@@ -308,6 +308,7 @@ package molehill.core.render.engine
 		
 		private var _currentScrollX:Number;
 		private var _currentScrollY:Number;
+		private var _currentScale:Number;
 		
 		private var _vertexBufferSize:int = 0;
 		private var _indexBufferSize:int = 0;
@@ -365,6 +366,7 @@ package molehill.core.render.engine
 			var m:Matrix3D = new Matrix3D();
 			_currentScrollX = int.MIN_VALUE;
 			_currentScrollY = int.MIN_VALUE;
+			_currentScale = 1;
 			
 			while (_listRenderChunks.length > 0)
 			{
@@ -376,15 +378,17 @@ package molehill.core.render.engine
 					_context3D.setBlendFactors.apply(null, BlendMode.getBlendFactors(blendMode));
 				}
 				
-				if (_currentScrollX != chunkData.scrollX || _currentScrollY != chunkData.scrollY)
+				if (_currentScrollX != chunkData.scrollX || _currentScrollY != chunkData.scrollY || _currentScale != chunkData.scale)
 				{
 					_currentScrollX = chunkData.scrollX;
 					_currentScrollY = chunkData.scrollY;
+					_currentScale = chunkData.scale;
 					
 					//trace(_currentScrollX, _currentScrollY);
 					
 					m.identity();
 					m.appendTranslation(_currentScrollX, _currentScrollY, 0);
+					m.appendScale(_currentScale, _currentScale, 1);
 					m.append(_orthoMatrix);
 					
 					_context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, m, true);
