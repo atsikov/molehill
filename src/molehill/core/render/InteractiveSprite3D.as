@@ -20,12 +20,6 @@ package molehill.core.render
 			super();
 		}
 		
-		private var _ignoreTransparentPixels:Boolean = false;
-		public function get ignoreTransparentPixels():Boolean
-		{
-			return _ignoreTransparentPixels;
-		}
-		
 		override protected function onAddedToScene():void
 		{
 			super.onAddedToScene();
@@ -33,30 +27,9 @@ package molehill.core.render
 			//InputManager.getInstance().sortListeners();
 		}
 		
-		/**
-		 * If set to true, mouse won't be detected over transparent pixels 
-		 **/
-		public function set ignoreTransparentPixels(value:Boolean):void
-		{
-			_ignoreTransparentPixels = value;
-		}
-		
-		private function isPixelTransparent(localX:int, localY:int):Boolean
-		{
-			var textureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureID);
-			var alphaData:NormalizedAlphaChannel = textureData.getNormalizedAlpha();
-			
-			if (alphaData == null)
-			{
-				return false;
-			}
-			
-			return !alphaData.hitTestPoint(localX, localY);
-		}
-		
 		public function onMouseDown(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
-			if (_ignoreTransparentPixels && isPixelTransparent(localX, localY))
+			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				return false;
 			}
@@ -76,7 +49,7 @@ package molehill.core.render
 		
 		public function onMouseUp(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
-			if (_ignoreTransparentPixels && isPixelTransparent(localX, localY))
+			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				return false;
 			}
@@ -96,7 +69,7 @@ package molehill.core.render
 		
 		public function onMouseClick(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
-			if (_ignoreTransparentPixels && isPixelTransparent(localX, localY))
+			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				return false;
 			}
@@ -116,7 +89,7 @@ package molehill.core.render
 		
 		public function onMouseMove(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
-			if (_ignoreTransparentPixels)
+			if (ignoreTransparentPixels)
 			{
 				if (isPixelTransparent(localX, localY))
 				{
@@ -167,7 +140,7 @@ package molehill.core.render
 		private var _mouseIsOver:Boolean = false;
 		public function onMouseOver(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
-			if (_ignoreTransparentPixels && isPixelTransparent(localX, localY))
+			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				if (_mouseIsOver)
 				{

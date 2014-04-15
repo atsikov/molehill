@@ -20,7 +20,19 @@ package molehill.core.texture
 		{
 			var tm:TextureManager = getInstance();
 			var texture:Texture;
-			if (textureData is BitmapData)
+			if (textureData is ARFTextureData)
+			{
+				texture = tm.createCompressedTextureFromARF(textureData);
+			}
+			else if (textureData is BRFTextureData)
+			{
+				texture = tm.createTextureFromBRF(textureData);
+			}
+			else if (textureData is FontBRFTextureData)
+			{
+				texture = tm.createFontTextureFromBitmapData(textureData);
+			}
+			else if (textureData is BitmapData)
 			{
 				if (params[1] == null)
 				{
@@ -34,18 +46,6 @@ package molehill.core.texture
 				{
 					texture = tm.createTextureFromBitmapData(textureData, params[0], params[1], params[2]);
 				}
-			}
-			else if (textureData is ARFTextureData)
-			{
-				texture = tm.createCompressedTextureFromARF(textureData);
-			}
-			else if (textureData is BRFTextureData)
-			{
-				texture = tm.createTextureFromBRF(textureData);
-			}
-			else if (textureData is FontBRFTextureData)
-			{
-				texture = tm.createFontTextureFromBitmapData(textureData);
 			}
 			else if (textureData == null)
 			{
@@ -459,7 +459,7 @@ package molehill.core.texture
 			{
 				var atlas:TextureAtlasBitmapData = _hashAtlasBitmapByTextureID[textureId];
 				var needMipmaps:Boolean = atlas is FontBRFTextureData;
-				texture = _context3D.createTexture(arfData.width, arfData.height, Context3DTextureFormat.BGRA, false, needMipmaps ? 7 : 0);
+				texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false, needMipmaps ? 7 : 0);
 				texture.uploadFromBitmapData(atlas, 0);
 				
 				_hashTexturesByAtlasBitmap[atlas] = texture;

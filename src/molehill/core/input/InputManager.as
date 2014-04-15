@@ -248,6 +248,7 @@ package molehill.core.input
 			var molehillObjects:Vector.<Sprite3D> = activeScene.getObjectsUnderPoint(mousePoint);
 			var numObjects:Number = molehillObjects.length;
 			
+			var topInteractiveParent:Sprite3DContainer;
 			for (var i:int = numObjects - 1; i >= 0; i--)
 			{
 				var candidate:Sprite3D = molehillObjects[i] as Sprite3D;
@@ -268,6 +269,26 @@ package molehill.core.input
 					{
 						continue;
 					}
+					
+					candidate = parent;
+				}
+				
+				if (topInteractiveParent != null)
+				{
+					 var candidateContainer:Sprite3DContainer = candidate is Sprite3DContainer ? candidate as Sprite3DContainer : candidate.parent;
+					 while (candidateContainer != null && candidateContainer !== topInteractiveParent)
+					 {
+						 candidateContainer = candidateContainer.parent;
+					 }
+					 
+					 if (candidateContainer == null)
+					 {
+						 candidate = topInteractiveParent;
+					 }
+				}
+				else
+				{
+					topInteractiveParent = parent as Sprite3DContainer;
 				}
 				
 				if (_hashTypeByListeners[candidate] == null)
@@ -284,7 +305,7 @@ package molehill.core.input
 					}
 					else
 					{
-						//continue;
+						continue;
 					}
 				}
 				

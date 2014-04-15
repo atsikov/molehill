@@ -109,17 +109,19 @@ package molehill.core.texture
 			return _hashTextureRegion[textureID];
 		}
 		
-		private var _atlasID:String;
+		private var _atlasID:String = null;
 		public function get atlasID():String
 		{
 			return _atlasID;
 		}
 		
-		/**
-		 *  !!! Do NOT change this value after texture was added to TextureManager !!!
-		 **/
 		public function set atlasID(value:String):void
 		{
+			if (_atlasID != null)
+			{
+				return;
+			}
+			
 			_atlasID = value;
 		}
 		

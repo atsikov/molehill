@@ -12,6 +12,7 @@ package molehill.core.texture
 	{
 		protected var _rawPNGData:ByteArray;
 		private var _rawSpriteAnimationData:Object;
+		protected var _textureAtlasData:TextureAtlasData;
 		public function BRFTextureData(rawData:ByteArray)
 		{
 			rawData.position = 0;
@@ -55,6 +56,8 @@ package molehill.core.texture
 			var pngHeight:uint = _rawPNGData.readUnsignedInt();
 			super(pngWidth, pngHeight);
 			
+			_atlasData = _textureAtlasData;
+			
 			var loader:Loader = new Loader();
 			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageLoaded);
 			loader.loadBytes(_rawPNGData);
@@ -76,12 +79,6 @@ package molehill.core.texture
 		public function get rawPNGData():ByteArray
 		{
 			return _rawPNGData;
-		}
-		
-		protected var _textureAtlasData:TextureAtlasData;
-		override public function get textureAtlasData():TextureAtlasData
-		{
-			return _textureAtlasData;
 		}
 		
 		public function get rawSpriteAnimationData():Object

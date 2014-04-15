@@ -20,6 +20,7 @@ package molehill.core.sprite
 	import molehill.core.render.shader.species.mask.MaskAlphaCutoutShader;
 	import molehill.core.render.shader.species.mask.MaskedObjectShader;
 	import molehill.core.sort.IZSortDisplayObject;
+	import molehill.core.texture.NormalizedAlphaChannel;
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
@@ -948,16 +949,65 @@ package molehill.core.sprite
 		 **/
 		public function hitTestPoint(point:Point):Boolean
 		{
-			var localMouseX:Number = point.x - _parentShiftX;
-			var localMouseY:Number = point.y - _parentShiftY;
-			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
-			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
-			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
-			var d:int = Math.max(_shiftY, _shiftY + _cachedHeight);
-			return	(a <= localMouseX) &&
-				(b >= localMouseX) &&
-				(c <= localMouseY) &&
-				(d >= localMouseY);
+			if (_scene == null)
+			{
+				return false;
+			}
+			
+			var localX:Number = point.x - _parentShiftX;
+			var localY:Number = point.y - _parentShiftY;
+
+			var scaledShiftX:Number = _shiftX * _parentScaleX;
+			var scaledShiftY:Number = _shiftY * _parentScaleY;
+			
+			if (_ignoreTransparentPixels && isPixelTransparent((localX - scaledShiftX) / _scaleX, (localY - scaledShiftY) / _scaleY))
+			{
+				return false;
+			}
+			
+			var a:int = Math.min(scaledShiftX, scaledShiftX + _cachedWidth);
+			var b:int = Math.max(scaledShiftX, scaledShiftX + _cachedWidth);
+			var c:int = Math.min(scaledShiftX, scaledShiftX + _cachedHeight);
+			var d:int = Math.max(scaledShiftX, scaledShiftX + _cachedHeight);
+			return	(a <= localX) &&
+				(b >= localX) &&
+				(c <= localY) &&
+				(d >= localY);
+		}
+		
+		/**
+		 * If set to true, mouse won't be detected over transparent pixels 
+		 **/
+		private var _ignoreTransparentPixels:Boolean = false;
+		public function get ignoreTransparentPixels():Boolean
+		{
+			return _ignoreTransparentPixels;
+		}
+		
+		public function set ignoreTransparentPixels(value:Boolean):void
+		{
+			_ignoreTransparentPixels = value;
+		}
+		
+		public function isPixelTransparent(localX:int, localY:int):Boolean
+		{
+			var textureData:TextureData = TEXTURE_MANAGER.getTextureDataByID(textureID);
+			if (localX < textureData.blankOffsetX ||
+				localY < textureData.blankOffsetY ||
+				localX > textureData.blankOffsetX + textureData.croppedWidth ||
+				localY > textureData.blankOffsetY + textureData.croppedHeight) 
+			{
+				return false;
+			}
+			
+			var alphaData:NormalizedAlphaChannel = textureData.getNormalizedAlpha();
+			
+			if (alphaData == null)
+			{
+				return false;
+			}
+			
+			return !alphaData.hitTestPoint(localX, localY);
 		}
 		
 		molehill_internal function hitTestCoords(globalX:Number, globalY:Number):Boolean
@@ -967,16 +1017,22 @@ package molehill.core.sprite
 				return false;
 			}
 			
-			var localMouseX:Number = globalX - _parentShiftX;
-			var localMouseY:Number = globalY - _parentShiftY;
+			var localX:Number = globalX - _parentShiftX;
+			var localY:Number = globalY - _parentShiftY;
+			
+			if (_ignoreTransparentPixels && isPixelTransparent(localX, localY))
+			{
+				return false;
+			}
+			
 			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
 			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
 			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
 			var d:int = Math.max(_shiftY, _shiftY + _cachedHeight);
-			return	(a <= localMouseX) &&
-				(b >= localMouseX) &&
-				(c <= localMouseY) &&
-				(d >= localMouseY);
+			return	(a <= localX) &&
+				(b >= localX) &&
+				(c <= localY) &&
+				(d >= localY);
 		}
 		
 		molehill_internal var _textureChanged:Boolean = false;
@@ -1188,9 +1244,12 @@ package molehill.core.sprite
 		 **/
 		public function localToGlobal(point:Point):void
 		{
+			point.x *= _scaleX;
+			point.y *= _scaleY;
+			
 			point.offset(
-				_parentShiftX + _shiftX * _parentScaleX * _scaleX,
-				_parentShiftY + _shiftY * _parentScaleY * _scaleY
+				_parentShiftX + _shiftX * _parentScaleX,
+				_parentShiftY + _shiftY * _parentScaleY
 			);
 			
 			var cameraOwner:Sprite3D = this;
@@ -1246,9 +1305,12 @@ package molehill.core.sprite
 			}
 			
 			point.offset(
-				-_parentShiftX - _shiftX * _parentScaleX * _scaleX,
-				-_parentShiftY - _shiftY * _parentScaleY * _scaleY
+				-_parentShiftX - _shiftX * _parentScaleX,
+				-_parentShiftY - _shiftY * _parentScaleY
 			);
+			
+			point.x /= _scaleX;
+			point.y /= _scaleY;
 		}
 		
 		molehill_internal function get isOnScreen():Boolean
