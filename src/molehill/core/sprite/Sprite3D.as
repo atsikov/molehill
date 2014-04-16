@@ -547,15 +547,6 @@ package molehill.core.sprite
 			}
 		}
 		
-		public function applySize():void
-		{
-			updateValues();
-			if (_parent != null)
-			{
-				_parent.updateDimensions(this);
-			}
-		}
-		
 		private var _matrix:Object = {'a': 1, 'b': 0, 'c': 0, 'd': 1, 'tx': 0, 'ty': 0};
 		private var _fromMatrix:Boolean = false;
 		public function applyMatrix(a:Number, b:Number, c:Number, d:Number, tx:Number, ty:Number):void
@@ -818,6 +809,22 @@ package molehill.core.sprite
 			_textureW1 = 0;
 			_textureW2 = 0;
 			_textureW3 = 1;
+			
+			_textureID = null;
+			
+			_cachedWidth = 0;
+			_cachedHeight = 0;
+			
+			_width = 0;
+			_height = 0;
+			
+			_visibilityChanged = !_visible;
+			_visible = true;
+			
+			_mask = null;
+			_cutout = null;
+			
+			_camera = null;
 			
 			hasChanged = true;
 		}
