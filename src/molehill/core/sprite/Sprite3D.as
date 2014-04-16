@@ -967,8 +967,8 @@ package molehill.core.sprite
 			
 			var a:int = Math.min(scaledShiftX, scaledShiftX + _cachedWidth);
 			var b:int = Math.max(scaledShiftX, scaledShiftX + _cachedWidth);
-			var c:int = Math.min(scaledShiftX, scaledShiftX + _cachedHeight);
-			var d:int = Math.max(scaledShiftX, scaledShiftX + _cachedHeight);
+			var c:int = Math.min(scaledShiftY, scaledShiftY + _cachedHeight);
+			var d:int = Math.max(scaledShiftY, scaledShiftY + _cachedHeight);
 			return	(a <= localX) &&
 				(b >= localX) &&
 				(c <= localY) &&

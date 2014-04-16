@@ -54,12 +54,12 @@ package molehill.core.render
 		 **/
 		private function compareTrees():Boolean
 		{
-			return ObjectUtils.traceTree(localTreeRoot) == ObjectUtils.traceTree(_bacthingTree);
+			return ObjectUtils.traceTree(localRenderTree) == ObjectUtils.traceTree(_bacthingTree);
 		}
 		
 		private function traceTrees():void
 		{
-			trace(ObjectUtils.traceTree(localTreeRoot));
+			trace(ObjectUtils.traceTree(localRenderTree));
 			trace('-----------------');
 			trace(ObjectUtils.traceTree(_bacthingTree));
 			trace('================================');
@@ -75,38 +75,51 @@ package molehill.core.render
 		
 		private var _hashBatchersOldToNew:Dictionary;
 		private var _hashBatchersNewToOld:Dictionary;
-		private function checkBatchingTree(treeNode:TreeNode, batchingTree:TreeNode, cameraOwner:Sprite3D = null):void
+		
+		/**
+		 * Main method to build batchers on current render tree
+		 **/
+		private function checkBatchingTree(renderTree:TreeNode, batchingTree:TreeNode, cameraOwner:Sprite3D = null):void
 		{
 			var batchNode:TreeNode
-			if (treeNode == null)
+			if (renderTree == null)
 			{
 				return;
 			}
 			
-			while (treeNode != null)
+			while (renderTree != null)
 			{
-				//trace(treeNode.value, batchingTree.value);
-				if (treeNode.value !== (batchingTree.value as BatchingInfo).child)
+				if (renderTree.value is UIComponent3D)
 				{
-					if (!(treeNode.value as Sprite3D).addedToScene)
+					(renderTree.value as UIComponent3D).updateFlattnedTree();
+				}
+				
+				//trace(treeNode.value, batchingTree.value);
+				
+				// sprites in render and batching tree aren't the same in this node
+				// need to sync trees
+				if (renderTree.value !== (batchingTree.value as BatchingInfo).child)
+				{
+					if (!(renderTree.value as Sprite3D).addedToScene)
 					{
-						// new child added to render tree
+						// new child was added to render tree
 						batchNode = new TreeNode(
-							new BatchingInfo(treeNode.value)
+							new BatchingInfo(renderTree.value)
 						);
 						
-						var treeParent:TreeNode = treeNode.parent;
-						var prevSibling:TreeNode = treeNode.prevSibling;
-						treeParent.removeNode(treeNode);
-						prepareBatchers(treeNode, batchNode, cameraOwner);
+						var treeParent:TreeNode = renderTree.parent;
+						var prevSibling:TreeNode = renderTree.prevSibling;
+						treeParent.removeNode(renderTree);
+						prepareBatchers(renderTree, batchNode, cameraOwner);
 						
+						// addind new node to batching tree
 						if (prevSibling != null)
 						{
-							treeParent.insertNodeAfter(prevSibling, treeNode);
+							treeParent.insertNodeAfter(prevSibling, renderTree);
 						}
 						else
 						{
-							treeParent.addAsFirstNode(treeNode);
+							treeParent.addAsFirstNode(renderTree);
 						}
 						
 						if (batchingTree.prevSibling == null)
@@ -122,8 +135,8 @@ package molehill.core.render
 					else
 					{
 						// child exists in batching tree but not in render tree
-						// need to remove child from batching
-						var prevNode:TreeNode = treeNode.prevSibling;
+						// removing node from batching tree
+						var prevNode:TreeNode = renderTree.prevSibling;
 						var batchingParent:TreeNode = batchingTree.parent
 						var nextNode:TreeNode = batchingTree.nextSibling;
 						batchingTree.parent.removeNode(batchingTree);
@@ -135,20 +148,20 @@ package molehill.core.render
 						}
 						else
 						{
-							treeParent = treeNode.parent;
+							treeParent = renderTree.parent;
 							
 							batchNode = new TreeNode(
-								new BatchingInfo(treeNode.value)
+								new BatchingInfo(renderTree.value)
 							);
-							treeParent.removeNode(treeNode);
-							prepareBatchers(treeNode, batchNode, cameraOwner);
+							treeParent.removeNode(renderTree);
+							prepareBatchers(renderTree, batchNode, cameraOwner);
 							if (prevNode != null)
 							{
-								treeParent.insertNodeAfter(prevNode, treeNode);
+								treeParent.insertNodeAfter(prevNode, renderTree);
 							}
 							else
 							{
-								treeParent.addAsFirstNode(treeNode);
+								treeParent.addAsFirstNode(renderTree);
 							}
 							
 							batchingParent.addNode(batchNode);
@@ -158,6 +171,7 @@ package molehill.core.render
 					}
 				}
 				
+				// saving current batcher to use for insertion if got new suitable unbatched sprite
 				if ((batchingTree.value as BatchingInfo).batcher != null)
 				{
 					var oldBatcher:IVertexBatcher = (batchingTree.value as BatchingInfo).batcher;
@@ -174,24 +188,30 @@ package molehill.core.render
 					_lastBatchedChild = (batchingTree.value as BatchingInfo).child;
 				}
 				
-				if (treeNode.hasChildren)
+				if (renderTree.hasChildren)
 				{
-					var container:Sprite3DContainer = treeNode.value as Sprite3DContainer;
+					var container:Sprite3DContainer = renderTree.value as Sprite3DContainer;
 					
+					// found new non-empty container in render tree
+					// adding children tom bacthing
 					if (!batchingTree.hasChildren)
 					{
 						// adding new empty container to batching
 						batchNode = new TreeNode(
-							new BatchingInfo(treeNode.firstChild.value)
+							new BatchingInfo(renderTree.firstChild.value)
 						);
-						var firstChild:TreeNode = treeNode.firstChild;
-						treeNode.removeNode(firstChild);
+						var firstChild:TreeNode = renderTree.firstChild;
+						renderTree.removeNode(firstChild);
 						prepareBatchers(firstChild, batchNode, cameraOwner);
-						treeNode.addAsFirstNode(firstChild);
+						renderTree.addAsFirstNode(firstChild);
 						batchingTree.addAsFirstNode(batchNode);
 					}
 					
-					checkBatchingTree(treeNode.firstChild, batchingTree.firstChild, (treeNode.value as Sprite3D).camera != null ? treeNode.value as Sprite3D : cameraOwner);
+					checkBatchingTree(
+						container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
+						batchingTree.firstChild,
+						(renderTree.value as Sprite3D).camera != null ? renderTree.value as Sprite3D : cameraOwner
+					);
 					
 					// scroll rect changed
 					if (container.cameraChanged)
@@ -206,22 +226,22 @@ package molehill.core.render
 					
 				}
 				
-				if (treeNode.nextSibling != null && batchingTree.nextSibling == null)
+				if (renderTree.nextSibling != null && batchingTree.nextSibling == null)
 				{
 					// need to add new branch at the end of the current
 					batchNode = new TreeNode(
-						new BatchingInfo(treeNode.nextSibling.value)
+						new BatchingInfo(renderTree.nextSibling.value)
 					);
 					
-					var nextSibling:TreeNode = treeNode.nextSibling;
-					treeNode.parent.removeNode(nextSibling);
+					var nextSibling:TreeNode = renderTree.nextSibling;
+					renderTree.parent.removeNode(nextSibling);
 					prepareBatchers(nextSibling, batchNode, cameraOwner);
-					treeNode.parent.insertNodeAfter(treeNode, nextSibling);
+					renderTree.parent.insertNodeAfter(renderTree, nextSibling);
 					
 					batchingTree.parent.addNode(batchNode);
 				}
 				
-				treeNode = treeNode.nextSibling;
+				renderTree = renderTree.nextSibling;
 				batchingTree = batchingTree.nextSibling;
 			}
 			
@@ -273,10 +293,14 @@ package molehill.core.render
 		private var _batchingTrigger:Sprite3D;
 		
 		private var _bacthingTree:TreeNode;
-		private function prepareBatchers(root:TreeNode, batcherTreeNode:TreeNode, cameraOwner:Sprite3D):void
+		
+		/**
+		 * Method to build branch of batchers based on branch from render tree
+		 **/
+		private function prepareBatchers(renderTree:TreeNode, batcherTree:TreeNode, cameraOwner:Sprite3D):void
 		{
 			var currentBatcher:IVertexBatcher = _currentBatcher != null ? _currentBatcher : (_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1]);
-			var node:TreeNode = root;
+			var node:TreeNode = renderTree;
 			if (node == null)
 			{
 				return;
@@ -285,26 +309,28 @@ package molehill.core.render
 			while (node != null)
 			{
 				var sprite:Sprite3D = node.value as Sprite3D;
-				/*if (sprite is UIComponent3D)
+				if (node.hasChildren)
 				{
-					prepareUIComponentBuffers();
-					parseUIComponent((sprite as Sprite3DContainer).localTreeRoot);
-					flushUIComponentBuffers();
+					if (sprite is UIComponent3D)
+					{
+						(sprite as UIComponent3D).updateFlattnedTree();
+					}
 					
-					currentBatcher = null;
-				}
-				else */if (node.hasChildren)
-				{
-					if (batcherTreeNode.firstChild == null)
+					var renderTreeFirstChild:TreeNode = sprite is UIComponent3D ? (sprite as UIComponent3D).flattenedRenderTree.firstChild : node.firstChild;
+					if (batcherTree.firstChild == null)
 					{
 						// new branch found
 						var batchNode:TreeNode = new TreeNode(
-							new BatchingInfo(node.firstChild.value)
+							new BatchingInfo(renderTreeFirstChild.value)
 						);
-						batcherTreeNode.addNode(batchNode);
+						batcherTree.addNode(batchNode);
 					}
 					
-					prepareBatchers(node.firstChild, batcherTreeNode.firstChild, sprite.camera != null ? sprite : cameraOwner);
+					prepareBatchers(
+						renderTreeFirstChild,
+						batcherTree.firstChild,
+						sprite.camera != null ? sprite : cameraOwner
+					);
 					sprite.addedToScene = true;
 				}
 				else
@@ -314,7 +340,7 @@ package molehill.core.render
 						_listSpriteBatchers.splice(_batcherInsertPosition, 0, sprite);
 						_batcherInsertPosition++;
 						(sprite as IVertexBatcher).cameraOwner = cameraOwner;
-						(batcherTreeNode.value as BatchingInfo).batcher = sprite as IVertexBatcher;
+						(batcherTree.value as BatchingInfo).batcher = sprite as IVertexBatcher;
 						_lastBatchedChild = sprite;
 						currentBatcher = null;
 					}
@@ -356,143 +382,26 @@ package molehill.core.render
 							currentBatcher = newBatcher;
 						}
 						_lastBatchedChild = sprite;
-						(batcherTreeNode.value as BatchingInfo).batcher = currentBatcher;
+						(batcherTree.value as BatchingInfo).batcher = currentBatcher;
 					}
 				}
 				
 				node = node.nextSibling;
 				
-				if (node != null && batcherTreeNode.nextSibling == null)
+				if (node != null && batcherTree.nextSibling == null)
 				{
 					batchNode = new TreeNode(
 						new BatchingInfo(node.value)
 					);
-					batcherTreeNode.parent.insertNodeAfter(batcherTreeNode, batchNode);
+					batcherTree.parent.insertNodeAfter(batcherTree, batchNode);
 				}
-				batcherTreeNode = batcherTreeNode.nextSibling;
+				batcherTree = batcherTree.nextSibling;
 			}
 		}
 		
-		private var _listUiTextBatchers:Vector.<SpriteBatcher>;
-		private var _listUiBackBatchers:Vector.<SpriteBatcher>;
-		private var _listUiMiscBatchers:Vector.<SpriteBatcher>;
-		private function prepareUIComponentBuffers():void
-		{
-			if (_listUiBackBatchers == null)
-			{
-				_listUiBackBatchers = new Vector.<SpriteBatcher>();
-			}
-			if (_listUiMiscBatchers == null)
-			{
-				_listUiMiscBatchers = new Vector.<SpriteBatcher>();
-			}
-			if (_listUiTextBatchers == null)
-			{
-				_listUiTextBatchers = new Vector.<SpriteBatcher>();
-			}
-		}
-		
-		private function flushUIComponentBuffers():void
-		{
-			while (_listUiBackBatchers.length > 0)
-			{
-				_listSpriteBatchers.push(
-					_listUiBackBatchers.shift()
-				);
-			}
-			
-			while (_listUiMiscBatchers.length > 0)
-			{
-				_listSpriteBatchers.push(
-					_listUiMiscBatchers.shift()
-				);
-			}
-			
-			while (_listUiTextBatchers.length > 0)
-			{
-				_listSpriteBatchers.push(
-					_listUiTextBatchers.shift()
-				);
-			}
-		}
-		
-		// TODO: implement UI component parsing using new batching tree system
-		private function parseUIComponent(root:TreeNode, cameraOwner:Sprite3DContainer = null):void
-		{
-			var currentBackBatcher:SpriteBatcher = _listUiBackBatchers.length == 0 ? null : _listUiBackBatchers[_listUiBackBatchers.length - 1];
-			var currentMiscBatcher:SpriteBatcher = _listUiMiscBatchers.length == 0 ? null : _listUiMiscBatchers[_listUiMiscBatchers.length - 1];
-			var currentTextBatcher:SpriteBatcher = _listUiTextBatchers.length == 0 ? null : _listUiTextBatchers[_listUiTextBatchers.length - 1];
-			var tm:TextureManager = TextureManager.getInstance();
-			
-			var node:TreeNode = root.firstChild;
-			var newBatcher:SpriteBatcher;
-			
-			while (node != null)
-			{
-				var child:Sprite3D = node.value;
-				if (child is TextField3D)
-				{
-					if ((child as Sprite3DContainer).numChildren > 0)
-					{
-						var textureAtlasID:String = tm.getAtlasDataByTextureID(child.textureID).atlasID;
-						var shader:Shader3D = (child as Sprite3DContainer).shader;
-						var blendMode:String = (child as Sprite3DContainer).blendMode;
-						
-						if (currentTextBatcher != null &&
-							(currentTextBatcher.shader != shader ||
-							currentTextBatcher.textureAtlasID != textureAtlasID ||
-							currentTextBatcher.blendMode != blendMode)							
-						)
-						{
-							currentTextBatcher = null;
-						}
-						
-						if (currentTextBatcher == null)
-						{
-							currentTextBatcher = new SpriteBatcher(this);
-							currentTextBatcher.blendMode = blendMode;
-							currentTextBatcher.shader = shader;
-							currentTextBatcher.textureAtlasID = textureAtlasID;
-							currentTextBatcher.cameraOwner = cameraOwner;
-							_listUiTextBatchers.push(currentTextBatcher);
-						}
-						
-						currentTextBatcher.pushSpriteContainerTree(child as Sprite3DContainer);
-					}
-					node = node.nextSibling;
-					continue;
-				}
-				else if (node.hasChildren)
-				{
-					parseUIComponent(node, child.camera != null ? child as Sprite3DContainer : cameraOwner);
-				}
-				else
-				{
-					textureAtlasID = child.textureID == null ? null : tm.getAtlasDataByTextureID(child.textureID).atlasID;
-					if (child.isBackground)
-					{
-						newBatcher = pushToSuitableSpriteBacther(currentBackBatcher, child, textureAtlasID, cameraOwner);
-						if (newBatcher !== currentBackBatcher)
-						{
-							_listUiBackBatchers.push(newBatcher);
-							currentBackBatcher = newBatcher;
-						}
-					}
-					else
-					{
-						newBatcher = pushToSuitableSpriteBacther(currentMiscBatcher, child, textureAtlasID, cameraOwner);
-						if (newBatcher !== currentMiscBatcher)
-						{
-							_listUiMiscBatchers.push(newBatcher);
-							currentMiscBatcher = newBatcher;
-						}
-					}
-				}
-				
-				node = node.nextSibling;
-			}
-		}
-		
+		/**
+		 * Adding sprite to proper batcher either passed or new one
+		 **/
 		private function pushToSuitableSpriteBacther(candidateBatcher:SpriteBatcher, child:Sprite3D, textureAtlasID:String, cameraOwner:Sprite3D):SpriteBatcher
 		{
 			var batcherCreated:Boolean = false;
@@ -600,7 +509,7 @@ package molehill.core.render
 					
 					//traceTrees();
 					
-					checkBatchingTree(localTreeRoot, _bacthingTree);
+					checkBatchingTree(localRenderTree, _bacthingTree);
 					/*
 					if (!compareTrees())
 					{
@@ -610,7 +519,7 @@ package molehill.core.render
 				}
 				else
 				{
-					resetChangeFlags(localTreeRoot);
+					resetChangeFlags(localRenderTree);
 					
 					_doBatching = true;
 					
@@ -618,7 +527,7 @@ package molehill.core.render
 					_bacthingTree = new TreeNode(
 						new BatchingInfo(this)
 					);
-					prepareBatchers(localTreeRoot, _bacthingTree, null);
+					prepareBatchers(localRenderTree, _bacthingTree, null);
 				}
 			}
 			_needUpdateBatchers = false;

@@ -31,7 +31,7 @@ package molehill.core.sprite
 		public function Sprite3DContainer()
 		{
 			_listChildren = new Vector.<Sprite3D>();
-			localTreeRoot = new TreeNode(this);
+			localRenderTree = new TreeNode(this);
 
 			_childCoordsX0 = new BinarySearchTree();
 			_childCoordsY0 = new BinarySearchTree();
@@ -93,13 +93,13 @@ package molehill.core.sprite
 			var node:TreeNode;
 			if (child is Sprite3DContainer)
 			{
-				node = (child as Sprite3DContainer).localTreeRoot;
+				node = (child as Sprite3DContainer).localRenderTree;
 			}
 			else
 			{
 				node = new TreeNode(child);
 			}
-			localTreeRoot.addNode(node);
+			localRenderTree.addNode(node);
 			_hashNodesByChild[child] = node;
 			_listChildren.push(child);
 			_numChildren++;
@@ -156,7 +156,7 @@ package molehill.core.sprite
 			var node:TreeNode;
 			if (child is Sprite3DContainer)
 			{
-				node = (child as Sprite3DContainer).localTreeRoot;
+				node = (child as Sprite3DContainer).localRenderTree;
 			}
 			else
 			{
@@ -164,18 +164,18 @@ package molehill.core.sprite
 			}
 			if (index == 0)
 			{
-				localTreeRoot.addAsFirstNode(node);
+				localRenderTree.addAsFirstNode(node);
 				_listChildren.splice(index, 0, child);
 			}
 			else if (index < _listChildren.length)
 			{
 				var prevNode:TreeNode = getNodeByChild(_listChildren[index - 1]);
-				localTreeRoot.insertNodeAfter(prevNode, node);
+				localRenderTree.insertNodeAfter(prevNode, node);
 				_listChildren.splice(index, 0, child);
 			}
 			else
 			{
-				localTreeRoot.addNode(node);
+				localRenderTree.addNode(node);
 				_listChildren.push(child);
 			}
 			_hashNodesByChild[child] = node;
@@ -300,7 +300,7 @@ package molehill.core.sprite
 		{
 			return;
 			
-			if (localTreeRoot == null)
+			if (localRenderTree == null)
 			{
 				_containerX = int.MAX_VALUE;
 				_containerY = int.MAX_VALUE;
@@ -308,7 +308,7 @@ package molehill.core.sprite
 				_containerRight = int.MIN_VALUE;
 			}
 			
-			var node:TreeNode = node == null ? localTreeRoot.firstChild : node.firstChild;
+			var node:TreeNode = node == null ? localRenderTree.firstChild : node.firstChild;
 			while (node != null)
 			{
 				if (node.hasChildren)
@@ -376,7 +376,7 @@ package molehill.core.sprite
 		public function removeChild(child:Sprite3D):Sprite3D
 		{
 			var node:TreeNode = getNodeByChild(child);
-			localTreeRoot.removeNode(node);
+			localRenderTree.removeNode(node);
 			
 			child.setScene(null);
 			child._parent = null;
@@ -429,7 +429,7 @@ package molehill.core.sprite
 		{
 			var child:Sprite3D = _listChildren[index];
 			var node:TreeNode = getNodeByChild(child);
-			localTreeRoot.removeNode(node);
+			localRenderTree.removeNode(node);
 			
 			if (child is AnimatedSprite3D)
 			{
@@ -717,7 +717,7 @@ package molehill.core.sprite
 			}
 		}
 		
-		molehill_internal var localTreeRoot:TreeNode;
+		molehill_internal var localRenderTree:TreeNode;
 		
 		override public function set isBackground(value:Boolean):void
 		{

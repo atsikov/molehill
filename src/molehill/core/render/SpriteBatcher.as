@@ -200,7 +200,7 @@ package molehill.core.render
 		
 		internal function pushSpriteContainerTree(container:Sprite3DContainer):void
 		{
-			var root:TreeNode = container.localTreeRoot.firstChild;
+			var root:TreeNode = container.localRenderTree.firstChild;
 			
 			while (root != null)
 			{

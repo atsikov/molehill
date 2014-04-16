@@ -85,6 +85,11 @@ package molehill.core.text
 			
 			_notifyParentOnChange = false;
 			
+			if (_scene != null)
+			{
+				var updateBatchersFlag:Boolean = _scene._needUpdateBatchers;
+			}
+			
 			var childIndex:int = 0;
 			var numGlyphs:int = 0;
 			for (var i:int = 0; i < textLength; i++)
@@ -123,15 +128,9 @@ package molehill.core.text
 				
 				child._silentChange = true;
 				
-				child.setTexture(textureName);
-				
-				if (i == 0)
-				{
-					setTexture(textureName);
-				}
 				
 				var charTextureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureName);
-				child.textureRegion = TextureManager.getInstance().getTextureRegion(textureName);
+				child.setTexture(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
 				child.moveTo(lineWidth, lineY);
 				
@@ -164,7 +163,14 @@ package molehill.core.text
 			_y2 = _containerBottom;
 			
 			_x3 = _containerRight;
-		
+			
+			if (_scene != null)
+			{
+				// do not need to update batcher cause we assume that all fonts for one textfield are on the same atlas
+				_scene._needUpdateBatchers = updateBatchersFlag;
+			}
+			
+			treeStructureChanged = textureAtlasChanged;
 			_notifyParentOnChange = true;
 			updateDimensions(this);
 		}
