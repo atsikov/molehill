@@ -68,6 +68,11 @@ package molehill.core.render
 				return true;
 			}
 			
+			if (src !== localRenderTree && (src.value is UIComponent3D))
+			{
+				return true;
+			}
+			
 			if (spriteContainer.treeStructureChanged)
 			{
 				return false;
@@ -99,6 +104,14 @@ package molehill.core.render
 		{
 			var node:TreeNode;
 			var sprite:Sprite3D = src.value as Sprite3D;
+			if (sprite !== this && (sprite is UIComponent3D))
+			{
+				flattenedRenderTree.addNode(
+					copyTree(src)
+				);
+				return;
+			}
+			
 			if (src.hasChildren && !(sprite is TextField3D))
 			{
 				createFlattenedTree(src.firstChild);
