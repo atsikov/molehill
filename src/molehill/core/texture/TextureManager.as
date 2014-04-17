@@ -282,27 +282,27 @@ package molehill.core.texture
 			
 			if (isReady)
 			{
-				var texture:Texture;
-				texture = _context3D.createTexture(textureData.width, textureData.height, Context3DTextureFormat.BGRA, false, Math.min(textureData.numTextures, 7));
+				//var texture:Texture;
+				//texture = _context3D.createTexture(textureData.width, textureData.height, Context3DTextureFormat.BGRA, false, Math.min(textureData.numTextures, 7));
 				
-				_hashCompressedTexturesByARFData[textureData] = texture;
-				texture.uploadCompressedTextureFromByteArray(textureData.rawATFData, 0, true);
-				_hashTexturesByAtlasData[textureData.textureAtlasData] = texture;
+				//_hashCompressedTexturesByARFData[textureData] = texture;
+				//texture.uploadCompressedTextureFromByteArray(textureData.rawATFData, 0, true);
+				//_hashTexturesByAtlasData[textureData.textureAtlasData] = texture;
 				_hashAtlasDataByAtlasID[textureData.textureAtlasData.atlasID] = textureData.textureAtlasData;
-				_hashTexturesByAtlasID[textureData.textureAtlasData.atlasID] = texture;
-				_hashAtlasIDByTexture[texture] = textureData.textureAtlasData.atlasID;
+				//_hashTexturesByAtlasID[textureData.textureAtlasData.atlasID] = texture;
+				//_hashAtlasIDByTexture[texture] = textureData.textureAtlasData.atlasID;
 				
 				for (var textureID:String in textureData.textureAtlasData._hashTextures)
 				{
 					_hashAtlasIDByTextureID[textureID] = textureData.textureAtlasData.atlasID;
-					_hashTexturesByTextureID[textureID] = texture;
+					//_hashTexturesByTextureID[textureID] = texture;
 					_hashAtlasDataByTextureID[textureID] = textureData.textureAtlasData;
 					_hashARFDataByTextureID[textureID] = textureData;
 				}
 				
-				_hashTextureTypeByTexture[texture] = true;
+				//_hashTextureTypeByTexture[texture] = true;
 			}
-			return texture;
+			return null; //texture;
 		}
 		
 		public function createTextureFromBRF(textureData:BRFTextureData):Texture
@@ -314,27 +314,27 @@ package molehill.core.texture
 			
 			if (isReady)
 			{
-				var texture:Texture;
-				texture = _context3D.createTexture(textureData.width, textureData.height, Context3DTextureFormat.BGRA, false);
+				//var texture:Texture;
+				//texture = _context3D.createTexture(textureData.width, textureData.height, Context3DTextureFormat.BGRA, false);
 				
-				_hashTexturesByAtlasBitmap[textureData] = texture;
-				texture.uploadFromBitmapData(textureData, 0);
-				_hashTexturesByAtlasData[textureData.textureAtlasData] = texture;
+				//_hashTexturesByAtlasBitmap[textureData] = texture;
+				//texture.uploadFromBitmapData(textureData, 0);
+				//_hashTexturesByAtlasData[textureData.textureAtlasData] = texture;
 				_hashAtlasDataByAtlasID[textureData.textureAtlasData.atlasID] = textureData.textureAtlasData;
-				_hashTexturesByAtlasID[textureData.textureAtlasData.atlasID] = texture;
-				_hashAtlasIDByTexture[texture] = textureData.textureAtlasData.atlasID;
+				//_hashTexturesByAtlasID[textureData.textureAtlasData.atlasID] = texture;
+				//_hashAtlasIDByTexture[texture] = textureData.textureAtlasData.atlasID;
 				
 				for (var textureID:String in textureData.textureAtlasData._hashTextures)
 				{
 					_hashAtlasIDByTextureID[textureID] = textureData.textureAtlasData.atlasID;
-					_hashTexturesByTextureID[textureID] = texture;
+					//_hashTexturesByTextureID[textureID] = texture;
 					_hashAtlasDataByTextureID[textureID] = textureData.textureAtlasData;
 					_hashAtlasBitmapByTextureID[textureID] = textureData;
 				}
 				
-				_hashTextureTypeByTexture[texture] = false;
+				//_hashTextureTypeByTexture[texture] = false;
 			}
-			return texture;
+			return null; //texture;
 		}
 		
 		public function createFontTextureFromBitmapData(fontBitmap:FontBRFTextureData):Texture
@@ -346,35 +346,35 @@ package molehill.core.texture
 			
 			if (isReady)
 			{
-				var texture:Texture;
-				texture = _context3D.createTexture(
-					fontBitmap.width,
-					fontBitmap.height,
-					Context3DTextureFormat.BGRA,
-					false,
-					Math.min(
-						MathUtils.log2(fontBitmap.width),
-						MathUtils.log2(fontBitmap.height),
-						7
-					)
-				);
+				//var texture:Texture;
+				//texture = _context3D.createTexture(
+				//	fontBitmap.width,
+				//	fontBitmap.height,
+				//	Context3DTextureFormat.BGRA,
+				//	false,
+				//	Math.min(
+				//		MathUtils.log2(fontBitmap.width),
+				//		MathUtils.log2(fontBitmap.height),
+				//		7
+				//	)
+				//);
 				
-				_hashTexturesByAtlasBitmap[fontBitmap] = texture;
-				texture.uploadFromBitmapData(fontBitmap);
-				_hashTexturesByAtlasData[fontBitmap.textureAtlasData] = texture;
+				//_hashTexturesByAtlasBitmap[fontBitmap] = texture;
+				//texture.uploadFromBitmapData(fontBitmap);
+				//_hashTexturesByAtlasData[fontBitmap.textureAtlasData] = texture;
 				_hashAtlasDataByAtlasID[fontBitmap.textureAtlasData.atlasID] = fontBitmap.textureAtlasData;
-				_hashTexturesByAtlasID[fontBitmap.textureAtlasData.atlasID] = texture;
-				_hashAtlasIDByTexture[texture] = fontBitmap.textureAtlasData.atlasID;
+				//_hashTexturesByAtlasID[fontBitmap.textureAtlasData.atlasID] = texture;
+				//_hashAtlasIDByTexture[texture] = fontBitmap.textureAtlasData.atlasID;
 				
 				for (var textureID:String in fontBitmap.textureAtlasData._hashTextures)
 				{
 					_hashAtlasIDByTextureID[textureID] = fontBitmap.textureAtlasData.atlasID;
-					_hashTexturesByTextureID[textureID] = texture;
+					//_hashTexturesByTextureID[textureID] = texture;
 					_hashAtlasDataByTextureID[textureID] = fontBitmap.textureAtlasData;
 					_hashAtlasBitmapByTextureID[textureID] = fontBitmap;
 				}
 				
-				_hashTextureTypeByTexture[texture] = false;
+				//_hashTextureTypeByTexture[texture] = false;
 			}
 			
 			var mipWidth:int = fontBitmap.width / 2;
@@ -389,7 +389,7 @@ package molehill.core.texture
 			while (mipWidth > 0 && mipHeight > 0)
 			{
 				mipImage.draw(fontBitmap, scaleTransform, null, null, null, true);
-				texture.uploadFromBitmapData(mipImage, mipLevel);
+				//texture.uploadFromBitmapData(mipImage, mipLevel);
 				scaleTransform.scale(0.5, 0.5);
 				mipLevel++;
 				mipWidth >>= 1;
@@ -398,13 +398,16 @@ package molehill.core.texture
 			
 			mipImage.dispose();
 			
-			return texture;
+			return null; //texture;
 		}
 		
 		public function reuploadTexture(bitmapData:BitmapData):void
 		{
 			var texture:Texture = _hashTexturesByAtlasBitmap[bitmapData];
-			texture.uploadFromBitmapData(bitmapData);
+			if (texture != null)
+			{
+				texture.uploadFromBitmapData(bitmapData);
+			}
 		}
 		
 		// Objects for hashing by strings

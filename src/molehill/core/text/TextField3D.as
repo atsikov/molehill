@@ -126,16 +126,10 @@ package molehill.core.text
 					super.addChild(child);
 				}
 				
-				child._silentChange = true;
-				
-				
 				var charTextureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureName);
 				child.setTexture(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
 				child.moveTo(lineWidth, lineY);
-				
-				child._silentChange = false;
-				child.hasChanged = true;
 				
 				lineWidth += Math.ceil(child.width);
 				lineHeight = Math.max(lineHeight, Math.ceil(child.height));

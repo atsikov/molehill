@@ -13,6 +13,8 @@ package molehill.core.text
 		public function TextField3DCharacter()
 		{
 			super();
+			
+			updateOnRender = true;
 		}
 		
 		override protected function updateParent():void

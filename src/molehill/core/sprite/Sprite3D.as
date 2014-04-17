@@ -541,7 +541,7 @@ package molehill.core.sprite
 		
 		protected function updateParent():void
 		{
-			if (_parent != null)
+			if (_parent != null/* && _notifyParentOnChange*/)
 			{
 				_parent.updateDimensions(this);
 			}
@@ -826,6 +826,9 @@ package molehill.core.sprite
 			
 			_camera = null;
 			
+			_updateOnRender = false;
+			//_notifyParentOnChange = true;
+			
 			hasChanged = true;
 		}
 		
@@ -1064,15 +1067,42 @@ package molehill.core.sprite
 			return _hasChanged;
 		}
 		*/
-		molehill_internal var _silentChange:Boolean = false;
+		private var _updateOnRender:Boolean;
+		molehill_internal var updateOnRenderChanged:Boolean = false;
+		public function get updateOnRender():Boolean
+		{
+			return _updateOnRender;
+		}
+		
+		public function set updateOnRender(value:Boolean):void
+		{
+			_updateOnRender = value;
+			
+			updateOnRenderChanged = true;
+		}
+		/*
+		private var _notifyParentOnChange:Boolean;
+		molehill_internal var notifyParentChanged:Boolean = false;
+		public function get notifyParentOnChange():Boolean
+		{
+			return _notifyParentOnChange;
+		}
+		
+		public function set notifyParentOnChange(value:Boolean):void
+		{
+			_notifyParentOnChange = value;
+			
+			notifyParentChanged = true;
+		}
+		*/
 		molehill_internal function set hasChanged(value:Boolean):void
 		{
-			if (_silentChange)
+			_hasChanged = value;
+			
+			if (_updateOnRender)
 			{
 				return;
 			}
-			
-			_hasChanged = value;
 			
 			if (_hasChanged)
 			{

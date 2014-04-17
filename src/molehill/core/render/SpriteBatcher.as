@@ -524,7 +524,7 @@ package molehill.core.render
 				indexNum = numSprites - 1 - i;
 				
 				var j:int;
-				
+				var isOnScreen:Boolean = true;
 				if (!sprite.visible)
 				{
 					sprite.hasChanged = false;
@@ -534,10 +534,13 @@ package molehill.core.render
 				{
 					nextIndexNum = _numVisibleSprites * Sprite3D.NUM_ELEMENTS_PER_SPRITE;
 					
+					if (sprite.updateOnRender)
+					{
+						sprite.updateValues();
+					}
+					
 					if (sprite._hasChanged || _needUpdateBuffers)
 					{
-						//sprite.updateValues();
-						
 						_vertexBufferData.position = (nextIndexNum + v0) * 4;
 						_vertexBufferData.writeFloat(sprite._vertexX0);
 						_vertexBufferData.writeFloat(sprite._vertexY0);
@@ -655,6 +658,16 @@ package molehill.core.render
 			
 			if (currentNumVisibleSprites < _numVisibleSprites)
 			{
+				if (_vertexBuffer != null)
+				{
+					_vertexBuffer.dispose()
+				}
+				
+				if (_indexBuffer != null)
+				{
+					_indexBuffer.dispose()
+				}
+				
 				_indexBuffer = null;
 				_vertexBuffer = null;
 			}
@@ -687,9 +700,11 @@ package molehill.core.render
 		private var _listOrderedBuffers:Vector.<OrderedVertexBuffer>;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
+			var vertexBufferChanged:Boolean = false;
 			if (_vertexBuffer == null)
 			{
 				_vertexBuffer = context.createVertexBuffer(_numVisibleSprites * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+				vertexBufferChanged = true;
 			}
 			if (_needUploadVertexData)
 			{
@@ -722,7 +737,7 @@ package molehill.core.render
 				);
 				_listOrderedBuffers.fixed = true;
 			}
-			else
+			else if (vertexBufferChanged)
 			{
 				_listOrderedBuffers[0].buffer = _vertexBuffer;
 				_listOrderedBuffers[1].buffer = _vertexBuffer;

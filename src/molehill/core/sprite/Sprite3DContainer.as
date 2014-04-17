@@ -203,12 +203,12 @@ package molehill.core.sprite
 			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
 			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
 			
-			updateContainerSize();
+			var dimensionsChanged:Boolean = updateContainerSize();
 			
 			updateChildParentValues(child);
 			child.updateValues();
 			
-			if (_parent != null)
+			if (dimensionsChanged && _parent != null/* && notifyParentOnChange*/)
 			{
 				_parent.updateDimensions(this);
 			}
@@ -231,6 +231,17 @@ package molehill.core.sprite
 			child.parentRed = _parentRed * _redMultiplier;
 			child.parentGreen = _parentGreen * _greenMultiplier;
 			child.parentBlue = _parentBlue * _blueMultiplier;
+			
+			if (!child.updateOnRenderChanged)
+			{
+				child.updateOnRender = updateOnRender;
+			}
+			/*
+			if (!child.notifyParentChanged)
+			{
+				child.notifyParentOnChange = notifyParentOnChange;
+			}
+			*/
 		}
 		
 		protected var _containerX:int = 0;
@@ -248,15 +259,14 @@ package molehill.core.sprite
 			_childCoordsX3.updateNodeWeight(child.parentX3Node, child._x3);
 			_childCoordsY3.updateNodeWeight(child.parentY3Node, child._y3);
 			
-			updateContainerSize();
-			
-			if (_parent != null)
+			var dimansionsChanged:Boolean = updateContainerSize();
+			if (dimansionsChanged && _parent != null/* && notifyParentOnChange*/)
 			{
 				_parent.updateDimensions(this);
 			}
 		}
 		
-		private function updateContainerSize():void
+		private function updateContainerSize():Boolean
 		{
 			_containerX = Math.min(
 				_childCoordsX0.getMinWeight(),
@@ -283,45 +293,28 @@ package molehill.core.sprite
 				_childCoordsY3.getMaxWeight()
 			);
 			
-			_x0 = _containerX;
-			_y0 = _containerY;
+			var dimensionsChanged:Boolean =
+				_x0 != _containerX ||
+				_y0 != _containerY ||
+				_x2 != _containerRight ||
+				_y2 != _containerBottom;
 			
-			_x1 = _containerX;
-			_y1 = _containerBottom;
-			
-			_x2 = _containerRight
-			_y2 = _containerBottom
-			
-			_x3 = _containerRight
-			_y3 = _containerY;
-		}
-		
-		private function updateAllDimensions(node:TreeNode = null):void
-		{
-			return;
-			
-			if (localRenderTree == null)
+			if (dimensionsChanged)
 			{
-				_containerX = int.MAX_VALUE;
-				_containerY = int.MAX_VALUE;
-				_containerBottom = int.MIN_VALUE;
-				_containerRight = int.MIN_VALUE;
-			}
-			
-			var node:TreeNode = node == null ? localRenderTree.firstChild : node.firstChild;
-			while (node != null)
-			{
-				if (node.hasChildren)
-				{
-					updateAllDimensions(node);
-				}
-				else
-				{
-					updateDimensions(node.value as Sprite3D);
-				}
+				_x0 = _containerX;
+				_y0 = _containerY;
 				
-				node = node.nextSibling;
+				_x1 = _containerX;
+				_y1 = _containerBottom;
+				
+				_x2 = _containerRight
+				_y2 = _containerBottom
+				
+				_x3 = _containerRight
+				_y3 = _containerY;
 			}
+			
+			return dimensionsChanged;
 		}
 		
 		public function getChildAt(index:int):Sprite3D
@@ -965,5 +958,28 @@ package molehill.core.sprite
 			
 			super.rotation = value;
 		}
+		
+		override public function set updateOnRender(value:Boolean):void
+		{
+			super.updateOnRender = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].updateOnRender = value;
+			}
+			
+		}
+		/*
+		override public function set notifyParentOnChange(value:Boolean):void
+		{
+			super.notifyParentOnChange = value;
+			
+			for (var i:int = 0; i < _listChildren.length; i++) 
+			{
+				_listChildren[i].notifyParentOnChange = value;
+			}
+			
+		}
+		*/
 	}
 }
