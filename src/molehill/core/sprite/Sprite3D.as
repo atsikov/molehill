@@ -42,10 +42,10 @@ package molehill.core.sprite
 		public static const NUM_VERTICES_PER_SPRITE:uint = 4;
 		
 		public static const VERTICES_OFFSET:uint = 0;
-		public static const COLOR_OFFSET:uint = 3;
-		public static const TEXTURE_OFFSET:uint = 7;
+		public static const COLOR_OFFSET:uint = 2; //3;
+		public static const TEXTURE_OFFSET:uint = 6; //7;
 		
-		public static const NUM_ELEMENTS_PER_VERTEX:uint = 9;
+		public static const NUM_ELEMENTS_PER_VERTEX:uint = 8; //9;
 		
 		public static const NUM_ELEMENTS_PER_SPRITE:uint = NUM_ELEMENTS_PER_VERTEX * NUM_VERTICES_PER_SPRITE;
 		
@@ -233,6 +233,8 @@ package molehill.core.sprite
 			hasChanged = true;
 		}
 		
+		molehill_internal var _colorChanged:Boolean = true;
+		
 		private var _darkenColor:uint = 0xFFFFFF;
 		public function get darkenColor():uint
 		{
@@ -246,6 +248,8 @@ package molehill.core.sprite
 			_redMultiplier = (value >>> 16) / 0xFF;
 			_greenMultiplier = ((value & 0xFFFF) >>> 8) / 0xFF;
 			_blueMultiplier = (value & 0xFF) / 0xFF;
+			
+			_colorChanged = true;
 			
 			hasChanged = true;
 		}
@@ -269,6 +273,7 @@ package molehill.core.sprite
 			}
 			
 			_redMultiplier = value;
+			_colorChanged = true;
 			
 			hasChanged = true;
 		}
@@ -292,6 +297,7 @@ package molehill.core.sprite
 			}
 			
 			_greenMultiplier = value;
+			_colorChanged = true;
 			
 			hasChanged = true;
 		}
@@ -315,6 +321,7 @@ package molehill.core.sprite
 			}
 			
 			_blueMultiplier = value;
+			_colorChanged = true;
 			
 			hasChanged = true;
 		}
@@ -330,14 +337,16 @@ package molehill.core.sprite
 			return _textureID != "" && _textureID != null;
 		}
 		
-		public function setTexture(textureId:String):void
+		public function setTexture(value:String):void
 		{
-			if (_textureID != textureId)
+			if (_textureID != value)
 			{
 				var prevAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID);
-				_textureID = textureId;
+				var currentAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(value);
 				
-				if (_parent != null && prevAtlasData !== TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID))
+				_textureID = value;
+				
+				if (_parent != null && prevAtlasData !== currentAtlasData)
 				{
 					_parent.textureAtlasChanged = true;
 					if (_scene != null)
@@ -347,13 +356,18 @@ package molehill.core.sprite
 				}
 			}
 			
-			var textureData:TextureData = TEXTURE_MANAGER.getTextureDataByID(textureId);
+			if (currentAtlasData == null)
+			{
+				return;
+			}
+			
+			var textureData:TextureData = currentAtlasData.getTextureData(_textureID);
 			if (textureData == null)
 			{
 				return;
 			}
 			
-			var textureRegion:Rectangle = TEXTURE_MANAGER.getTextureRegion(textureId);
+			var textureRegion:Rectangle = currentAtlasData.getTextureRegion(_textureID);
 			this.textureRegion = textureRegion;
 			
 			_blankOffsetX = textureData.blankOffsetX;
@@ -1060,7 +1074,6 @@ package molehill.core.sprite
 			}
 		}
 	
-		molehill_internal var _hasChanged:Boolean = true;
 		/*
 		molehill_internal function get hasChanged():Boolean
 		{
@@ -1095,6 +1108,12 @@ package molehill.core.sprite
 			notifyParentChanged = true;
 		}
 		*/
+		private var _hasChanged:Boolean = true;
+		molehill_internal function get hasChanged():Boolean
+		{
+			return _hasChanged;
+		}
+		
 		molehill_internal function set hasChanged(value:Boolean):void
 		{
 			_hasChanged = value;

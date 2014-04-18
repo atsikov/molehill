@@ -7,6 +7,7 @@ package molehill.core.text
 	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
@@ -90,6 +91,7 @@ package molehill.core.text
 				var updateBatchersFlag:Boolean = _scene._needUpdateBatchers;
 			}
 			
+			var charAtlasData:TextureAtlasData;
 			var childIndex:int = 0;
 			var numGlyphs:int = 0;
 			for (var i:int = 0; i < textLength; i++)
@@ -109,10 +111,27 @@ package molehill.core.text
 				}
 				
 				var textureName:String = getTextureForChar(_fontName, _fontTextureSize, charCode);
-				if (!TextureManager.getInstance().isTextureCreated(textureName))
+				if (charAtlasData == null)
+				{
+					charAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(textureName);
+				}
+				
+				if (charAtlasData == null)
 				{
 					charCode = 32;
 					textureName = getTextureForChar(_fontName, _fontTextureSize, charCode);
+					
+					charAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(textureName);
+				}
+				
+				var charTextureData:TextureData = charAtlasData.getTextureData(textureName);
+				
+				if (charTextureData == null)
+				{
+					charCode = 32;
+					textureName = getTextureForChar(_fontName, _fontTextureSize, charCode);
+					
+					charTextureData = charAtlasData.getTextureData(textureName);
 				}
 				
 				var child:TextField3DCharacter;
@@ -124,9 +143,10 @@ package molehill.core.text
 				{
 					child = getCharacterSprite();
 					super.addChild(child);
+					
+					updateBatchersFlag = true;
 				}
 				
-				var charTextureData:TextureData = TextureManager.getInstance().getTextureDataByID(textureName);
 				child.setTexture(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
 				child.moveTo(lineWidth, lineY);
@@ -146,6 +166,8 @@ package molehill.core.text
 			while (numChildren > childIndex)
 			{
 				_cacheSprites.push(super.removeChildAt(childIndex - 1));
+				
+				updateBatchersFlag = true;
 			}
 			
 			_containerRight = _containerX + _textWidth;
@@ -186,20 +208,28 @@ package molehill.core.text
 		private static var _hashChars:Object = new Object();
 		private static function getTextureForChar(font:String, size:uint, char:uint):String
 		{
-			if (_hashChars[font] == null)
+			var fontObject:Object = _hashChars[font];
+			if (fontObject == null)
 			{
-				_hashChars[font] = new Object();
-			}
-			if (_hashChars[font][size] == null)
-			{
-				_hashChars[font][size] = new Object();
-			}
-			if (_hashChars[font][size][char] == null)
-			{
-				_hashChars[font][size][char] = font + "_" + size + "_" + char;
+				fontObject = new Object();
+				_hashChars[font] = fontObject;
 			}
 			
-			return _hashChars[font][size][char];
+			var sizeObject:Object = fontObject[size];
+			if (sizeObject == null)
+			{
+				sizeObject = new Object();
+				fontObject[size] = sizeObject;
+			}
+			
+			var charTexture:String = sizeObject[char];
+			if (charTexture == null)
+			{
+				charTexture = font + "_" + size + "_" + char;
+				sizeObject[char] = charTexture;
+			}
+			
+			return charTexture;
 		}
 		
 		private var _textWidth:Number = 0;
@@ -293,7 +323,7 @@ package molehill.core.text
 		{
 			super.hasChanged = value;
 			
-			if (_hasChanged)
+			if (hasChanged)
 			{
 				updateDimensions(this);
 			}

@@ -263,7 +263,7 @@ package molehill.core.render.particles
 			
 			updateValues();
 			
-			if (_hasChanged)
+			if (hasChanged)
 			{
 				if (_spriteVertexData == null)
 				{

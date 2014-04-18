@@ -185,10 +185,10 @@ package molehill.core.render
 				_totalIndexBuffer = null;
 			}
 			
-			if (_vertexBufferData != null)
+			if (_vertexBufferVerticesData != null)
 			{
-				_vertexBufferData.length = 0;
-				_vertexBufferData = null;
+				_vertexBufferVerticesData.length = 0;
+				_vertexBufferVerticesData = null;
 			}
 			
 			if (_indexBufferData != null)
@@ -258,10 +258,10 @@ package molehill.core.render
 				_totalIndexBuffer = null;
 			}
 			
-			if (_vertexBufferData != null)
+			if (_vertexBufferVerticesData != null)
 			{
-				_vertexBufferData.length = 0;
-				_vertexBufferData = null;
+				_vertexBufferVerticesData.length = 0;
+				_vertexBufferVerticesData = null;
 			}
 			
 			if (_indexBufferData != null)
@@ -303,7 +303,7 @@ package molehill.core.render
 			result._needUpdateBuffers = true;
 			
 			_indexBufferData = null;
-			_vertexBufferData = null;
+			_vertexBufferVerticesData = null;
 			
 			_needUpdateBuffers = true;
 			_numSprites = childIndex;
@@ -400,11 +400,13 @@ package molehill.core.render
 		private var _totalVertexBuffer:VertexBuffer3D;
 		private var _totalIndexBuffer:IndexBuffer3D;
 		
-		private var _vertexBufferData:ByteArray;
+		private var _vertexBufferVerticesData:ByteArray;
+		private var _vertexBufferColorData:ByteArray;
+		private var _vertexBufferTextureData:ByteArray;
 		public function getVerticesData():ByteArray
 		{
 			prepareSprites();
-			return _vertexBufferData;
+			return _vertexBufferVerticesData;
 		}
 
 		private var _indexBufferData:ByteArray;
@@ -454,6 +456,9 @@ package molehill.core.render
 		}
 		
 		private var _needUploadVertexData:Boolean = true;
+		private var _needUploadColorData:Boolean = true;
+		private var _needUploadTextureData:Boolean = true;
+		
 		private var _needUploadIndexData:Boolean = true;
 		private function updateBuffers():void
 		{
@@ -471,7 +476,7 @@ package molehill.core.render
 				while (cursor != null)
 				{
 					sprite = cursor.data as Sprite3D;
-					if (sprite._hasChanged || sprite._textureChanged)
+					if (sprite.hasChanged || sprite._textureChanged)
 					{
 						hasChanges = true;
 					}
@@ -489,16 +494,25 @@ package molehill.core.render
 				}
 			}
 			
-			_needUploadVertexData = true;
-			_needUploadIndexData = true;
-			
 			var currentNumVisibleSprites:int = _numVisibleSprites;
 			_numVisibleSprites = 0;
 			
-			if (_vertexBufferData == null)
+			if (_vertexBufferVerticesData == null)
 			{
-				_vertexBufferData = new ByteArray();
-				_vertexBufferData.endian = Endian.LITTLE_ENDIAN;
+				_vertexBufferVerticesData = new ByteArray();
+				_vertexBufferVerticesData.endian = Endian.LITTLE_ENDIAN;
+			}
+			
+			if (_vertexBufferColorData == null)
+			{
+				_vertexBufferColorData = new ByteArray();
+				_vertexBufferColorData.endian = Endian.LITTLE_ENDIAN;
+			}
+			
+			if (_vertexBufferTextureData == null)
+			{
+				_vertexBufferTextureData = new ByteArray();
+				_vertexBufferTextureData.endian = Endian.LITTLE_ENDIAN;
 			}
 			
 			if (_indexBufferData == null)
@@ -539,43 +553,24 @@ package molehill.core.render
 						sprite.updateValues();
 					}
 					
-					if (sprite._hasChanged || _needUpdateBuffers)
+					if (sprite.hasChanged || _needUpdateBuffers)
 					{
-						_vertexBufferData.position = (nextIndexNum + v0) * 4;
-						_vertexBufferData.writeFloat(sprite._vertexX0);
-						_vertexBufferData.writeFloat(sprite._vertexY0);
-						_vertexBufferData.writeFloat(sprite._z0);
-						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
-						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
-						_vertexBufferData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
-						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						_vertexBufferVerticesData.position = _numVisibleSprites * 32;
+						_vertexBufferVerticesData.writeFloat(sprite._vertexX0);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexY0);
+						//_vertexBufferVerticesData.writeFloat(sprite._z0);
 						
-						_vertexBufferData.position = (nextIndexNum + v1) * 4;
-						_vertexBufferData.writeFloat(sprite._vertexX1);
-						_vertexBufferData.writeFloat(sprite._vertexY1);
-						_vertexBufferData.writeFloat(sprite._z1);
-						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
-						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
-						_vertexBufferData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
-						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexX1);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexY1);
+						//_vertexBufferVerticesData.writeFloat(sprite._z1);
 						
-						_vertexBufferData.position = (nextIndexNum + v2) * 4;
-						_vertexBufferData.writeFloat(sprite._vertexX2);
-						_vertexBufferData.writeFloat(sprite._vertexY2);
-						_vertexBufferData.writeFloat(sprite._z2);
-						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
-						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
-						_vertexBufferData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
-						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexX2);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexY2);
+						//_vertexBufferVerticesData.writeFloat(sprite._z2);
 						
-						_vertexBufferData.position = (nextIndexNum + v3) * 4;
-						_vertexBufferData.writeFloat(sprite._vertexX3);
-						_vertexBufferData.writeFloat(sprite._vertexY3);
-						_vertexBufferData.writeFloat(sprite._z3);
-						_vertexBufferData.writeFloat(sprite._redMultiplier * sprite._parentRed);
-						_vertexBufferData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
-						_vertexBufferData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
-						_vertexBufferData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexX3);
+						_vertexBufferVerticesData.writeFloat(sprite._vertexY3);
+						//_vertexBufferVerticesData.writeFloat(sprite._z3);
 						
 						var topCandidate:Number;
 						var bottomCandidate:Number;
@@ -609,27 +604,56 @@ package molehill.core.render
 						}
 						
 						sprite.hasChanged = false;
+						
+						_needUploadVertexData = true;
+					}
+					
+					if (sprite._colorChanged || _needUpdateBuffers)
+					{
+						_vertexBufferColorData.position = _numVisibleSprites * 64;
+						_vertexBufferColorData.writeFloat(sprite._redMultiplier * sprite._parentRed);
+						_vertexBufferColorData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
+						_vertexBufferColorData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
+						_vertexBufferColorData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						
+						_vertexBufferColorData.writeFloat(sprite._redMultiplier * sprite._parentRed);
+						_vertexBufferColorData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
+						_vertexBufferColorData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
+						_vertexBufferColorData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						
+						_vertexBufferColorData.writeFloat(sprite._redMultiplier * sprite._parentRed);
+						_vertexBufferColorData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
+						_vertexBufferColorData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
+						_vertexBufferColorData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						
+						_vertexBufferColorData.writeFloat(sprite._redMultiplier * sprite._parentRed);
+						_vertexBufferColorData.writeFloat(sprite._greenMultiplier * sprite._parentGreen);
+						_vertexBufferColorData.writeFloat(sprite._blueMultiplier * sprite._parentBlue);
+						_vertexBufferColorData.writeFloat(sprite._alpha * sprite._parentAlpha);
+						
+						sprite._colorChanged = false;
+						
+						_needUploadColorData = true;
 					}
 					
 					if (sprite._textureChanged || _needUpdateBuffers)
 					{
-						_vertexBufferData.position = (nextIndexNum + v0 + Sprite3D.TEXTURE_OFFSET) * 4;
-						_vertexBufferData.writeFloat(sprite._textureU0);
-						_vertexBufferData.writeFloat(sprite._textureW0);
+						_vertexBufferTextureData.position = _numVisibleSprites * 32;
+						_vertexBufferTextureData.writeFloat(sprite._textureU0);
+						_vertexBufferTextureData.writeFloat(sprite._textureW0);
 						
-						_vertexBufferData.position = (nextIndexNum + v1 + Sprite3D.TEXTURE_OFFSET) * 4;
-						_vertexBufferData.writeFloat(sprite._textureU1);
-						_vertexBufferData.writeFloat(sprite._textureW1);
+						_vertexBufferTextureData.writeFloat(sprite._textureU1);
+						_vertexBufferTextureData.writeFloat(sprite._textureW1);
 						
-						_vertexBufferData.position = (nextIndexNum + v2 + Sprite3D.TEXTURE_OFFSET) * 4;
-						_vertexBufferData.writeFloat(sprite._textureU2);
-						_vertexBufferData.writeFloat(sprite._textureW2);
+						_vertexBufferTextureData.writeFloat(sprite._textureU2);
+						_vertexBufferTextureData.writeFloat(sprite._textureW2);
 						
-						_vertexBufferData.position = (nextIndexNum + v3 + Sprite3D.TEXTURE_OFFSET) * 4;
-						_vertexBufferData.writeFloat(sprite._textureU3);
-						_vertexBufferData.writeFloat(sprite._textureW3);
+						_vertexBufferTextureData.writeFloat(sprite._textureU3);
+						_vertexBufferTextureData.writeFloat(sprite._textureW3);
 						
 						sprite._textureChanged = false;
+						
+						_needUploadTextureData = true;
 					}
 					
 					if (_needUpdateBuffers)
@@ -658,9 +682,19 @@ package molehill.core.render
 			
 			if (currentNumVisibleSprites < _numVisibleSprites)
 			{
-				if (_vertexBuffer != null)
+				if (_vertexBufferVertices != null)
 				{
-					_vertexBuffer.dispose()
+					_vertexBufferVertices.dispose()
+				}
+				
+				if (_vertexBufferColor != null)
+				{
+					_vertexBufferColor.dispose()
+				}
+				
+				if (_vertexBufferTexture != null)
+				{
+					_vertexBufferTexture.dispose()
 				}
 				
 				if (_indexBuffer != null)
@@ -668,8 +702,17 @@ package molehill.core.render
 					_indexBuffer.dispose()
 				}
 				
+				_vertexBufferVertices = null;
+				_vertexBufferColor = null;
+				_vertexBufferTexture = null;
+				
 				_indexBuffer = null;
-				_vertexBuffer = null;
+				
+				_needUploadVertexData = true;
+				_needUploadColorData = true;
+				_needUploadTextureData = true;
+				
+				_needUploadIndexData = true;
 			}
 			
 			_needUpdateBuffers = false;
@@ -696,31 +739,52 @@ package molehill.core.render
 			_shader = value;
 		}
 		
-		private var _vertexBuffer:VertexBuffer3D;
+		private var _vertexBufferVertices:VertexBuffer3D;
+		private var _vertexBufferColor:VertexBuffer3D;
+		private var _vertexBufferTexture:VertexBuffer3D;
+		
 		private var _listOrderedBuffers:Vector.<OrderedVertexBuffer>;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
 			var vertexBufferChanged:Boolean = false;
-			if (_vertexBuffer == null)
+			if (_vertexBufferVertices == null)
 			{
-				_vertexBuffer = context.createVertexBuffer(_numVisibleSprites * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+				_vertexBufferVertices = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				_vertexBufferColor = context.createVertexBuffer(_numVisibleSprites * 4, 4);
+				_vertexBufferTexture = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				
 				vertexBufferChanged = true;
 			}
 			if (_needUploadVertexData)
 			{
 				/*
 				trace("Vertex Data");
-				for (var i:int = 0; i < _vertexBufferData.length; i+= 36)
+				for (var i:int = 0; i < _vertexBufferVerticesData.length; i+= 8)
 				{
-					_vertexBufferData.position = i;
-					trace("coords: " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() +
-						" | color: " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat() +
-						" | texture: " + _vertexBufferData.readFloat() + ", " + _vertexBufferData.readFloat()
-					);
+					_vertexBufferVerticesData.position = i;
+					trace("coords: " + _vertexBufferVerticesData.readFloat() + ", " + _vertexBufferVerticesData.readFloat());
 				}
 				*/
-				_vertexBuffer.uploadFromByteArray(_vertexBufferData, 0, 0, _numVisibleSprites * 4);
+				_vertexBufferVertices.uploadFromByteArray(_vertexBufferVerticesData, 0, 0, _numVisibleSprites * 4);
 				_needUploadVertexData = false;
+			}
+			if (_needUploadColorData)
+			{
+				/*
+				trace("Color Data");
+				for (var i:int = 0; i < _vertexBufferColorData.length; i+= 16)
+				{
+					_vertexBufferColorData.position = i;
+					trace("Color components: " + _vertexBufferColorData.readFloat() + ", " + _vertexBufferColorData.readFloat() + ", " + _vertexBufferColorData.readFloat() + ", " + _vertexBufferColorData.readFloat());
+				}
+				*/
+				_vertexBufferColor.uploadFromByteArray(_vertexBufferColorData, 0, 0, _numVisibleSprites * 4);
+				_needUploadColorData = false;
+			}
+			if (_needUploadTextureData)
+			{
+				_vertexBufferTexture.uploadFromByteArray(_vertexBufferTextureData, 0, 0, _numVisibleSprites * 4);
+				_needUploadTextureData = false;
 			}
 			
 			if (_listOrderedBuffers == null)
@@ -731,17 +795,17 @@ package molehill.core.render
 			if (_listOrderedBuffers.length == 0)
 			{
 				_listOrderedBuffers.push(
-					new OrderedVertexBuffer(0, _vertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_3),
-					new OrderedVertexBuffer(1, _vertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4),
-					new OrderedVertexBuffer(2, _vertexBuffer, Sprite3D.TEXTURE_OFFSET, Context3DVertexBufferFormat.FLOAT_2)
+					new OrderedVertexBuffer(0, _vertexBufferVertices, 0, Context3DVertexBufferFormat.FLOAT_2),
+					new OrderedVertexBuffer(1, _vertexBufferColor, 0, Context3DVertexBufferFormat.FLOAT_4),
+					new OrderedVertexBuffer(2, _vertexBufferTexture, 0, Context3DVertexBufferFormat.FLOAT_2)
 				);
 				_listOrderedBuffers.fixed = true;
 			}
 			else if (vertexBufferChanged)
 			{
-				_listOrderedBuffers[0].buffer = _vertexBuffer;
-				_listOrderedBuffers[1].buffer = _vertexBuffer;
-				_listOrderedBuffers[2].buffer = _vertexBuffer;
+				_listOrderedBuffers[0].buffer = _vertexBufferVertices;
+				_listOrderedBuffers[1].buffer = _vertexBufferColor;
+				_listOrderedBuffers[2].buffer = _vertexBufferTexture;
 			}
 			
 			return _listOrderedBuffers;

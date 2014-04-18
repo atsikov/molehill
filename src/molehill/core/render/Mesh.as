@@ -196,7 +196,7 @@ package molehill.core.render
 			{
 				_vertexData.writeFloat(_listVerticesX[i]);
 				_vertexData.writeFloat(_listVerticesY[i]);
-				_vertexData.writeFloat(0);
+				//_vertexData.writeFloat(0);
 				
 				var rgba:uint = _listColors[i];
 				_vertexData.writeFloat((rgba >>> 24) / 0xFF);
@@ -365,7 +365,7 @@ package molehill.core.render
 			if (_listOrderedBuffers.length == 0)
 			{
 				_listOrderedBuffers.push(
-					new OrderedVertexBuffer(0, _vertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_3),
+					new OrderedVertexBuffer(0, _vertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2),
 					new OrderedVertexBuffer(1, _vertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4),
 					new OrderedVertexBuffer(2, _vertexBuffer, Sprite3D.TEXTURE_OFFSET, Context3DVertexBufferFormat.FLOAT_2)
 				);
