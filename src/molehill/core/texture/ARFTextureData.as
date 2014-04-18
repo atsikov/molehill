@@ -45,10 +45,8 @@ package molehill.core.texture
 			
 			if (_textureAtlasData == null)
 			{
-				var textureData:ARFTextureData = new ARFTextureData(rawData);
-				
-				var textureAtlasData:TextureAtlasData = new TextureAtlasData(textureData.width, textureData.height);
-				textureAtlasData.addTextureDesc(textureID, 0, 0, textureData.width, textureData.height);
+				_textureAtlasData = new TextureAtlasData(width, height);
+				_textureAtlasData.addTextureDesc(textureID, 0, 0, width, height);
 			}
 		}
 

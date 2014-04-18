@@ -221,6 +221,7 @@ package molehill.core.texture
 		{
 			var atlas:TextureAtlasBitmapData;
 			var node:TextureAtlasDataNode;
+			
 			for (var field:Object in _hashTexturesByAtlasBitmap)
 			{
 				atlas = field as TextureAtlasBitmapData;
@@ -242,6 +243,7 @@ package molehill.core.texture
 				if (node == null)
 				{
 					atlas = new TextureAtlasBitmapData(width == 0 ? _textureWidth : width, height == 0 ? _textureHeight : height);
+					atlas.textureAtlasData.atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
 					atlas.insert(bitmapData, textureID);
 					texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false);
 					_hashTexturesByAtlasBitmap[atlas] = texture;
@@ -275,6 +277,11 @@ package molehill.core.texture
 		
 		public function createCompressedTextureFromARF(textureData:ARFTextureData):Texture
 		{
+			if (textureData.textureAtlasData.atlasID == null)
+			{
+				textureData.textureAtlasData.atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
+			}
+			
 			if (_hashTexturesByAtlasID[textureData.textureAtlasData.atlasID] != null)
 			{
 				return _hashTexturesByAtlasID[textureData.textureAtlasData.atlasID];
@@ -307,6 +314,11 @@ package molehill.core.texture
 		
 		public function createTextureFromBRF(textureData:BRFTextureData):Texture
 		{
+			if (textureData.textureAtlasData.atlasID == null)
+			{
+				textureData.textureAtlasData.atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
+			}
+			
 			if (_hashTexturesByAtlasID[textureData.textureAtlasData.atlasID] != null)
 			{
 				return _hashTexturesByAtlasID[textureData.textureAtlasData.atlasID];
@@ -339,6 +351,11 @@ package molehill.core.texture
 		
 		public function createFontTextureFromBitmapData(fontBitmap:FontBRFTextureData):Texture
 		{
+			if (fontBitmap.textureAtlasData.atlasID == null)
+			{
+				fontBitmap.textureAtlasData.atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
+			}
+			
 			if (_hashTexturesByAtlasID[fontBitmap.textureAtlasData.atlasID] != null)
 			{
 				return _hashTexturesByAtlasID[fontBitmap.textureAtlasData.atlasID];

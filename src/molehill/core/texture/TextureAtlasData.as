@@ -56,8 +56,6 @@ package molehill.core.texture
 		private var _atlasHeight:uint = 0;
 		public function TextureAtlasData(atlasWidth:uint, atlasHeight:uint)
 		{
-			_atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
-			
 			_atlasWidth = atlasWidth;
 			_atlasHeight = atlasHeight;
 			
