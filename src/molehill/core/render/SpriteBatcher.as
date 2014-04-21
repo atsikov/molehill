@@ -71,17 +71,6 @@ package molehill.core.render
 			_listSprites.enqueue(sprite);
 			_needUpdateBuffers = true;
 			_numSprites++;
-			
-			if (_totalVertexBuffer != null)
-			{
-				_totalVertexBuffer.dispose();
-				_totalVertexBuffer = null;
-			}
-			if (_totalIndexBuffer != null)
-			{
-				_totalIndexBuffer.dispose();
-				_totalIndexBuffer = null;
-			}
 		}
 		
 		internal function addChildBefore(child1:Sprite3D, child2:Sprite3D):void
@@ -112,17 +101,6 @@ package molehill.core.render
 			}
 			_needUpdateBuffers = true;
 			_numSprites++;
-			
-			if (_totalVertexBuffer != null)
-			{
-				_totalVertexBuffer.dispose();
-				_totalVertexBuffer = null;
-			}
-			if (_totalIndexBuffer != null)
-			{
-				_totalIndexBuffer.dispose();
-				_totalIndexBuffer = null;
-			}
 		}
 		
 		
@@ -146,17 +124,6 @@ package molehill.core.render
 			}
 			_needUpdateBuffers = true;
 			_numSprites++;
-			
-			if (_totalVertexBuffer != null)
-			{
-				_totalVertexBuffer.dispose();
-				_totalVertexBuffer = null;
-			}
-			if (_totalIndexBuffer != null)
-			{
-				_totalIndexBuffer.dispose();
-				_totalIndexBuffer = null;
-			}
 		}
 		
 		internal function reset():void
@@ -172,18 +139,6 @@ package molehill.core.render
 			
 			_numSprites = 0;
 			_numVisibleSprites = 0;
-			
-			if (_totalVertexBuffer != null)
-			{
-				_totalVertexBuffer.dispose();
-				_totalVertexBuffer = null;
-			}
-			
-			if (_totalIndexBuffer != null)
-			{
-				_totalIndexBuffer.dispose();
-				_totalIndexBuffer = null;
-			}
 			
 			if (_vertexBufferVerticesData != null)
 			{
@@ -244,30 +199,6 @@ package molehill.core.render
 			if (cursor.data is AnimatedSprite3D)
 			{
 				(cursor.data as AnimatedSprite3D).stop();
-			}
-			
-			if (_totalVertexBuffer != null)
-			{
-				_totalVertexBuffer.dispose();
-				_totalVertexBuffer = null;
-			}
-			
-			if (_totalIndexBuffer != null)
-			{
-				_totalIndexBuffer.dispose();
-				_totalIndexBuffer = null;
-			}
-			
-			if (_vertexBufferVerticesData != null)
-			{
-				_vertexBufferVerticesData.length = 0;
-				_vertexBufferVerticesData = null;
-			}
-			
-			if (_indexBufferData != null)
-			{
-				_indexBufferData.length = 0;
-				_indexBufferData = null;
 			}
 			
 			_needUpdateBuffers = true;
@@ -397,9 +328,6 @@ package molehill.core.render
 			return _numVisibleSprites * 2;
 		}
 		
-		private var _totalVertexBuffer:VertexBuffer3D;
-		private var _totalIndexBuffer:IndexBuffer3D;
-		
 		private var _vertexBufferVerticesData:ByteArray;
 		private var _vertexBufferColorData:ByteArray;
 		private var _vertexBufferTextureData:ByteArray;
@@ -476,7 +404,7 @@ package molehill.core.render
 				while (cursor != null)
 				{
 					sprite = cursor.data as Sprite3D;
-					if (sprite.hasChanged || sprite._textureChanged)
+					if (sprite.hasChanged || sprite._colorChanged || sprite._textureChanged)
 					{
 						hasChanges = true;
 					}

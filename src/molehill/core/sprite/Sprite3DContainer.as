@@ -13,10 +13,14 @@ package molehill.core.sprite
 	import molehill.core.render.Scene3D;
 	import molehill.core.render.shader.Shader3D;
 	
+	import utils.CachingFactory;
+	
 	use namespace molehill_internal;
 
 	public class Sprite3DContainer extends InteractiveSprite3D
 	{
+		protected static var _cacheTreeNodes:CachingFactory;
+		
 		private var _listChildren:Vector.<Sprite3D>
 		
 		private var _childCoordsX0:BinarySearchTree;
@@ -30,8 +34,14 @@ package molehill.core.sprite
 		
 		public function Sprite3DContainer()
 		{
+			if (_cacheTreeNodes == null)
+			{
+				_cacheTreeNodes = new CachingFactory(TreeNode, 5000);
+			}
+			
 			_listChildren = new Vector.<Sprite3D>();
-			localRenderTree = new TreeNode(this);
+			localRenderTree = _cacheTreeNodes.newInstance();
+			localRenderTree.value = this;
 
 			_childCoordsX0 = new BinarySearchTree();
 			_childCoordsY0 = new BinarySearchTree();
@@ -97,8 +107,10 @@ package molehill.core.sprite
 			}
 			else
 			{
-				node = new TreeNode(child);
+				node = _cacheTreeNodes.newInstance();
+				node.value = child;
 			}
+			
 			localRenderTree.addNode(node);
 			_hashNodesByChild[child] = node;
 			_listChildren.push(child);
@@ -160,12 +172,14 @@ package molehill.core.sprite
 			}
 			else
 			{
-				node = new TreeNode(child);
+				node = _cacheTreeNodes.newInstance();
+				node.value = child;
 			}
+			
 			if (index == 0)
 			{
 				localRenderTree.addAsFirstNode(node);
-				_listChildren.splice(index, 0, child);
+				_listChildren.unshift(child);
 			}
 			else if (index < _listChildren.length)
 			{
@@ -371,11 +385,28 @@ package molehill.core.sprite
 			var node:TreeNode = getNodeByChild(child);
 			localRenderTree.removeNode(node);
 			
+			if (!(child is Sprite3DContainer))
+			{
+				node.reset();
+				_cacheTreeNodes.storeInstance(node);
+			}
+			
 			child.setScene(null);
 			child._parent = null;
-			_listChildren.splice(
-				_listChildren.indexOf(child), 1
-			);
+			
+			var childIndex:int = _listChildren.indexOf(child);
+			if (childIndex == 0)
+			{
+				_listChildren.shift();
+			}
+			else if (childIndex == _numChildren - 1)
+			{
+				_listChildren.pop();
+			}
+			else
+			{
+				_listChildren.splice(childIndex, 1);
+			}
 			
 			if (_scene != null)
 			{
@@ -424,6 +455,12 @@ package molehill.core.sprite
 			var node:TreeNode = getNodeByChild(child);
 			localRenderTree.removeNode(node);
 			
+			if (!(child is Sprite3DContainer))
+			{
+				node.reset();
+				_cacheTreeNodes.storeInstance(node);
+			}
+			
 			if (child is AnimatedSprite3D)
 			{
 				(child as AnimatedSprite3D).stop();
@@ -431,7 +468,18 @@ package molehill.core.sprite
 			
 			child.setScene(null);
 			child._parent = null;
-			_listChildren.splice(index, 1);
+			if (index == 0)
+			{
+				_listChildren.shift();
+			}
+			else if (index == _numChildren - 1)
+			{
+				_listChildren.pop();
+			}
+			else
+			{
+				_listChildren.splice(index, 1);
+			}
 			
 			if (_scene != null)
 			{

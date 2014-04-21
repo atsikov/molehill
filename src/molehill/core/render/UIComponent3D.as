@@ -43,16 +43,29 @@ package molehill.core.render
 		{
 			if (flattenedRenderTree == null || !precheckLocalRenderTree(localRenderTree))
 			{
-				flattenedRenderTree = new TreeNode(this);
-				
-				_localTreeBack = new TreeNode(_containerBacks);
-				flattenedRenderTree.addNode(_localTreeBack);
-				
-				_localTreeMisc = new TreeNode(_containerMiscs);
-				flattenedRenderTree.addNode(_localTreeMisc);
-				
-				_localTreeText = new TreeNode(_containerTexts);
-				flattenedRenderTree.addNode(_localTreeText);
+				if (flattenedRenderTree == null)
+				{
+					flattenedRenderTree = _cacheTreeNodes.newInstance();
+					flattenedRenderTree.value = this;
+					
+					_localTreeBack = _cacheTreeNodes.newInstance();
+					_localTreeBack.value = _containerBacks;
+					flattenedRenderTree.addNode(_localTreeBack);
+					
+					_localTreeMisc = _cacheTreeNodes.newInstance()
+					_localTreeMisc.value = _containerMiscs;
+					flattenedRenderTree.addNode(_localTreeMisc);
+					
+					_localTreeText = _cacheTreeNodes.newInstance();
+					_localTreeText.value = _containerTexts;
+					flattenedRenderTree.addNode(_localTreeText);
+				}
+				else
+				{
+					cacheAllNodes(_localTreeBack.firstChild);
+					cacheAllNodes(_localTreeMisc.firstChild);
+					cacheAllNodes(_localTreeText.firstChild);
+				}
 				
 				createFlattenedTree(localRenderTree);
 			}
@@ -100,6 +113,31 @@ package molehill.core.render
 			return true;
 		}
 		
+		private function cacheAllNodes(node:TreeNode):void
+		{
+			if (node == null)
+			{
+				return;
+			}
+			
+			if (node.hasChildren)
+			{
+				cacheAllNodes(node.firstChild);
+			}
+			
+			var currentNode:TreeNode = node;
+			while (currentNode != null)
+			{
+				var nextNode:TreeNode = currentNode.nextSibling;
+				
+				currentNode.parent.removeNode(currentNode);
+				currentNode.reset();
+				_cacheTreeNodes.storeInstance(currentNode);
+				
+				currentNode = nextNode;
+			}
+		}
+		
 		private function createFlattenedTree(src:TreeNode):void
 		{
 			var node:TreeNode;
@@ -141,7 +179,8 @@ package molehill.core.render
 						suitableTree = _localTreeMisc;
 					}
 					
-					node = new TreeNode(sprite);
+					node = _cacheTreeNodes.newInstance();
+					node.value = sprite;
 					suitableTree.addNode(
 						node
 					);
@@ -158,20 +197,23 @@ package molehill.core.render
 		{
 			if (dest == null)
 			{
-				dest = new TreeNode(src.value);
+				dest = _cacheTreeNodes.newInstance();
+				dest.value = src.value;
 			}
 			
 			var node:TreeNode;
 			if (src.hasChildren)
 			{
-				node = new TreeNode(src.firstChild.value);
+				node = _cacheTreeNodes.newInstance();
+				node.value = src.firstChild.value;
 				dest.addAsFirstNode(node);
 				copyTree(src.firstChild, node);
 				
 				var nextSibling:TreeNode = src.firstChild.nextSibling;
 				while (nextSibling != null)
 				{
-					node = new TreeNode(nextSibling.value);
+					node = _cacheTreeNodes.newInstance();
+					node.value = nextSibling.value;
 					dest.addNode(node);
 					copyTree(nextSibling, node)
 					nextSibling = nextSibling.nextSibling;

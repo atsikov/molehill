@@ -9,14 +9,14 @@ package molehill.core.text
 		
 		public function TextField3DFormat(
 			font:String = "",
-			color:uint = 0,
 			size:uint = 12,
+			color:uint = 0,
 			align:String = "alignLeft"
 		)
 		{
 			this.font = font;
-			this.color = color;
 			this.size = size;
+			this.color = color;
 			this.align = align;
 		}
 	}

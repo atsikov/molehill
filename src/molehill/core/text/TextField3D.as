@@ -244,6 +244,13 @@ package molehill.core.text
 			return _textHeight;
 		}
 		
+		// TODO: add new characters instead of performing full update
+		public function appendText(text:String):void
+		{
+			_text += text;
+			updateLayout();
+		}
+		
 		// restrict any children manipulation
 		override public function addChild(child:Sprite3D):Sprite3D
 		{

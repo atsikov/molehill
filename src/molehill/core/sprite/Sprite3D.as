@@ -3,6 +3,7 @@ package molehill.core.sprite
 	import avmplus.getQualifiedClassName;
 	
 	import easy.collections.BinarySearchTreeNode;
+	import easy.collections.LinkedList;
 	
 	import flash.events.EventDispatcher;
 	import flash.geom.Point;
@@ -230,6 +231,8 @@ package molehill.core.sprite
 			
 			_alpha = value;
 			
+			_colorChanged = true;
+			
 			hasChanged = true;
 		}
 		
@@ -420,24 +423,28 @@ package molehill.core.sprite
 		molehill_internal function set parentRed(value:Number):void
 		{
 			_parentRed = value;
+			_colorChanged = true;
 		}
 
 		molehill_internal var _parentGreen:Number = 1;
 		molehill_internal function set parentGreen(value:Number):void
 		{
 			_parentGreen = value;
+			_colorChanged = true;
 		}
 		
 		molehill_internal var _parentBlue:Number = 1;
 		molehill_internal function set parentBlue(value:Number):void
 		{
 			_parentBlue = value;
+			_colorChanged = true;
 		}
 		
 		molehill_internal var _parentAlpha:Number = 1;
 		molehill_internal function set parentAlpha(value:Number):void
 		{
 			_parentAlpha = value;
+			_colorChanged = true;
 		}
 		
 		molehill_internal var _parentRotation:Number = 0;
@@ -1067,7 +1074,7 @@ package molehill.core.sprite
 			_visibilityChanged = false;
 			
 			var currentParent:Sprite3DContainer = _parent;
-			while (currentParent != null)
+			while (currentParent != null && currentParent._visibilityChanged)
 			{
 				currentParent._visibilityChanged = false;
 				currentParent = currentParent._parent;
@@ -1330,59 +1337,69 @@ package molehill.core.sprite
 		 **/
 		public function globalToLocal(point:Point):void
 		{
-			var cameraOwners:Array;
+			globalToLocalCoords(point.x, point.y);
 			
+			point.x = _localX;
+			point.y = _localY;
+		}
+		
+		private var _localX:Number;
+		private var _localY:Number;
+		
+		private var _cameraOwners:LinkedList;
+		private function globalToLocalCoords(globalX:Number, globalY:Number):void
+		{
 			var cameraOwner:Sprite3D = this;
 			while (cameraOwner != null)
 			{
 				if (cameraOwner.camera != null)
 				{
-					if (cameraOwners == null)
+					if (_cameraOwners == null)
 					{
-						cameraOwners = new Array();
-						
-						cameraOwners.push(cameraOwner.camera);
+						_cameraOwners = new LinkedList();
 					}
+					
+					_cameraOwners.enqueue(cameraOwner.camera);
 				}
 				cameraOwner = cameraOwner.parent;
 			}
 			
-			if (cameraOwners != null)
+			if (_cameraOwners != null)
 			{
-				var numCameraOwners:int = cameraOwners.length;
-				for (var i:int = 0; i < numCameraOwners; i++)
+				while (!_cameraOwners.empty)
 				{
-					var currentCamera:CustomCamera = cameraOwners.pop();
-					point.offset(currentCamera.scrollX, currentCamera.scrollY);
+					var currentCamera:CustomCamera = _cameraOwners.pop() as CustomCamera;
 					
-					point.x /= currentCamera.scale;
-					point.y /= currentCamera.scale;
+					globalX += currentCamera.scrollX;
+					globalY += currentCamera.scrollY;
+					
+					globalX /= currentCamera.scale;
+					globalY /= currentCamera.scale;
 				}
 			}
 			
-			point.offset(
-				-_parentShiftX - _shiftX * _parentScaleX,
-				-_parentShiftY - _shiftY * _parentScaleY
-			);
+			globalX += -_parentShiftX - _shiftX * _parentScaleX;
+			globalY += -_parentShiftY - _shiftY * _parentScaleY;
 			
-			point.x /= _scaleX;
-			point.y /= _scaleY;
+			globalX /= _scaleX;
+			globalY /= _scaleY;
+			
+			_localX = globalX;
+			_localY = globalY;
 		}
 		
 		molehill_internal function get isOnScreen():Boolean
 		{
 			var renderEngine:RenderEngine = SCENE_MANAGER.renderEngine;
 			
-			var tl:Point = new Point();
-			globalToLocal(tl);
-			if (tl.x > width || tl.y > width)
+			globalToLocalCoords(0, 0);
+			if (_localX > width || _localY > height)
 			{
 				return false;
 			}
 			
-			var br:Point = new Point(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
-			globalToLocal(br);
-			if (br.x < 0 || br.y < 0)
+			globalToLocalCoords(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
+			if (_localX < 0 || _localY < 0)
 			{
 				return false;
 			}

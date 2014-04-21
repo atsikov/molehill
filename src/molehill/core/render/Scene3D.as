@@ -588,8 +588,6 @@ package molehill.core.render
 			}
 		}
 		
-		public var renderInfo:String = "";
-		
 		private var _lastTexture:Texture;
 		private var _t:uint;
 		private function onRenderEnterFrame(event:Event):void
@@ -598,8 +596,8 @@ package molehill.core.render
 			{
 				if (_renderEngine != null)
 				{
-					renderInfo =
-						"Render mode: " + (_renderEngine as RenderEngine).renderMode;
+					renderInfo.mode =
+						_renderEngine.renderMode;
 				}
 				return;
 			}
@@ -610,13 +608,18 @@ package molehill.core.render
 			
 			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
 			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
-			renderInfo =
-				"Render mode: " + (_renderEngine as RenderEngine).renderMode +
-				"\nDraw calls: " +
-				(_renderEngine as RenderEngine).drawCalls +
-				"\nTotal tris: " + (_renderEngine as RenderEngine).totalTris +
-				"\nTexture atlases: " + (numBitmapAtlases + numCompressedAtlases).toString() + " (" + numBitmapAtlases + " bitmaps, " + numCompressedAtlases + " compressed)" +
-				"\nRendering to " + _renderEngine.getViewportWidth() + " x " + _renderEngine.getViewportHeight();
+			
+			_renderInfo.mode = _renderEngine.renderMode;
+			_renderInfo.drawCalls = _renderEngine.drawCalls;
+			_renderInfo.totalTris = _renderEngine.totalTris;
+			_renderInfo.numBitmapAtlases = numBitmapAtlases;
+			_renderInfo.numCompressedAtlases = numCompressedAtlases;
+		}
+		
+		private var _renderInfo:Object = new Object();
+		public function get renderInfo():Object
+		{
+			return _renderInfo;
 		}
 	}
 }

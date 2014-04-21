@@ -232,11 +232,12 @@ package molehill.core.render.engine
 				return _numVertexFloats;
 			}
 			
+			/*
 			var vertexBufferData:ByteArray = batcher.getVerticesData();
 			var indexBufferData:ByteArray = batcher.getIndicesData(_numVertexFloats);
 			var numNewVertices:uint = vertexBufferData.length / 4;
 			var numNewIndices:uint = indexBufferData.length / 2;
-			
+			*/
 			_currentTexture = batcher.textureAtlasID == null ? null : _textureManager.getTextureByAtlasID(batcher.textureAtlasID);
 			
 			var batcherScrollX:Number = 0;
@@ -289,8 +290,8 @@ package molehill.core.render.engine
 			//_baIndexData.writeBytes(indexBufferData);
 			
 			var i:int;
-			_numVertexFloats += numNewVertices;
-			_numIndexShorts += numNewIndices;
+			//_numVertexFloats += numNewVertices;
+			//_numIndexShorts += numNewIndices;
 			
 			return _numVertexFloats;
 		}
