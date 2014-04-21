@@ -225,6 +225,10 @@ package molehill.core.render
 					}
 					
 				}
+				else if (batchingTree.hasChildren)
+				{
+					removeNodeReferences(batchingTree);
+				}
 				
 				if (renderTree.nextSibling != null && batchingTree.nextSibling == null)
 				{

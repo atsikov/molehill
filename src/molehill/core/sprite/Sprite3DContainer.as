@@ -19,7 +19,7 @@ package molehill.core.sprite
 
 	public class Sprite3DContainer extends InteractiveSprite3D
 	{
-		protected static var _cacheTreeNodes:CachingFactory;
+		molehill_internal static var _cacheTreeNodes:CachingFactory;
 		
 		private var _listChildren:Vector.<Sprite3D>
 		

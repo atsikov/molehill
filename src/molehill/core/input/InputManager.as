@@ -10,10 +10,13 @@ package molehill.core.input
 	
 	import molehill.core.Scene3DManager;
 	import molehill.core.events.Input3DEvent;
+	import molehill.core.molehill_input_internal;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.Scene3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	
+	use namespace molehill_input_internal;
 	
 	public class InputManager
 	{

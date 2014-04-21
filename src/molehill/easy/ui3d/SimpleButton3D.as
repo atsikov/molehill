@@ -181,19 +181,19 @@ package molehill.easy.ui3d
 			if (value)
 			{
 				_currentState = STATE_NORMAL;
-				addEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
-				addEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
-				addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-				addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-				addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				addEventListener(MouseEvent.MOUSE_OVER, onSpriteMouseOver);
+				addEventListener(MouseEvent.MOUSE_OUT, onSpriteMouseOut);
+				addEventListener(MouseEvent.MOUSE_DOWN, onSpriteMouseDown);
+				addEventListener(MouseEvent.MOUSE_UP, onSpriteMouseUp);
+				addEventListener(MouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			}
 			else
 			{
-				removeEventListener(MouseEvent.MOUSE_OVER, onMouseOver);
-				removeEventListener(MouseEvent.MOUSE_OUT, onMouseOut);
-				removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-				removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-				removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				removeEventListener(MouseEvent.MOUSE_OVER, onSpriteMouseOver);
+				removeEventListener(MouseEvent.MOUSE_OUT, onSpriteMouseOut);
+				removeEventListener(MouseEvent.MOUSE_DOWN, onSpriteMouseDown);
+				removeEventListener(MouseEvent.MOUSE_UP, onSpriteMouseUp);
+				removeEventListener(MouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			}
 			
 			updateState();

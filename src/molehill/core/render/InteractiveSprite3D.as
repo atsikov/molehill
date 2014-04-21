@@ -5,6 +5,7 @@ package molehill.core.render
 	
 	import molehill.core.events.Input3DEvent;
 	import molehill.core.input.InputManager;
+	import molehill.core.molehill_input_internal;
 	import molehill.core.molehill_internal;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.texture.NormalizedAlphaChannel;
@@ -12,6 +13,7 @@ package molehill.core.render
 	import molehill.core.texture.TextureManager;
 	
 	use namespace molehill_internal;
+	use namespace molehill_input_internal;
 
 	public class InteractiveSprite3D extends Sprite3D
 	{
@@ -27,7 +29,7 @@ package molehill.core.render
 			//InputManager.getInstance().sortListeners();
 		}
 		
-		public function onMouseDown(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseDown(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
@@ -47,7 +49,7 @@ package molehill.core.render
 			return true;
 		}
 		
-		public function onMouseUp(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseUp(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
@@ -67,7 +69,7 @@ package molehill.core.render
 			return true;
 		}
 		
-		public function onMouseClick(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseClick(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
@@ -87,7 +89,7 @@ package molehill.core.render
 			return true;
 		}
 		
-		public function onMouseMove(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseMove(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
 			if (ignoreTransparentPixels)
 			{
@@ -121,7 +123,7 @@ package molehill.core.render
 			return true;
 		}
 		
-		public function onMouseOut(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseOut(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
 			_mouseIsOver = false;
 			dispatchEvent(
@@ -138,7 +140,7 @@ package molehill.core.render
 		}
 		
 		private var _mouseIsOver:Boolean = false;
-		public function onMouseOver(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseOver(stageX:int, stageY:int, localX:int, localY:int):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
