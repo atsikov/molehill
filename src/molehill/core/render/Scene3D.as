@@ -2,19 +2,19 @@ package molehill.core.render
 {
 	import easy.collections.TreeNode;
 	
+	import flash.desktop.Clipboard;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display3D.textures.Texture;
 	import flash.events.Event;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
+	import flash.utils.getTimer;
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.render.engine.RenderEngine;
-	import molehill.core.render.shader.Shader3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
-	import molehill.core.text.TextField3D;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.ObjectUtils;
@@ -57,12 +57,14 @@ package molehill.core.render
 			return ObjectUtils.traceTree(localRenderTree) == ObjectUtils.traceTree(_bacthingTree);
 		}
 		
+		public var globalTraceString:String = "";
 		private function traceTrees():void
 		{
-			trace(ObjectUtils.traceTree(localRenderTree));
-			trace('-----------------');
-			trace(ObjectUtils.traceTree(_bacthingTree));
-			trace('================================');
+			globalTraceString += getTimer()/ 1000 + "\n\n";
+			globalTraceString += ObjectUtils.traceTree(localRenderTree);
+			globalTraceString += '\n-----------------\n';
+			globalTraceString += ObjectUtils.traceTree(_bacthingTree);
+			globalTraceString += '\n================================\n\n';
 		}
 		
 		molehill_internal var _needUpdateBatchers:Boolean = false;
@@ -227,7 +229,16 @@ package molehill.core.render
 				}
 				else if (batchingTree.hasChildren)
 				{
+					// last child was removed from container
+					// cleaning up suitable batchers tree branch
 					removeNodeReferences(batchingTree);
+					
+					while (batchingTree.hasChildren)
+					{
+						batchingTree.removeNode(
+							batchingTree.firstChild
+						);
+					}
 				}
 				
 				if (renderTree.nextSibling != null && batchingTree.nextSibling == null)
@@ -514,12 +525,8 @@ package molehill.core.render
 					//traceTrees();
 					
 					checkBatchingTree(localRenderTree, _bacthingTree);
-					/*
-					if (!compareTrees())
-					{
-						traceTrees();
-					}
-					*/
+					
+					// traceTrees();
 				}
 				else
 				{
