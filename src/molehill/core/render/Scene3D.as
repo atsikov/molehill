@@ -558,7 +558,7 @@ package molehill.core.render
 					
 					checkBatchingTree(localRenderTree, _bacthingTree);
 					
-					// traceTrees();
+					//traceTrees();
 				}
 				else
 				{

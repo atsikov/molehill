@@ -340,16 +340,16 @@ package molehill.core.sprite
 			return _textureID != "" && _textureID != null;
 		}
 		
+		private var _currentAtlasData:TextureAtlasData;
 		public function setTexture(value:String):void
 		{
-			if (_textureID != value)
+			if (_textureID != value || _currentAtlasData == null)
 			{
-				var prevAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(_textureID);
-				var currentAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(value);
+				var newAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(value);
 				
 				_textureID = value;
 				
-				if (_parent != null && prevAtlasData !== currentAtlasData)
+				if (_parent != null && _currentAtlasData !== newAtlasData)
 				{
 					_parent.textureAtlasChanged = true;
 					if (_scene != null)
@@ -357,20 +357,22 @@ package molehill.core.sprite
 						_scene._needUpdateBatchers = true;
 					}
 				}
+				
+				_currentAtlasData = newAtlasData;
 			}
 			
-			if (currentAtlasData == null)
+			if (_currentAtlasData == null)
 			{
 				return;
 			}
 			
-			var textureData:TextureData = currentAtlasData.getTextureData(_textureID);
+			var textureData:TextureData = _currentAtlasData.getTextureData(_textureID);
 			if (textureData == null)
 			{
 				return;
 			}
 			
-			var textureRegion:Rectangle = currentAtlasData.getTextureRegion(_textureID);
+			var textureRegion:Rectangle = _currentAtlasData.getTextureRegion(_textureID);
 			this.textureRegion = textureRegion;
 			
 			_blankOffsetX = textureData.blankOffsetX;
@@ -1022,7 +1024,7 @@ package molehill.core.sprite
 		
 		public function isPixelTransparent(localX:int, localY:int):Boolean
 		{
-			var textureData:TextureData = TEXTURE_MANAGER.getTextureDataByID(textureID);
+			var textureData:TextureData = _currentAtlasData.getTextureData(textureID);
 			if (localX < textureData.blankOffsetX ||
 				localY < textureData.blankOffsetY ||
 				localX > textureData.blankOffsetX + textureData.croppedWidth ||

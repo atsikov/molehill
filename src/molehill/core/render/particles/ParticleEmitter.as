@@ -43,7 +43,7 @@ package molehill.core.render.particles
 			_cacheParticleData = new Vector.<ParticleData>();
 			
 			_enterFrameListener = new Sprite();
-			_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+			//_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
 		}
 		
 		private var _lastGenerationTime:uint = 0;

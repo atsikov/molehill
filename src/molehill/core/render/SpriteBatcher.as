@@ -449,23 +449,11 @@ package molehill.core.render
 				_indexBufferData.endian = Endian.LITTLE_ENDIAN;
 			}
 			
-			var indexNum:int = 0;
-			var nextIndexNum:int;
-			
-			var v0:int = 0;
-			var v1:int = Sprite3D.NUM_ELEMENTS_PER_VERTEX;
-			var v2:int = 2 * Sprite3D.NUM_ELEMENTS_PER_VERTEX;
-			var v3:int = 3 * Sprite3D.NUM_ELEMENTS_PER_VERTEX;
-			
-			var i:int = 0;
 			cursor = _listSprites.head;
 			while (cursor != null)
 			{
 				sprite = cursor.data as Sprite3D;
 				
-				indexNum = numSprites - 1 - i;
-				
-				var j:int;
 				var isOnScreen:Boolean = true;
 				if (!sprite.visible)
 				{
@@ -474,8 +462,6 @@ package molehill.core.render
 				}
 				else
 				{
-					nextIndexNum = _numVisibleSprites * Sprite3D.NUM_ELEMENTS_PER_SPRITE;
-					
 					if (sprite.updateOnRender)
 					{
 						sprite.updateValues();
@@ -586,11 +572,9 @@ package molehill.core.render
 					
 					if (_needUpdateBuffers)
 					{
-						nextIndexNum = _numVisibleSprites * 6;
+						var indexNum:uint = _numVisibleSprites * 4;
 						
-						indexNum = _numVisibleSprites * 4 + _lastPassedVertices / 9;
-						
-						_indexBufferData.position = _numVisibleSprites * 6 * 2;
+						_indexBufferData.position = _numVisibleSprites * 12;
 						_indexBufferData.writeShort(indexNum);
 						_indexBufferData.writeShort(indexNum + 1);
 						_indexBufferData.writeShort(indexNum + 2);
@@ -605,7 +589,6 @@ package molehill.core.render
 				sprite.resetVisibilityChanged();
 				
 				cursor = cursor.next;
-				i++;
 			}
 			
 			if (currentNumVisibleSprites < _numVisibleSprites)
