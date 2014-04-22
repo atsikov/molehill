@@ -49,6 +49,38 @@ package molehill.core.render
 			_renderEngine = value;
 		}
 		
+		public function onContextRestored():void
+		{
+			_listRestoredBatchers = new Array();
+			
+			notifyBatchersOnContextRestored(_bacthingTree);
+			
+			_listRestoredBatchers = null;
+		}
+		
+		private var _listRestoredBatchers:Array;
+		private function notifyBatchersOnContextRestored(node:TreeNode):void
+		{
+			if (node == null)
+			{
+				return;
+			}
+			
+			if (node.hasChildren)
+			{
+				notifyBatchersOnContextRestored(node.firstChild);
+			}
+			
+			var batcher:IVertexBatcher = (node.value as BatchingInfo).batcher;
+			if (batcher != null && _listRestoredBatchers.indexOf(batcher) == -1)
+			{
+				batcher.onContextRestored();
+				_listRestoredBatchers.push(batcher);
+			}
+			
+			notifyBatchersOnContextRestored(node.nextSibling);
+		}
+		
 		/**
 		 * private
 		 **/

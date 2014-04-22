@@ -350,6 +350,7 @@ package molehill.core.render
 			if (_vertexBuffer == null)
 			{
 				_vertexBuffer = context.createVertexBuffer(numTriangles * 2, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+				_needUploadVertexData = true;
 			}
 			if (_needUploadVertexData)
 			{
@@ -387,6 +388,7 @@ package molehill.core.render
 			if (_indexBuffer == null)
 			{
 				_indexBuffer = context.createIndexBuffer(numTriangles * 3);
+				_needUploadIndexData = true;
 			}
 			if (_needUploadIndexData)
 			{
@@ -400,6 +402,25 @@ package molehill.core.render
 		public function get indexBufferOffset():int
 		{
 			return 0;
+		}
+		
+		public function onContextRestored():void
+		{
+			if (_vertexBuffer != null)
+			{
+				_vertexBuffer.dispose();
+				_vertexBuffer = null;
+			}
+			
+			_needUploadVertexData = true;
+			
+			if (_indexBuffer != null)
+			{
+				_indexBuffer.dispose();
+				_indexBuffer = null;
+			}
+			
+			_needUploadIndexData = true;
 		}
 	}
 }

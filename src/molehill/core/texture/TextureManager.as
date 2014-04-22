@@ -136,7 +136,38 @@ package molehill.core.texture
 		public function setContext(value:Context3D):void
 		{
 			_context3D = value;
+			for each (var texture:Texture in _hashTexturesByAtlasID)
+			{
+				texture.dispose();
+				var atlasID:String = _hashAtlasIDByTexture[texture];
+				
+				var atlasData:TextureAtlasData = _hashAtlasDataByAtlasID[atlasID];
+				
+				delete _hashTexturesByAtlasData[atlasData];
+				delete _hashTexturesByAtlasID[atlasID];
+				
+				_hashAtlasIDByTexture[texture] = null;
+				
+				for (var textureId:String in atlasData._hashTextures)
+				{
+					delete _hashTexturesByTextureID[textureId];
+				}
+				
+				if (_hashARFDataByTextureID[textureId] != null)
+				{
+					delete _hashCompressedTexturesByARFData[_hashARFDataByTextureID[textureId]];
+				}
+				else
+				{
+					delete _hashTexturesByTextureID[_hashAtlasBitmapByTextureID[textureId]];
+				}
+				
+				delete _hashTextureTypeByTexture[texture];
+			}
 			
+			_notUsedTextures = new Dictionary();
+			
+			/*
 			_hashTextureTypeByTexture = new Dictionary();
 			
 			for (var field:Object in _hashTexturesByAtlasBitmap)
@@ -212,6 +243,7 @@ package molehill.core.texture
 					_hashTexturesByTextureID[textureID] = texture;
 				}
 			}
+			*/
 		}
 		
 		private var _hashCompressedTexturesByARFData:Dictionary;

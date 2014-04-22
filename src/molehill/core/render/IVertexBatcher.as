@@ -10,6 +10,8 @@ package molehill.core.render
 
 	public interface IVertexBatcher
 	{
+		function onContextRestored():void;
+		
 		function getVerticesData():ByteArray;
 		function getIndicesData(passedVertices:uint):ByteArray;
 		function get numTriangles():uint;

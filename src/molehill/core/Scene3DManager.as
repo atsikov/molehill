@@ -6,9 +6,9 @@ package molehill.core
 	import flash.events.Event;
 	
 	import molehill.core.render.Scene3D;
-	import molehill.core.sprite.Sprite3D;
 	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3DCache;
+	import molehill.core.sprite.Sprite3D;
 	import molehill.core.texture.TextureManager;
 
 	public class Scene3DManager
@@ -99,8 +99,14 @@ package molehill.core
 		{
 			var context:Context3D = _stage.stage3Ds[0].context3D;
 			TextureManager.getInstance().setContext(context);
+			Shader3DCache.getInstance().init(context);
 			_renderer.setContext3D(context);
 			_renderer.setViewportSize(_stage.stageWidth, _stage.stageHeight);
+			
+			for each (var scene:Scene3D in _hashScenes)
+			{
+				scene.onContextRestored();
+			}
 			
 			if (_contextLossCallback != null)
 			{

@@ -126,16 +126,13 @@ package molehill.core.render
 			}
 			
 			var currentNode:TreeNode = node;
-			while (currentNode != null)
-			{
-				var nextNode:TreeNode = currentNode.nextSibling;
-				
-				currentNode.parent.removeNode(currentNode);
-				currentNode.reset();
-				_cacheTreeNodes.storeInstance(currentNode);
-				
-				currentNode = nextNode;
-			}
+			var nextNode:TreeNode = currentNode.nextSibling;
+			
+			currentNode.parent.removeNode(currentNode);
+			currentNode.reset();
+			_cacheTreeNodes.storeInstance(currentNode);
+			
+			cacheAllNodes(nextNode);
 		}
 		
 		private function createFlattenedTree(src:TreeNode):void
@@ -204,18 +201,16 @@ package molehill.core.render
 			var node:TreeNode;
 			if (src.hasChildren)
 			{
-				node = _cacheTreeNodes.newInstance();
-				node.value = src.firstChild.value;
-				dest.addAsFirstNode(node);
-				copyTree(src.firstChild, node);
+				dest.addAsFirstNode(
+					copyTree(src.firstChild)
+				);
 				
 				var nextSibling:TreeNode = src.firstChild.nextSibling;
 				while (nextSibling != null)
 				{
-					node = _cacheTreeNodes.newInstance();
-					node.value = nextSibling.value;
-					dest.addNode(node);
-					copyTree(nextSibling, node)
+					dest.addNode(
+						copyTree(nextSibling)
+					);
 					nextSibling = nextSibling.nextSibling;
 				}
 			}

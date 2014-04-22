@@ -660,5 +660,20 @@ package molehill.core.render.particles
 		{
 			return 0;
 		}
+		
+		public function onContextRestored():void
+		{
+			if (_mainVertexBuffer != null)
+			{
+				_mainVertexBuffer.dispose();
+				_mainVertexBuffer = null;
+			}
+			
+			if (_indexBuffer != null)
+			{
+				_indexBuffer.dispose();
+				_indexBuffer = null;
+			}
+		}
 	}
 }

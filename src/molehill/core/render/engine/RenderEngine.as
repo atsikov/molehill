@@ -62,7 +62,7 @@ package molehill.core.render.engine
 			_baIndexData = new ByteArray();
 			_baIndexData.endian = Endian.LITTLE_ENDIAN;
 			
-			//_context3D.enableErrorChecking = true;
+			_context3D.enableErrorChecking = true;
 			//_context3D.setCulling(Context3DTriangleFace.BACK);
 			_context3D.setBlendFactors(Context3DBlendFactor.SOURCE_ALPHA, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA);
 			_context3D.setDepthTest(false, Context3DCompareMode.ALWAYS);

@@ -773,5 +773,38 @@ package molehill.core.render
 		{
 			return 0;
 		}
+		
+		public function onContextRestored():void
+		{
+			if (_vertexBufferVertices != null)
+			{
+				_vertexBufferVertices.dispose();
+				_vertexBufferVertices = null;
+			}
+			
+			if (_vertexBufferColor != null)
+			{
+				_vertexBufferColor.dispose();
+				_vertexBufferColor = null;
+			}
+			
+			if (_vertexBufferTexture != null)
+			{
+				_vertexBufferTexture.dispose();
+				_vertexBufferTexture = null;
+			}
+			
+			_needUploadVertexData = true;
+			_needUploadColorData = true;
+			_needUploadTextureData = true;
+			
+			if (_indexBuffer != null)
+			{
+				_indexBuffer.dispose();
+				_indexBuffer = null;
+			}
+			
+			_needUploadIndexData = true;
+		}
 	}
 }
