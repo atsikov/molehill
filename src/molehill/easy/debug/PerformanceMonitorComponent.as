@@ -104,9 +104,11 @@ package molehill.easy.debug
 			
 			var currentConsumedMemory:int = System.totalMemory;
 			var needScaleDown:Boolean = false;
-			if (currentConsumedMemory > _maxMemory)
+			var scaleFactor:int = 1;
+			while (currentConsumedMemory > _maxMemory)
 			{
 				_maxMemory *= 2;
+				scaleFactor *= 2;
 				needScaleDown = true;
 			}
 			
@@ -119,7 +121,7 @@ package molehill.easy.debug
 					for (var i:int = 0; i < numGraphPieces; i++)
 					{
 						var piece:Sprite3D = _containerMemoryGraph.getChildAt(i);
-						if (piece.y > 75)
+						if (piece.y < 75)
 						{
 							needScaleUp = false;
 							break;
@@ -136,7 +138,7 @@ package molehill.easy.debug
 					for (i = 0; i < numGraphPieces; i++)
 					{
 						piece = _containerMemoryGraph.getChildAt(i);
-						piece.y *= 2;
+						piece.y = 2 * piece.y - 150;
 					}
 				}
 			}
@@ -145,7 +147,8 @@ package molehill.easy.debug
 				for (i = 0; i < numGraphPieces; i++)
 				{
 					piece = _containerMemoryGraph.getChildAt(i);
-					piece.y /= 2;
+					
+					piece.y = 150 - (150 - piece.y) / scaleFactor;
 				}
 			}
 			
