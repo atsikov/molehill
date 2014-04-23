@@ -24,18 +24,41 @@ package molehill.easy.ui3d
 			setSize(_tiledWidth, _tiledHeight);
 		}
 		
+		override public function set textureRegion(value:Rectangle):void
+		{
+			_referenceSprite.textureRegion = value;
+			
+			setSize(_tiledWidth, _tiledHeight);
+		}
+		
 		private var _cacheSprites:CachingFactory;
 		private var _tiledWidth:Number = 0;
 		private var _tiledHeight:Number = 0;
+		
+		override public function get width():Number
+		{
+			return _tiledWidth;
+		}
 		
 		override public function set width(value:Number):void
 		{
 			setSize(value, _tiledHeight);
 		}
 		
+		override public function get height():Number
+		{
+			return _tiledHeight;
+		}
+		
 		override public function set height(value:Number):void
 		{
 			setSize(_tiledWidth, value);
+		}
+		
+		public function setTileSize(w:Number, h:Number):void
+		{
+			_referenceSprite.setSize(w, h);
+			setSize(_tiledWidth, _tiledHeight);
 		}
 		
 		override public function setSize(w:Number, h:Number):void
@@ -56,6 +79,11 @@ package molehill.easy.ui3d
 				return;
 			}
 			
+			if (_referenceSprite.width == 0 || _referenceSprite.height == 0)
+			{
+				return;
+			}
+			
 			for (var i:int = 0; i < w; i += _referenceSprite.width)
 			{
 				for (var j:int = 0; j < h; j += _referenceSprite.height)
@@ -63,6 +91,7 @@ package molehill.easy.ui3d
 					sprite = _cacheSprites.newInstance();
 					sprite.moveTo(i, j);
 					sprite.setTexture(_referenceSprite.textureID);
+					sprite.textureRegion = _referenceSprite.textureRegion;
 					
 					var spriteWidth:int = _referenceSprite.width;
 					var spriteHeight:int = _referenceSprite.height;
@@ -77,11 +106,11 @@ package molehill.easy.ui3d
 						spriteHeight = h - j;
 					}
 					
+					sprite.setSize(spriteWidth, spriteHeight);
+					
 					if (spriteWidth != _referenceSprite.width ||
 						spriteHeight != _referenceSprite.height)
 					{
-						sprite.setSize(spriteWidth, spriteHeight);
-						
 						var textureRegion:Rectangle = _referenceSprite.textureRegion.clone();
 						textureRegion.width *= spriteWidth / _referenceSprite.width;
 						textureRegion.height *= spriteHeight / _referenceSprite.height;

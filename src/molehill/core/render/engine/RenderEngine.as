@@ -10,6 +10,7 @@ package molehill.core.render.engine
 	import flash.display3D.VertexBuffer3D;
 	import flash.display3D.textures.Texture;
 	import flash.geom.Matrix3D;
+	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
@@ -17,6 +18,7 @@ package molehill.core.render.engine
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.IVertexBatcher;
 	import molehill.core.render.OrderedVertexBuffer;
+	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.BaseShader;
@@ -243,22 +245,26 @@ package molehill.core.render.engine
 			var batcherScrollX:Number = 0;
 			var batcherScrollY:Number = 0;
 			var batcherScale:Number = 1;
+			var batcherScissorRect:Rectangle = null;
 			
-			if (batcher.batcherCamera != null)
+			var camerasEqual:Boolean = false;
+			if (_lastChunkData != null)
 			{
-				// setting negative scroll values to act as flash DisplayObject.scrollRect
-				batcherScrollX = -batcher.batcherCamera.scrollX;
-				batcherScrollY = -batcher.batcherCamera.scrollY;
-				batcherScale = batcher.batcherCamera.scale;
+				if (batcher.batcherCamera != null)
+				{
+					camerasEqual = _lastChunkData.camera != null && _lastChunkData.camera.isEqual(batcher.batcherCamera); 
+				}
+				else
+				{
+					camerasEqual = _lastChunkData.camera == null;
+				}
 			}
 			
 			if (_lastChunkData != null &&
 				_lastChunkData.texture == _currentTexture &&
 				_lastChunkData.shader == batcher.shader &&
 				_lastChunkData.blendMode == batcher.blendMode &&
-				_lastChunkData.scrollX == batcherScrollX &&
-				_lastChunkData.scrollY == batcherScrollY &&
-				_lastChunkData.scale == batcherScale &&
+				camerasEqual &&
 				_lastChunkData.additionalVertexBuffers === batcher.getAdditionalVertexBuffers(_context3D) &&
 				_lastChunkData.customIndexBuffer === batcher.getCustomIndexBuffer(_context3D))
 			{
@@ -272,9 +278,7 @@ package molehill.core.render.engine
 				chunkData.numTriangles = batcher.numTriangles;
 				chunkData.shader = batcher.shader;
 				chunkData.blendMode = batcher.blendMode;
-				chunkData.scrollX = batcherScrollX;
-				chunkData.scrollY = batcherScrollY;
-				chunkData.scale = batcherScale;
+				chunkData.camera = batcher.batcherCamera;
 				chunkData.additionalVertexBuffers = batcher.getAdditionalVertexBuffers(_context3D);
 				chunkData.customIndexBuffer = batcher.getCustomIndexBuffer(_context3D);
 				
@@ -369,6 +373,8 @@ package molehill.core.render.engine
 			_currentScrollY = int.MIN_VALUE;
 			_currentScale = 1;
 			
+			var currentCamera:CustomCamera;
+			
 			while (_listRenderChunks.length > 0)
 			{
 				var chunkData:RenderChunkData = _listRenderChunks.shift();
@@ -379,11 +385,14 @@ package molehill.core.render.engine
 					_context3D.setBlendFactors.apply(null, BlendMode.getBlendFactors(blendMode));
 				}
 				
-				if (_currentScrollX != chunkData.scrollX || _currentScrollY != chunkData.scrollY || _currentScale != chunkData.scale)
+				if (chunkData.camera != null && 
+					(currentCamera == null || !currentCamera.isEqual(chunkData.camera)))
 				{
-					_currentScrollX = chunkData.scrollX;
-					_currentScrollY = chunkData.scrollY;
-					_currentScale = chunkData.scale;
+					currentCamera = chunkData.camera;
+					
+					_currentScrollX = -currentCamera.scrollX;
+					_currentScrollY = -currentCamera.scrollY;
+					_currentScale = currentCamera.scale;
 					
 					//trace(_currentScrollX, _currentScrollY);
 					
@@ -393,6 +402,25 @@ package molehill.core.render.engine
 					m.append(_orthoMatrix);
 					
 					_context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, m, true);
+					
+					//_context3D.setScissorRectangle(currentCamera.scissorRect);
+				}
+				else if (chunkData.camera == null && currentCamera != null)
+				{
+					_currentScrollX = 0;
+					_currentScrollY = 0;
+					_currentScale = 1;
+					
+					//trace(_currentScrollX, _currentScrollY);
+					
+					m.identity();
+					m.appendScale(_currentScale, _currentScale, 1);
+					m.appendTranslation(_currentScrollX, _currentScrollY, 0);
+					m.append(_orthoMatrix);
+					
+					_context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, m, true);
+					
+					//_context3D.setScissorRectangle(null);
 				}
 				
 				var currentShader:Shader3D = chunkData.shader;
@@ -478,8 +506,7 @@ package molehill.core.render.engine
 				chunkData.blendMode = null;
 				chunkData.firstIndex = 0;
 				chunkData.numTriangles = 0;
-				chunkData.scrollX = 0;
-				chunkData.scrollY = 0;
+				chunkData.camera = null;
 				chunkData.shader = null;
 				chunkData.texture = null;
 				chunkData.additionalVertexBuffers = null;

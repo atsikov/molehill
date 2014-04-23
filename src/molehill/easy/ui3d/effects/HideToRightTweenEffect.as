@@ -1,8 +1,9 @@
 package molehill.easy.ui3d.effects
 {
-	import easy.ui.WindowManager;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	
+	import molehill.easy.ui3d.WindowManager3D;
 	
 	public class HideToRightTweenEffect extends HideToLeftTweenEffect
 	{
@@ -18,7 +19,7 @@ package molehill.easy.ui3d.effects
 		
 		override protected function get targetPosition():Point
 		{
-			var windowContentRect:Rectangle = WindowManager.getInstance().contentRegion;
+			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
 			return new Point(Math.round(windowContentRect.width) + 200, Math.round((windowContentRect.height - _target.height) / 2 * startPosition.y));
 		}
 	}

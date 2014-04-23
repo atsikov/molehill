@@ -1,7 +1,8 @@
 package molehill.easy.ui3d.effects
 {
-	import flash.display.DisplayObject;
 	import flash.events.Event;
+	
+	import molehill.core.sprite.Sprite3D;
 
 	public class ZoomInEffect extends Effect
 	{
@@ -24,7 +25,7 @@ package molehill.easy.ui3d.effects
 		public var destinationX:Number = 1.0;
 		public var destinationY:Number = 1.0;
 		
-		override public function showEffect(target:DisplayObject, completeCallback:Function = null) : void
+		override public function showEffect(target:Sprite3D, completeCallback:Function = null) : void
 		{			
 			_srcWidth = target.width;
 			_srcHeight = target.height;

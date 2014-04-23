@@ -1,5 +1,7 @@
 package molehill.core.render.camera
 {
+	import flash.geom.Rectangle;
+
 	public class CustomCamera
 	{
 		public function CustomCamera()
@@ -39,11 +41,23 @@ package molehill.core.render.camera
 			_scale = value;
 		}
 		
+		private var _scissorRect:Rectangle;
+		public function get scissorRect():Rectangle
+		{
+			return _scissorRect;
+		}
+		
+		public function set scissorRect(value:Rectangle):void
+		{
+			_scissorRect = value;
+		}
+		
 		public function reset():void
 		{
 			_scrollX = 0;
 			_scrollY = 0;
 			_scale = 1;
+			_scissorRect = null;
 		}
 		
 		public function copyValues(camera:CustomCamera):void
@@ -51,11 +65,28 @@ package molehill.core.render.camera
 			_scrollX = camera.scrollX;
 			_scrollY = camera.scrollY;
 			_scale = camera.scale;
+			
+			var referenceRect:Rectangle = camera.scissorRect;
+			if (referenceRect != null)
+			{
+				if (_scissorRect == null)
+				{
+					_scissorRect = camera.scissorRect.clone();
+				}
+				else
+				{
+					_scissorRect.copyFrom(referenceRect);
+				}
+			}
 		}
 		
 		public function isEqual(reference:CustomCamera):Boolean
 		{
-			return _scrollX == reference.scrollX && _scrollY == reference.scrollY && scale == reference.scale;
+			return _scrollX == reference.scrollX &&
+				_scrollY == reference.scrollY &&
+				scale == reference.scale &&
+				(_scissorRect == null && reference.scissorRect == null ||
+				 _scissorRect != null && reference.scissorRect != null && _scissorRect.equals(reference._scissorRect));
 		}
 	}
 }

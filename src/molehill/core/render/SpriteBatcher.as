@@ -298,9 +298,7 @@ package molehill.core.render
 			
 			var referenceCamera:CustomCamera = _cameraOwner.camera;
 			
-			_batcherCamera.scrollX = referenceCamera.scrollX;
-			_batcherCamera.scrollY = referenceCamera.scrollY;
-			_batcherCamera.scale = referenceCamera.scale;
+			_batcherCamera.copyValues(referenceCamera);
 			
 			var parent:Sprite3DContainer = _cameraOwner.parent;
 			while (parent != null)

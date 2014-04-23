@@ -27,9 +27,13 @@ package molehill.easy.ui3d
 		
 		private var _totalWidth:Number = 0;
 		private var _totalHeight:Number = 0;
-		public function Sprite3D9Scale(bgTextureID:String, scaleRect:Rectangle)
+		
+		private var _fillMethod:String;
+		public function Sprite3D9Scale(bgTextureID:String, scaleRect:Rectangle, fillMethod:String = "stretch")
 		{
 			super();
+			
+			_fillMethod = fillMethod;
 			
 			var tm:TextureManager = TextureManager.getInstance();
 			var textureRegion:Rectangle = tm.getTextureRegion(bgTextureID);
@@ -41,6 +45,18 @@ package molehill.easy.ui3d
 			textureScaleRect.bottom = textureRegion.top + scaleRect.bottom / textureData.height * textureRegion.height
 			
 			_scaleRect = scaleRect;
+			
+			var spriteClass:Class;
+			switch (fillMethod)
+			{
+				case Sprite3D9ScaleFillMethod.STRETCH:
+					spriteClass = Sprite3D;
+					break;
+				
+				case Sprite3D9ScaleFillMethod.TILE:
+					spriteClass = TiledSprite3D;
+					break;
+			}
 			
 			// -------------------------------------
 			_bitmapTL = new Sprite3D();
@@ -54,7 +70,7 @@ package molehill.easy.ui3d
 				textureScaleRect.y - textureRegion.y
 			);
 			
-			_bitmapT = new Sprite3D();
+			_bitmapT = new spriteClass();
 			_bitmapT.setTexture(bgTextureID);
 			_bitmapT.width = scaleRect.width;
 			_bitmapT.height = scaleRect.y;
@@ -64,6 +80,14 @@ package molehill.easy.ui3d
 				textureScaleRect.width, 
 				textureScaleRect.y - textureRegion.y
 			);
+			
+			if (_bitmapT is TiledSprite3D)
+			{
+				(_bitmapT as TiledSprite3D).setTileSize(
+					scaleRect.width,
+					scaleRect.top
+				);
+			}
 			
 			_bitmapTR = new Sprite3D();
 			_bitmapTR.setTexture(bgTextureID);
@@ -77,7 +101,7 @@ package molehill.easy.ui3d
 			);
 			
 			// -------------------------------------
-			_bitmapL = new Sprite3D();
+			_bitmapL = new spriteClass();
 			_bitmapL.setTexture(bgTextureID);
 			_bitmapL.width = scaleRect.x;
 			_bitmapL.height = scaleRect.height;
@@ -88,7 +112,15 @@ package molehill.easy.ui3d
 				textureScaleRect.height
 			);
 			
-			_bitmapC = new Sprite3D();
+			if (_bitmapL is TiledSprite3D)
+			{
+				(_bitmapL as TiledSprite3D).setTileSize(
+					scaleRect.left,
+					scaleRect.height
+				);
+			}
+			
+			_bitmapC = new spriteClass();
 			_bitmapC.setTexture(bgTextureID);
 			_bitmapC.width = scaleRect.width;
 			_bitmapC.height = scaleRect.height;
@@ -99,7 +131,15 @@ package molehill.easy.ui3d
 				textureScaleRect.height
 			);
 			
-			_bitmapR = new Sprite3D();
+			if (_bitmapC is TiledSprite3D)
+			{
+				(_bitmapC as TiledSprite3D).setTileSize(
+					scaleRect.width,
+					scaleRect.height
+				);
+			}
+			
+			_bitmapR = new spriteClass();
 			_bitmapR.setTexture(bgTextureID);
 			_bitmapR.width = textureData.width - scaleRect.x - scaleRect.width;
 			_bitmapR.height = scaleRect.height;
@@ -109,6 +149,14 @@ package molehill.easy.ui3d
 				textureRegion.right - textureScaleRect.right, 
 				textureScaleRect.height
 			);
+			
+			if (_bitmapR is TiledSprite3D)
+			{
+				(_bitmapR as TiledSprite3D).setTileSize(
+					textureData.width - scaleRect.right,
+					scaleRect.height
+				);
+			}
 			
 			// -------------------------------------
 			_bitmapBL = new Sprite3D();
@@ -122,7 +170,7 @@ package molehill.easy.ui3d
 				textureRegion.bottom - textureScaleRect.bottom
 			);
 			
-			_bitmapB = new Sprite3D();
+			_bitmapB = new spriteClass();
 			_bitmapB.setTexture(bgTextureID);
 			_bitmapB.width = scaleRect.width;
 			_bitmapB.height = textureData.height - scaleRect.height - scaleRect.y;
@@ -132,6 +180,14 @@ package molehill.easy.ui3d
 				textureScaleRect.width, 
 				textureRegion.bottom - textureScaleRect.bottom
 			);
+			
+			if (_bitmapB is TiledSprite3D)
+			{
+				(_bitmapB as TiledSprite3D).setTileSize(
+					scaleRect.width,
+					textureData.height - scaleRect.bottom
+				);
+			}
 			
 			_bitmapBR = new Sprite3D();
 			_bitmapBR.setTexture(bgTextureID);
@@ -189,6 +245,14 @@ package molehill.easy.ui3d
 		override public function set height(value:Number):void
 		{
 			_totalHeight = value;
+		}
+		
+		override public function setSize(w:Number, h:Number):void
+		{
+			_totalWidth = w;
+			_totalHeight = h;
+			
+			resize();
 		}
 	}
 }

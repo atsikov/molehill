@@ -1,15 +1,12 @@
 package molehill.easy.ui3d.effects
 {
-	import easy.ui.WindowManager;
-	
 	import fl.motion.easing.Back;
-	import fl.motion.easing.Elastic;
 	
-	import flash.display.DisplayObject;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
 	import molehill.core.sprite.Sprite3D;
+	import molehill.easy.ui3d.WindowManager3D;
 	
 	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
@@ -55,7 +52,7 @@ package molehill.easy.ui3d.effects
 		
 		protected function get startPosition():Point
 		{
-			var windowContentRect:Rectangle = WindowManager.getInstance().contentRegion;
+			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
 			return new Point(Math.round(-_target.width) - 200, Math.round((windowContentRect.height - _target.height) / 2 * targetPosition.y));
 		}
 		
@@ -77,10 +74,12 @@ package molehill.easy.ui3d.effects
 			var startPos:Point = startPosition;
 			var targetPos:Point = targetPosition;
 			
-			var windowContentRect:Rectangle = WindowManager.getInstance().contentRegion;
+			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
 			
-			_target.x = startPos.x + Math.round(((windowContentRect.width - _target.width) / 2 * targetPos.x - startPos.x) * _tweenTarget.x);
-			_target.y = startPos.y + Math.round(((windowContentRect.height - _target.height) / 2 * targetPos.y - startPos.y) * _tweenTarget.y);
+			_target.moveTo(
+				startPos.x + Math.round(((windowContentRect.width - _target.width) / 2 * targetPos.x - startPos.x) * _tweenTarget.x),
+				startPos.y + Math.round(((windowContentRect.height - _target.height) / 2 * targetPos.y - startPos.y) * _tweenTarget.y)
+			);
 		}
 		
 		override protected function completeEffect():void

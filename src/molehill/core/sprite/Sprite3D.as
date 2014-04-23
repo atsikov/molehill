@@ -678,20 +678,15 @@ package molehill.core.sprite
 		}
 		
 		molehill_internal var _visible:Boolean = true;
+		molehill_internal var _parentVisible:Boolean = true;
+		molehill_internal function set parentVisible(value:Boolean):void
+		{
+			_parentVisible = value;
+		}
+		
 		public function get visible():Boolean 
 		{
-			var currentParent:Sprite3DContainer = _parent;
-			while (currentParent != null)
-			{
-				if (!currentParent._visible)
-				{
-					return false;
-				}
-				
-				currentParent = currentParent._parent;
-			}
-			
-			return _visible;
+			return _visible && _parentVisible;
 		}
 		
 		public function set visible(value:Boolean):void 
@@ -703,7 +698,7 @@ package molehill.core.sprite
 			
 			_visible = value;
 			
-			_visibilityChanged = true;
+			_visibilityChanged = _visible == visible;
 		}
 		
 		public function setSize(w:Number, h:Number):void
@@ -1231,14 +1226,10 @@ package molehill.core.sprite
 			_cutout = value;
 		}
 		
-		molehill_internal var parentX0Node:BinarySearchTreeNode;
-		molehill_internal var parentY0Node:BinarySearchTreeNode;
-		molehill_internal var parentX1Node:BinarySearchTreeNode;
-		molehill_internal var parentY1Node:BinarySearchTreeNode;
-		molehill_internal var parentX2Node:BinarySearchTreeNode;
-		molehill_internal var parentY2Node:BinarySearchTreeNode;
-		molehill_internal var parentX3Node:BinarySearchTreeNode;
-		molehill_internal var parentY3Node:BinarySearchTreeNode;
+		molehill_internal var parentMinXNode:BinarySearchTreeNode;
+		molehill_internal var parentMinYNode:BinarySearchTreeNode;
+		molehill_internal var parentMaxXNode:BinarySearchTreeNode;
+		molehill_internal var parentMaxYNode:BinarySearchTreeNode;
 		
 		private var _camera:CustomCamera = null;
 		/**

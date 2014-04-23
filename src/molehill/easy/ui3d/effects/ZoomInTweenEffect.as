@@ -6,6 +6,8 @@ package molehill.easy.ui3d.effects
 	
 	import flash.display.DisplayObject;
 	
+	import molehill.core.sprite.Sprite3D;
+	
 	import org.opentween.OpenTween;
 
 	public class ZoomInTweenEffect extends Effect
@@ -15,7 +17,7 @@ package molehill.easy.ui3d.effects
 		private var _srcWidth:Number;
 		private var _srcHeight:Number;
 		
-		override public function showEffect(target:DisplayObject, completeCallback:Function = null):void
+		override public function showEffect(target:Sprite3D, completeCallback:Function = null):void
 		{
 			super.showEffect(target, completeCallback);
 			_timer.stop();

@@ -23,34 +23,26 @@ package molehill.core.sprite
 		
 		private var _listChildren:Vector.<Sprite3D>
 		
-		private var _childCoordsX0:BinarySearchTree;
-		private var _childCoordsY0:BinarySearchTree;
-		private var _childCoordsX1:BinarySearchTree;
-		private var _childCoordsY1:BinarySearchTree;
-		private var _childCoordsX2:BinarySearchTree;
-		private var _childCoordsY2:BinarySearchTree;
-		private var _childCoordsX3:BinarySearchTree;
-		private var _childCoordsY3:BinarySearchTree;
+		private var _childCoordsMinX:BinarySearchTree;
+		private var _childCoordsMinY:BinarySearchTree;
+		private var _childCoordsMaxX:BinarySearchTree;
+		private var _childCoordsMaxY:BinarySearchTree;
 		
 		public function Sprite3DContainer()
 		{
 			if (_cacheTreeNodes == null)
 			{
-				_cacheTreeNodes = new CachingFactory(TreeNode, 5000);
+				_cacheTreeNodes = new CachingFactory(TreeNode, 1000);
 			}
 			
 			_listChildren = new Vector.<Sprite3D>();
 			localRenderTree = _cacheTreeNodes.newInstance();
 			localRenderTree.value = this;
 
-			_childCoordsX0 = new BinarySearchTree();
-			_childCoordsY0 = new BinarySearchTree();
-			_childCoordsX1 = new BinarySearchTree();
-			_childCoordsY1 = new BinarySearchTree();
-			_childCoordsX2 = new BinarySearchTree();
-			_childCoordsY2 = new BinarySearchTree();
-			_childCoordsX3 = new BinarySearchTree();
-			_childCoordsY3 = new BinarySearchTree();
+			_childCoordsMinX = new BinarySearchTree();
+			_childCoordsMinY = new BinarySearchTree();
+			_childCoordsMaxX = new BinarySearchTree();
+			_childCoordsMaxY = new BinarySearchTree();
 		}
 		
 		override public function set blendMode(value:String):void
@@ -76,6 +68,11 @@ package molehill.core.sprite
 		
 		public function addChild(child:Sprite3D):Sprite3D
 		{
+			if (child === this)
+			{
+				throw new Error("Cannot place sprite into itself");
+			}
+			
 			if (child.parent === this)
 			{
 				return child;
@@ -126,17 +123,33 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			child.parentX0Node = _childCoordsX0.insertElement(child, child._x0);
-			child.parentY0Node = _childCoordsY0.insertElement(child, child._y0);
-			
-			child.parentX1Node = _childCoordsX1.insertElement(child, child._x1);
-			child.parentY1Node = _childCoordsY1.insertElement(child, child._y1);
-			
-			child.parentX2Node = _childCoordsX2.insertElement(child, child._x2);
-			child.parentY2Node = _childCoordsY2.insertElement(child, child._y2);
-			
-			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
-			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
+			if (!(child is Sprite3DContainer) || (child as Sprite3DContainer).numChildren > 0)
+			{
+				var minX:Number;
+				var maxX:Number;
+				var minY:Number;
+				var maxY:Number;
+				if (child._rotation == 0 && child._parentRotation == 0)
+				{
+					minX = Math.min(child._x0, child._x2);
+					maxX = Math.max(child._x0, child._x2);
+					minY = Math.min(child._y0, child._y2);
+					maxY = Math.max(child._y0, child._y2);
+				}
+				else
+				{
+					minX = Math.min(child._x0, child._x1, child._x2, child._x3);
+					maxX = Math.max(child._x0, child._x1, child._x2, child._x3);
+					minY = Math.min(child._y0, child._y1, child._y2, child._y3);
+					maxY = Math.max(child._y0, child._y1, child._y2, child._y3);
+				}
+				
+				child.parentMinXNode = _childCoordsMinX.insertElement(child, minX);
+				child.parentMinYNode = _childCoordsMinY.insertElement(child, minY);
+				
+				child.parentMaxXNode = _childCoordsMaxX.insertElement(child, maxX);
+				child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
+			}
 			
 			updateChildParentValues(child);
 			child.updateValues();
@@ -205,17 +218,34 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			child.parentX0Node = _childCoordsX0.insertElement(child, child._x0);
-			child.parentY0Node = _childCoordsY0.insertElement(child, child._y0);
 			
-			child.parentX1Node = _childCoordsX1.insertElement(child, child._x1);
-			child.parentY1Node = _childCoordsY1.insertElement(child, child._y1);
-			
-			child.parentX2Node = _childCoordsX2.insertElement(child, child._x2);
-			child.parentY2Node = _childCoordsY2.insertElement(child, child._y2);
-			
-			child.parentX3Node = _childCoordsX3.insertElement(child, child._x3);
-			child.parentY3Node = _childCoordsY3.insertElement(child, child._y3);
+			if (!(child is Sprite3DContainer) || (child as Sprite3DContainer).numChildren > 0)
+			{
+				var minX:Number;
+				var maxX:Number;
+				var minY:Number;
+				var maxY:Number;
+				if (child._rotation == 0 && child._parentRotation == 0)
+				{
+					minX = Math.min(child._x0, child._x2);
+					maxX = Math.max(child._x0, child._x2);
+					minY = Math.min(child._y0, child._y2);
+					maxY = Math.max(child._y0, child._y2);
+				}
+				else
+				{
+					minX = Math.min(child._x0, child._x1, child._x2, child._x3);
+					maxX = Math.max(child._x0, child._x1, child._x2, child._x3);
+					minY = Math.min(child._y0, child._y1, child._y2, child._y3);
+					maxY = Math.max(child._y0, child._y1, child._y2, child._y3);
+				}
+				
+				child.parentMinXNode = _childCoordsMinX.insertElement(child, minX);
+				child.parentMinYNode = _childCoordsMinY.insertElement(child, minY);
+				
+				child.parentMaxXNode = _childCoordsMaxX.insertElement(child, maxX);
+				child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
+			}
 			
 			var dimensionsChanged:Boolean = updateContainerSize();
 			
@@ -264,17 +294,74 @@ package molehill.core.sprite
 		protected var _containerBottom:int = 0;
 		molehill_internal function updateDimensions(child:Sprite3D):void
 		{
-			_childCoordsX0.updateNodeWeight(child.parentX0Node, child._x0);
-			_childCoordsY0.updateNodeWeight(child.parentY0Node, child._y0);
-			_childCoordsX1.updateNodeWeight(child.parentX1Node, child._x1);
-			_childCoordsY1.updateNodeWeight(child.parentY1Node, child._y1);
-			_childCoordsX2.updateNodeWeight(child.parentX2Node, child._x2);
-			_childCoordsY2.updateNodeWeight(child.parentY2Node, child._y2);
-			_childCoordsX3.updateNodeWeight(child.parentX3Node, child._x3);
-			_childCoordsY3.updateNodeWeight(child.parentY3Node, child._y3);
+			var needUpdateDimensions:Boolean = false;
+			if (child is Sprite3DContainer)
+			{
+				var container:Sprite3DContainer = child as Sprite3DContainer;
+				if (container.numChildren == 0)
+				{
+					if (container.parentMinXNode != null)
+					{
+						_childCoordsMinX.removeNode(child.parentMinXNode);
+						_childCoordsMinY.removeNode(child.parentMinYNode);
+						_childCoordsMaxX.removeNode(child.parentMaxXNode);
+						_childCoordsMaxY.removeNode(child.parentMaxYNode);
+						
+						child.parentMinXNode = null;
+						child.parentMinYNode = null;
+						child.parentMaxXNode = null;
+						child.parentMaxYNode = null;
+						
+						needUpdateDimensions = true;
+					}
+					else
+					{
+						return;
+					}
+				}
+			}
 			
-			var dimansionsChanged:Boolean = updateContainerSize();
-			if (dimansionsChanged && _parent != null/* && notifyParentOnChange*/)
+			if (!needUpdateDimensions)
+			{
+				var minX:Number;
+				var maxX:Number;
+				var minY:Number;
+				var maxY:Number;
+				if (child._rotation == 0 && child._parentRotation == 0)
+				{
+					minX = Math.min(child._x0, child._x2);
+					maxX = Math.max(child._x0, child._x2);
+					minY = Math.min(child._y0, child._y2);
+					maxY = Math.max(child._y0, child._y2);
+				}
+				else
+				{
+					minX = Math.min(child._x0, child._x1, child._x2, child._x3);
+					maxX = Math.max(child._x0, child._x1, child._x2, child._x3);
+					minY = Math.min(child._y0, child._y1, child._y2, child._y3);
+					maxY = Math.max(child._y0, child._y1, child._y2, child._y3);
+				}
+				
+				if (child.parentMinXNode == null)
+				{
+					child.parentMinXNode = _childCoordsMinX.insertElement(child, minX);
+					child.parentMinYNode = _childCoordsMinY.insertElement(child, minY);
+					child.parentMaxXNode = _childCoordsMaxX.insertElement(child, maxX);
+					child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
+				}
+				else
+				{
+					_childCoordsMinX.updateNodeWeight(child.parentMinXNode, minX);
+					_childCoordsMinY.updateNodeWeight(child.parentMinYNode, minY);
+					_childCoordsMaxX.updateNodeWeight(child.parentMaxXNode, maxX);
+					_childCoordsMaxY.updateNodeWeight(child.parentMaxYNode, maxY);
+				}
+				
+				needUpdateDimensions = true;
+			}
+			
+			var dimensionsChanged:Boolean = updateContainerSize();
+			if (dimensionsChanged && _parent != null/* && notifyParentOnChange*/)
 			{
 				_parent.updateDimensions(this);
 			}
@@ -282,30 +369,10 @@ package molehill.core.sprite
 		
 		private function updateContainerSize():Boolean
 		{
-			_containerX = Math.min(
-				_childCoordsX0.getMinWeight(),
-				_childCoordsX1.getMinWeight(),
-				_childCoordsX2.getMinWeight(),
-				_childCoordsX3.getMinWeight()
-			);
-			_containerY = Math.min(
-				_childCoordsY0.getMinWeight(),
-				_childCoordsY1.getMinWeight(),
-				_childCoordsY2.getMinWeight(),
-				_childCoordsY3.getMinWeight()
-			);
-			_containerRight = Math.max(
-				_childCoordsX0.getMaxWeight(),
-				_childCoordsX1.getMaxWeight(),
-				_childCoordsX2.getMaxWeight(),
-				_childCoordsX3.getMaxWeight()
-			);
-			_containerBottom = Math.max(
-				_childCoordsY0.getMaxWeight(),
-				_childCoordsY1.getMaxWeight(),
-				_childCoordsY2.getMaxWeight(),
-				_childCoordsY3.getMaxWeight()
-			);
+			_containerX = _childCoordsMinX.minWeight;
+			_containerY = _childCoordsMinY.minWeight;
+			_containerRight = _childCoordsMaxX.maxWeight;
+			_containerBottom = _childCoordsMaxY.maxWeight;
 			
 			var dimensionsChanged:Boolean =
 				_x0 != _containerX ||
@@ -421,25 +488,20 @@ package molehill.core.sprite
 			}
 			treeStructureChanged = true;
 			
-			_childCoordsX0.removeNode(child.parentX0Node);
-			_childCoordsY0.removeNode(child.parentY0Node);
-			_childCoordsX1.removeNode(child.parentX1Node);
-			_childCoordsY1.removeNode(child.parentY1Node);
-			_childCoordsX2.removeNode(child.parentX2Node);
-			_childCoordsY2.removeNode(child.parentY2Node);
-			_childCoordsX3.removeNode(child.parentX3Node);
-			_childCoordsY3.removeNode(child.parentY3Node);
-			
-			child.parentX0Node = null;
-			child.parentY0Node = null;
-			child.parentX1Node = null;
-			child.parentY1Node = null;
-			child.parentX2Node = null;
-			child.parentY2Node = null;
-			child.parentX3Node = null;
-			child.parentY3Node = null;
-			
-			updateContainerSize();
+			if (child.parentMinXNode != null)
+			{
+				_childCoordsMinX.removeNode(child.parentMinXNode);
+				_childCoordsMinY.removeNode(child.parentMinYNode);
+				_childCoordsMaxX.removeNode(child.parentMaxXNode);
+				_childCoordsMaxY.removeNode(child.parentMaxYNode);
+				
+				child.parentMinXNode = null;
+				child.parentMinYNode = null;
+				child.parentMaxXNode = null;
+				child.parentMaxYNode = null;
+				
+				updateContainerSize();
+			}
 			
 			if (_parent != null)
 			{
@@ -494,25 +556,20 @@ package molehill.core.sprite
 			}
 			treeStructureChanged = true;
 			
-			_childCoordsX0.removeNode(child.parentX0Node);
-			_childCoordsY0.removeNode(child.parentY0Node);
-			_childCoordsX1.removeNode(child.parentX1Node);
-			_childCoordsY1.removeNode(child.parentY1Node);
-			_childCoordsX2.removeNode(child.parentX2Node);
-			_childCoordsY2.removeNode(child.parentY2Node);
-			_childCoordsX3.removeNode(child.parentX3Node);
-			_childCoordsY3.removeNode(child.parentY3Node);
-			
-			child.parentX0Node = null;
-			child.parentY0Node = null;
-			child.parentX1Node = null;
-			child.parentY1Node = null;
-			child.parentX2Node = null;
-			child.parentY2Node = null;
-			child.parentX3Node = null;
-			child.parentY3Node = null;
-			
-			updateContainerSize();
+			if (child.parentMinXNode != null)
+			{
+				_childCoordsMinX.removeNode(child.parentMinXNode);
+				_childCoordsMinY.removeNode(child.parentMinYNode);
+				_childCoordsMaxX.removeNode(child.parentMaxXNode);
+				_childCoordsMaxY.removeNode(child.parentMaxYNode);
+				
+				child.parentMinXNode = null;
+				child.parentMinYNode = null;
+				child.parentMaxXNode = null;
+				child.parentMaxYNode = null;
+				
+				updateContainerSize();
+			}
 			
 			if (_parent != null)
 			{
@@ -583,6 +640,18 @@ package molehill.core.sprite
 			for each (var child:Sprite3D in _listChildren)
 			{
 				child._visibilityChanged = _visibilityChanged;
+				
+				child.parentVisible = value;
+			}
+		}
+		
+		override molehill_internal function set parentVisible(value:Boolean):void
+		{
+			super.parentVisible = value;
+			
+			for each (var child:Sprite3D in _listChildren)
+			{
+				child.parentVisible = _visible && value;
 			}
 		}
 		
@@ -797,7 +866,7 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = value + _shiftY * _parentScaleX;
+				_listChildren[i].parentShiftY = value + _shiftY * _parentScaleY;
 			}
 		}
 		

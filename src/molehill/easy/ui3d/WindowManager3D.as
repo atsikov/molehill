@@ -170,6 +170,7 @@ package molehill.easy.ui3d
 			sprite.setSize(contentRegion.width, contentRegion.height);
 			sprite.darkenColor = _modalBGColor;
 			sprite.mouseEnabled = true;
+			sprite.ignoreTransparentPixels = false;
 			sprite.alpha = _modalBGAlpha;
 			return sprite;
 		}
