@@ -140,6 +140,8 @@ package molehill.core.sprite
 		
 		public function Sprite3D()
 		{
+			super(this);
+			
 			resetSprite();
 		}
 		

@@ -2,14 +2,17 @@ package molehill.core.input
 {
 	import flash.display.DisplayObject;
 	import flash.display.InteractiveObject;
+	import flash.display.Stage;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.utils.Dictionary;
 	
 	import molehill.core.Scene3DManager;
-	import molehill.core.events.Input3DEvent;
+	import molehill.core.events.Input3DKeyboardEvent;
+	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.molehill_input_internal;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.Scene3D;
@@ -18,7 +21,7 @@ package molehill.core.input
 	
 	use namespace molehill_input_internal;
 	
-	public class InputManager
+	public class InputManager extends EventDispatcher
 	{
 		private static var _instance:InputManager;
 		public static function getInstance():InputManager
@@ -46,22 +49,22 @@ package molehill.core.input
 			_objectsUnderMouse = new Dictionary();
 		}
 		
-		private var _mouseListener:InteractiveObject;
-		public function init(mouseListener:InteractiveObject):void
+		private var _stage:Stage;
+		public function init(stage:Stage):void
 		{
-			_mouseListener = mouseListener;
+			_stage = stage;
 			
-			_mouseStageX = mouseListener.stage != null ? mouseListener.stage.mouseX : mouseListener.mouseX;
-			_mouseStageY = mouseListener.stage != null ? mouseListener.stage.mouseY : mouseListener.mouseY;
+			_mouseStageX = stage.mouseX;
+			_mouseStageY = stage.mouseY;
 			
-			mouseListener.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			mouseListener.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			mouseListener.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+			stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 			
-			mouseListener.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
-			mouseListener.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 			
-			mouseListener.addEventListener(Event.ENTER_FRAME, onListenerEnterFrame, false, int.MAX_VALUE);
+			stage.addEventListener(Event.ENTER_FRAME, onListenerEnterFrame, false, int.MAX_VALUE);
 		}
 		
 		private var _enabled:Boolean = true;
@@ -79,23 +82,23 @@ package molehill.core.input
 			
 			if (value)
 			{
-				_mouseListener.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-				_mouseListener.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-				_mouseListener.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				_stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+				_stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+				_stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 				
-				_mouseListener.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
-				_mouseListener.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+				_stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+				_stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 				
 				_objectsUnderMouse = new Dictionary();
 			}
 			else
 			{
-				_mouseListener.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-				_mouseListener.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-				_mouseListener.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				_stage.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+				_stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+				_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 				
-				_mouseListener.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
-				_mouseListener.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+				_stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+				_stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 				
 				_objectsUnderMouse = null;
 			}
@@ -112,7 +115,7 @@ package molehill.core.input
 				while (
 					!(child is IMouseTransparent) && 
 					child.parent != null && 
-					child.parent != _mouseListener &&
+					child.parent != _stage &&
 					(!(child is IMouseDynamicTransparent) || !(child as IMouseDynamicTransparent).isTransparent)
 				)
 				{
@@ -139,7 +142,7 @@ package molehill.core.input
 		
 		private function onMouseUp(event:MouseEvent):void
 		{
-			if (_mouseListener.stage == null)
+			if (_stage.stage == null)
 			{
 				return;
 			}
@@ -151,7 +154,7 @@ package molehill.core.input
 		private var _listObjectsMouseDown:Array;
 		private function onMouseDown(event:MouseEvent):void
 		{
-			if (_mouseListener.stage == null)
+			if (_stage.stage == null)
 			{
 				return;
 			}
@@ -163,7 +166,7 @@ package molehill.core.input
 		private var _objectsUnderMouse:Dictionary;
 		private function onMouseMove(event:MouseEvent):void
 		{
-			if (_mouseListener.stage == null)
+			if (_stage.stage == null)
 			{
 				return;
 			}
@@ -175,12 +178,32 @@ package molehill.core.input
 		
 		private function onKeyUp(event:KeyboardEvent):void
 		{
-			
+			dispatchEvent(
+				new Input3DKeyboardEvent(
+					Input3DKeyboardEvent.KEY_UP,
+					event.charCode,
+					event.keyCode,
+					event.keyLocation,
+					event.ctrlKey,
+					event.altKey,
+					event.shiftKey
+				)
+			);
 		}
 		
 		private function onKeyDown(event:KeyboardEvent):void
 		{
-			
+			dispatchEvent(
+				new Input3DKeyboardEvent(
+					Input3DKeyboardEvent.KEY_DOWN,
+					event.charCode,
+					event.keyCode,
+					event.keyLocation,
+					event.ctrlKey,
+					event.altKey,
+					event.shiftKey
+				)
+			);
 		}
 		
 		private var _mouseStageX:Number = 0;
@@ -198,7 +221,7 @@ package molehill.core.input
 			
 			var listener:InteractiveSprite3D;
 			var mousePoint:Point = new Point(_mouseStageX, _mouseStageY);
-			var nativeObjects:Array = _mouseListener.stage.getObjectsUnderPoint(mousePoint);
+			var nativeObjects:Array = _stage.stage.getObjectsUnderPoint(mousePoint);
 			updateNativeObjectsUnderCursor(nativeObjects);
 			
 			var parent:Sprite3D;
@@ -206,7 +229,7 @@ package molehill.core.input
 			var localShiftY:Number = 0;
 			// Display List objects overlap our 3d scene
 			// Dispatching MOUSE_OUT for previous objects under mouse
-			var listMouseOutListeners:Array = _hashListenersByType[Input3DEvent.MOUSE_OUT];
+			var listMouseOutListeners:Array = _hashListenersByType[Input3DMouseEvent.MOUSE_OUT];
 			if (nativeObjects.length > 0)
 			{
 				for (var objectUnderMouse:Object in _objectsUnderMouse)
@@ -237,7 +260,8 @@ package molehill.core.input
 							_mouseStageX,
 							_mouseStageY,
 							_mouseStageX + localShiftX,
-							_mouseStageY + localShiftY
+							_mouseStageY + localShiftY,
+							listener
 						);
 					}
 					
@@ -252,6 +276,7 @@ package molehill.core.input
 			var numObjects:Number = molehillObjects.length;
 			
 			var topInteractiveParent:Sprite3DContainer;
+			var triggerSprite:Sprite3D;
 			for (var i:int = numObjects - 1; i >= 0; i--)
 			{
 				var candidate:Sprite3D = molehillObjects[i] as Sprite3D;
@@ -292,6 +317,7 @@ package molehill.core.input
 				else
 				{
 					topInteractiveParent = parent as Sprite3DContainer;
+					triggerSprite = molehillObjects[i] as Sprite3D;
 				}
 				
 				if (_hashTypeByListeners[candidate] == null)
@@ -329,6 +355,7 @@ package molehill.core.input
 					parent = parent.parent;
 				}
 				*/
+				/*
 				var eventTypes:Array = _hashTypeByListeners[candidate];
 				if (eventTypes != null)
 				{
@@ -344,7 +371,8 @@ package molehill.core.input
 										_mouseStageX,
 										_mouseStageY,
 										localShiftX,
-										localShiftY
+										localShiftY,
+										triggerSprite
 									))
 									{
 										_objectsUnderMouse[candidate] = true;
@@ -358,7 +386,8 @@ package molehill.core.input
 										_mouseStageX,
 										_mouseStageY,
 										localShiftX,
-										localShiftY
+										localShiftY,
+										triggerSprite
 									))
 									{
 										_objectsUnderMouse[candidate] = true;
@@ -372,7 +401,8 @@ package molehill.core.input
 										_mouseStageX,
 										_mouseStageY,
 										localShiftX,
-										localShiftY
+										localShiftY,
+										triggerSprite
 									))
 									{
 										_objectsUnderMouse[candidate] = true;
@@ -386,7 +416,8 @@ package molehill.core.input
 										_mouseStageX,
 										_mouseStageY,
 										localShiftX,
-										localShiftY
+										localShiftY,
+										triggerSprite
 									))
 									{
 										_objectsUnderMouse[candidate] = true;
@@ -400,7 +431,8 @@ package molehill.core.input
 										_mouseStageX,
 										_mouseStageY,
 										localShiftX,
-										localShiftY
+										localShiftY,
+										triggerSprite
 									))
 									{
 										_objectsUnderMouse[candidate] = true;
@@ -408,6 +440,76 @@ package molehill.core.input
 								}
 								break;
 						}
+					}
+				}
+				*/
+				if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
+				{
+					if ((candidate as InteractiveSprite3D).onMouseOver(
+						_mouseStageX,
+						_mouseStageY,
+						localShiftX,
+						localShiftY,
+						triggerSprite
+					))
+					{
+						_objectsUnderMouse[candidate] = true;
+					}
+				}
+				
+				if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
+				{
+					if ((candidate as InteractiveSprite3D).onMouseClick(
+						_mouseStageX,
+						_mouseStageY,
+						localShiftX,
+						localShiftY,
+						triggerSprite
+					))
+					{
+						_objectsUnderMouse[candidate] = true;
+					}
+				}
+				
+				if (_mouseKeyStateChanged && !_mouseKeyPressed)
+				{
+					if ((candidate as InteractiveSprite3D).onMouseUp(
+						_mouseStageX,
+						_mouseStageY,
+						localShiftX,
+						localShiftY,
+						triggerSprite
+					))
+					{
+						_objectsUnderMouse[candidate] = true;
+					}
+				}
+				
+				if (_mouseKeyStateChanged && _mouseKeyPressed)
+				{
+					if ((candidate as InteractiveSprite3D).onMouseDown(
+						_mouseStageX,
+						_mouseStageY,
+						localShiftX,
+						localShiftY,
+						triggerSprite
+					))
+					{
+						_objectsUnderMouse[candidate] = true;
+					}
+				}
+				
+				if (_mouseCoordsChanged)
+				{
+					if ((candidate as InteractiveSprite3D).onMouseMove(
+						_mouseStageX,
+						_mouseStageY,
+						localShiftX,
+						localShiftY,
+						triggerSprite
+					))
+					{
+						_objectsUnderMouse[candidate] = true;
 					}
 				}
 				
@@ -457,7 +559,8 @@ package molehill.core.input
 						_mouseStageX,
 						_mouseStageY,
 						_mouseStageX + localShiftX,
-						_mouseStageY + localShiftY
+						_mouseStageY + localShiftY,
+						listener
 					);
 				}
 				

@@ -11,6 +11,8 @@ package molehill.core.render
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
+	import molehill.core.events.Input3DMouseEvent;
+	import molehill.core.focus.IFocusable;
 	import molehill.core.molehill_internal;
 	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.sprite.Sprite3D;
@@ -36,6 +38,44 @@ package molehill.core.render
 			_enterFrameListener.addEventListener(Event.EXIT_FRAME, onRenderEnterFrame);
 			
 			_scene = this;
+			
+			addEventListener(Input3DMouseEvent.CLICK, onSceneMouseClick);
+		}
+		
+		public function set focus(value:Sprite3D):void
+		{
+			 updateFocus(value);
+		}
+		
+		private function updateFocus(target:Sprite3D):void
+		{
+			while (target != null)
+			{
+				if (target is IFocusable)
+				{
+					(target as IFocusable).onFocusReceived();
+				}
+				
+				target = target.parent;
+			}
+			
+			target = _focusInitiator;
+			while (target != null)
+			{
+				if (target is IFocusable)
+				{
+					(target as IFocusable).onFocusLost();
+				}
+				
+				target = target.parent;
+			}
+		}
+		
+		private var _focusInitiator:Sprite3D;
+		private function onSceneMouseClick(event:Input3DMouseEvent):void
+		{
+			var target:Sprite3D = event.eventInitiator;
+			updateFocus(target);
 		}
 		
 		private var _renderEngine:RenderEngine;

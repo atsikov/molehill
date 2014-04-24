@@ -73,6 +73,8 @@ package molehill.core.text
 			return new TextField3DCharacter();
 		}
 		
+		protected var _hashSymbolsByLine:Object;
+		protected var _numLines:uint = 0
 		private function updateLayout():void
 		{
 			var textLength:int = _text.length;
@@ -80,6 +82,9 @@ package molehill.core.text
 			var lineWidth:int = 0;
 			var lineY:int = 0;
 			var scale:Number = _fontSize / _fontTextureSize;
+			
+			_hashSymbolsByLine = new Object();
+			_numLines = 1;
 			
 			_textWidth = 0;
 			_textHeight = 0;
@@ -94,6 +99,8 @@ package molehill.core.text
 			var charAtlasData:TextureAtlasData;
 			var childIndex:int = 0;
 			var numGlyphs:int = 0;
+			var lineStart:int = 0;
+			var placedChildIndex:int = 0;
 			for (var i:int = 0; i < textLength; i++)
 			{
 				var charCode:int = _text.charCodeAt(i);
@@ -104,9 +111,34 @@ package molehill.core.text
 						_textWidth = lineWidth;
 					}
 					
+					switch (_align)
+					{
+						case TextField3DAlign.LEFT:
+							lineStart = 0;
+							break;
+						case TextField3DAlign.RIGHT:
+							lineStart = -lineWidth;
+							break;
+						case TextField3DAlign.CENTER:
+							lineStart = -lineWidth / 2;
+							break;
+					}
+					
+					for (var j:int = placedChildIndex; j < childIndex; j++)
+					{
+						child = super.getChildAt(j) as TextField3DCharacter;
+						child.moveTo(lineStart, lineY);
+						lineStart += Math.ceil(child.width);
+					}
+					
 					lineY += lineHeight;
 					lineHeight = 0;
 					lineWidth = 0;
+					
+					placedChildIndex = childIndex;
+					
+					_numLines++;
+					
 					continue;
 				}
 				
@@ -149,12 +181,33 @@ package molehill.core.text
 				
 				child.setTexture(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
-				child.moveTo(lineWidth, lineY);
 				
 				lineWidth += Math.ceil(child.width);
 				lineHeight = Math.max(lineHeight, Math.ceil(child.height));
 				
 				childIndex++;
+				
+				_hashSymbolsByLine[_numLines - 1] = uint(_hashSymbolsByLine[_numLines - 1]) + 1;
+			}
+			
+			switch (_align)
+			{
+				case TextField3DAlign.LEFT:
+					lineStart = 0;
+					break;
+				case TextField3DAlign.RIGHT:
+					lineStart = -lineWidth;
+					break;
+				case TextField3DAlign.CENTER:
+					lineStart = -lineWidth / 2;
+					break;
+			}
+			
+			for (i = placedChildIndex; i < childIndex; i++)
+			{
+				child = super.getChildAt(i) as TextField3DCharacter;
+				child.moveTo(lineStart, lineY);
+				lineStart += Math.ceil(child.width);
 			}
 			
 			if (_textWidth < lineWidth)
@@ -165,7 +218,7 @@ package molehill.core.text
 			
 			while (numChildren > childIndex)
 			{
-				_cacheSprites.push(super.removeChildAt(childIndex - 1));
+				_cacheSprites.push(super.removeChildAt(numChildren - 1));
 				
 				updateBatchersFlag = true;
 			}

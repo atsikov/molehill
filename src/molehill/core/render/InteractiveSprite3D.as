@@ -1,9 +1,10 @@
 package molehill.core.render
 {
+	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	
-	import molehill.core.events.Input3DEvent;
+	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.input.InputManager;
 	import molehill.core.molehill_input_internal;
 	import molehill.core.molehill_internal;
@@ -29,7 +30,7 @@ package molehill.core.render
 			//InputManager.getInstance().sortListeners();
 		}
 		
-		molehill_input_internal function onMouseDown(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseDown(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
@@ -37,19 +38,20 @@ package molehill.core.render
 			}
 			
 			dispatchEvent(
-				new Input3DEvent(
-					Input3DEvent.MOUSE_DOWN,
+				new Input3DMouseEvent(
+					Input3DMouseEvent.MOUSE_DOWN,
 					stageX,
 					stageY,
 					localX,
-					localY
+					localY,
+					eventInitiator
 				)
 			);
 			
 			return true;
 		}
 		
-		molehill_input_internal function onMouseUp(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseUp(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
@@ -57,19 +59,20 @@ package molehill.core.render
 			}
 			
 			dispatchEvent(
-				new Input3DEvent(
-					Input3DEvent.MOUSE_UP,
+				new Input3DMouseEvent(
+					Input3DMouseEvent.MOUSE_UP,
 					stageX,
 					stageY,
 					localX,
-					localY
+					localY,
+					eventInitiator
 				)
 			);
 			
 			return true;
 		}
 		
-		molehill_input_internal function onMouseClick(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseClick(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
@@ -77,19 +80,20 @@ package molehill.core.render
 			}
 			
 			dispatchEvent(
-				new Input3DEvent(
-					Input3DEvent.CLICK,
+				new Input3DMouseEvent(
+					Input3DMouseEvent.CLICK,
 					stageX,
 					stageY,
 					localX,
-					localY
+					localY,
+					eventInitiator
 				)
 			);
 			
 			return true;
 		}
 		
-		molehill_input_internal function onMouseMove(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseMove(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			if (ignoreTransparentPixels)
 			{
@@ -97,7 +101,7 @@ package molehill.core.render
 				{
 					if (_mouseIsOver)
 					{
-						onMouseOut(stageX, stageY, localX, localY);
+						onMouseOut(stageX, stageY, localX, localY, eventInitiator);
 					}
 					return false;
 				}
@@ -105,34 +109,36 @@ package molehill.core.render
 				{
 					if (!_mouseIsOver)
 					{
-						onMouseOver(stageX, stageY, localX, localY);
+						onMouseOver(stageX, stageY, localX, localY, eventInitiator);
 					}
 				}
 			}
 			
 			dispatchEvent(
-				new Input3DEvent(
-					Input3DEvent.MOUSE_MOVE,
+				new Input3DMouseEvent(
+					Input3DMouseEvent.MOUSE_MOVE,
 					stageX,
 					stageY,
 					localX,
-					localY
+					localY,
+					eventInitiator
 				)
 			);
 			
 			return true;
 		}
 		
-		molehill_input_internal function onMouseOut(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseOut(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			_mouseIsOver = false;
 			dispatchEvent(
-				new Input3DEvent(
-					Input3DEvent.MOUSE_OUT,
+				new Input3DMouseEvent(
+					Input3DMouseEvent.MOUSE_OUT,
 					stageX,
 					stageY,
 					localX,
-					localY
+					localY,
+					eventInitiator
 				)
 			);
 			
@@ -140,25 +146,26 @@ package molehill.core.render
 		}
 		
 		private var _mouseIsOver:Boolean = false;
-		molehill_input_internal function onMouseOver(stageX:int, stageY:int, localX:int, localY:int):Boolean
+		molehill_input_internal function onMouseOver(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				if (_mouseIsOver)
 				{
-					onMouseOut(stageX, stageY, localX, localY);
+					onMouseOut(stageX, stageY, localX, localY, eventInitiator);
 				}
 				return false;
 			}
 			
 			_mouseIsOver = true;
 			dispatchEvent(
-				new Input3DEvent(
-					Input3DEvent.MOUSE_OVER,
+				new Input3DMouseEvent(
+					Input3DMouseEvent.MOUSE_OVER,
 					stageX,
 					stageY,
 					localX,
-					localY
+					localY,
+					eventInitiator
 				)
 			);
 			
@@ -171,12 +178,12 @@ package molehill.core.render
 			
 			switch (type)
 			{
-				case Input3DEvent.CLICK:
-				case Input3DEvent.MOUSE_DOWN:
-				case Input3DEvent.MOUSE_MOVE:
-				case Input3DEvent.MOUSE_OUT:
-				case Input3DEvent.MOUSE_OVER:
-				case Input3DEvent.MOUSE_UP:
+				case Input3DMouseEvent.CLICK:
+				case Input3DMouseEvent.MOUSE_DOWN:
+				case Input3DMouseEvent.MOUSE_MOVE:
+				case Input3DMouseEvent.MOUSE_OUT:
+				case Input3DMouseEvent.MOUSE_OVER:
+				case Input3DMouseEvent.MOUSE_UP:
 					InputManager.getInstance().registerSprite(type, this);
 					break;
 			}
@@ -187,6 +194,33 @@ package molehill.core.render
 			super.removeEventListener(type, listener, useCapture);
 			
 			InputManager.getInstance().unregisterSprite(type, this);
+		}
+		
+		override public function dispatchEvent(event:Event):Boolean
+		{
+			var result:Boolean = false;
+			if (willTrigger(event.type))
+			{
+				result = super.dispatchEvent(event);
+				
+				if (!result)
+				{
+					return result;
+				}
+			}
+			
+			var currentParent:Sprite3D = parent;
+			while (currentParent != null)
+			{
+				if (currentParent.hasEventListener(event.type))
+				{
+					result = currentParent.dispatchEvent(event);
+				}
+				
+				currentParent = currentParent.parent;
+			}
+			
+			return result;
 		}
 	}
 }

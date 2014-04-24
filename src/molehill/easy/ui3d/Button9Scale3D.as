@@ -1,22 +1,16 @@
 package molehill.easy.ui3d
 {
-	import flash.display.Bitmap;
-	import flash.display.Sprite;
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.ui.MouseCursor;
 	import flash.utils.clearInterval;
 	import flash.utils.setInterval;
 	
 	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.input.MouseCursorManager;
-	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
-	import molehill.core.texture.TextureData;
-	import molehill.core.texture.TextureManager;
 	
-	public class SimpleButton3D extends InteractiveSprite3D
+	public class Button9Scale3D extends Sprite3DContainer
 	{
 		protected static const STATE_NORMAL:String   = "normal";
 		protected static const STATE_OVER:String     = "over";
@@ -25,36 +19,96 @@ package molehill.easy.ui3d
 		
 		protected var _currentState:String = STATE_NORMAL;
 		
-		protected var _normalTextureData:TextureData;
-		protected var _overTextureData:TextureData;
-		protected var _downTextureData:TextureData;
-		protected var _disabledTextureData:TextureData;
+		protected var _normalState:Sprite3D9Scale;
+		protected var _overState:Sprite3D9Scale;
+		protected var _downState:Sprite3D9Scale;
+		protected var _disabledState:Sprite3D9Scale;
 		
-		public function SimpleButton3D(
+		public function Button9Scale3D(
 			normalTextureID:String,
+			scaleRect:Rectangle,
+			scaleMethod:String = "stretch",
 			overTextureID:String = null,
 			downTextureID:String = null,
 			disabledTextureID:String = null
 		)
 		{
-			var tm:TextureManager = TextureManager.getInstance();
-			
 			mouseEnabled = true;
 			ignoreTransparentPixels = true;
 			
-			_normalTextureData = tm.getTextureDataByID(normalTextureID);
-			_overTextureData = overTextureID != null ? tm.getTextureDataByID(overTextureID) : _normalTextureData;
-			_downTextureData = downTextureID != null ? tm.getTextureDataByID(downTextureID) : _normalTextureData;
-			_disabledTextureData = tm.getTextureDataByID(disabledTextureID);
+			_normalState = new Sprite3D9Scale(
+				normalTextureID,
+				scaleRect,
+				scaleMethod
+			);
 			
-			setTexture(_normalTextureData.textureID);
-			setSize(_normalTextureData.width, _normalTextureData.height);
+			_overState = overTextureID == null ? null :
+				new Sprite3D9Scale(
+					overTextureID,
+					scaleRect,
+					scaleMethod
+				);
+			
+			_downState = downTextureID == null ? null :
+				new Sprite3D9Scale(
+					downTextureID,
+					scaleRect,
+					scaleMethod
+				);
+			
+			_disabledState = disabledTextureID == null ? null :
+				new Sprite3D9Scale(
+					disabledTextureID,
+					scaleRect,
+					scaleMethod
+				);
+			
+			addChild(_normalState);
 			
 			addEventListener(Input3DMouseEvent.MOUSE_OVER, onSpriteMouseOver);
 			addEventListener(Input3DMouseEvent.MOUSE_OUT, onSpriteMouseOut);
 			addEventListener(Input3DMouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			addEventListener(Input3DMouseEvent.MOUSE_DOWN, onSpriteMouseDown);
 			addEventListener(Input3DMouseEvent.MOUSE_UP, onSpriteMouseUp);
+		}
+		
+		override public function get width():Number
+		{
+			var child:Sprite3D = getChildAt(0);
+			return child.width;
+		}
+		
+		override public function set width(value:Number):void
+		{
+			setSize(value, height);
+		}
+		
+		override public function get height():Number
+		{
+			var child:Sprite3D = getChildAt(0);
+			return child.height;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			setSize(width, value);
+		}
+		
+		override public function setSize(w:Number, h:Number):void
+		{
+			_normalState.setSize(w, h);
+			if (_overState != null)
+			{
+				_overState.setSize(w, h);
+			}
+			if (_downState != null)
+			{
+				_downState.setSize(w, h);
+			}
+			if (_disabledState != null)
+			{
+				_disabledState.setSize(w, h);
+			}
 		}
 		
 		protected function onSpriteMouseOver(event:Input3DMouseEvent):void
@@ -110,55 +164,67 @@ package molehill.easy.ui3d
 		
 		protected function updateState():void
 		{
-			var tm:TextureManager = TextureManager.getInstance();
+			var child:Sprite3D = getChildAt(0);
 			
 			if(_enabled)
 			{
 				switch (_currentState)
 				{
 					case STATE_NORMAL:
-						if (textureID != _normalTextureData.textureID)
+						if (child !== _normalState)
 						{
-							setTexture(_normalTextureData.textureID);
-							setSize(_normalTextureData.width, _normalTextureData.height);
+							removeChild(child);
+							addChildAt(_normalState, 0);
 						}
 						break;
 					
 					case STATE_OVER:
-						if (textureID != _overTextureData.textureID)
+						if (_overState != null)
 						{
-							setTexture(_overTextureData.textureID);
-							setSize(_overTextureData.width, _overTextureData.height);
+							if (child !== _overState)
+							{
+								removeChild(child);
+								addChildAt(_overState, 0);
+							}
+						}
+						else if (child !== _normalState)
+						{
+							removeChild(child);
+							addChildAt(_normalState, 0);
 						}
 						break;
 					
 					case STATE_DOWN:
-						if (textureID != _downTextureData.textureID)
+						if (_downState != null)
 						{
-							setTexture(_downTextureData.textureID);
-							setSize(_downTextureData.width, _downTextureData.height);
+							if (child !== _downState)
+							{
+								removeChild(child);
+								addChildAt(_downState, 0);
+							}
+						}
+						else if (child !== _normalState)
+						{
+							removeChild(child);
+							addChildAt(_normalState, 0);
 						}
 						break;
 				}
 			}
 			else
 			{
-				if (_disabledTextureData != null)
+				if (_disabledState != null)
 				{
-					if (textureID != _disabledTextureData.textureID)
+					if (child !== _disabledState)
 					{
-						setTexture(_disabledTextureData.textureID);
-						setSize(_disabledTextureData.width, _disabledTextureData.height);
+						removeChild(child);
+						addChildAt(_disabledState, 0);
 					}
 				}
-				else
+				else if (child !== _normalState)
 				{
-					if (textureID != _normalTextureData.textureID)
-					{
-						setTexture(_normalTextureData.textureID);
-						textureRegion = tm.getTextureRegion(_normalTextureData.textureID);
-						setSize(_normalTextureData.width, _normalTextureData.height);
-					}
+					removeChild(child);
+					addChildAt(_normalState, 0);
 				}
 			}
 		}
@@ -181,19 +247,19 @@ package molehill.easy.ui3d
 			if (value)
 			{
 				_currentState = STATE_NORMAL;
-				addEventListener(MouseEvent.MOUSE_OVER, onSpriteMouseOver);
-				addEventListener(MouseEvent.MOUSE_OUT, onSpriteMouseOut);
-				addEventListener(MouseEvent.MOUSE_DOWN, onSpriteMouseDown);
-				addEventListener(MouseEvent.MOUSE_UP, onSpriteMouseUp);
-				addEventListener(MouseEvent.MOUSE_MOVE, onSpriteMouseMove);
+				addEventListener(Input3DMouseEvent.MOUSE_OVER, onSpriteMouseOver);
+				addEventListener(Input3DMouseEvent.MOUSE_OUT, onSpriteMouseOut);
+				addEventListener(Input3DMouseEvent.MOUSE_DOWN, onSpriteMouseDown);
+				addEventListener(Input3DMouseEvent.MOUSE_UP, onSpriteMouseUp);
+				addEventListener(Input3DMouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			}
 			else
 			{
-				removeEventListener(MouseEvent.MOUSE_OVER, onSpriteMouseOver);
-				removeEventListener(MouseEvent.MOUSE_OUT, onSpriteMouseOut);
-				removeEventListener(MouseEvent.MOUSE_DOWN, onSpriteMouseDown);
-				removeEventListener(MouseEvent.MOUSE_UP, onSpriteMouseUp);
-				removeEventListener(MouseEvent.MOUSE_MOVE, onSpriteMouseMove);
+				removeEventListener(Input3DMouseEvent.MOUSE_OVER, onSpriteMouseOver);
+				removeEventListener(Input3DMouseEvent.MOUSE_OUT, onSpriteMouseOut);
+				removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onSpriteMouseDown);
+				removeEventListener(Input3DMouseEvent.MOUSE_UP, onSpriteMouseUp);
+				removeEventListener(Input3DMouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			}
 			
 			updateState();

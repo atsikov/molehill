@@ -11,6 +11,7 @@ package molehill.easy.debug
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.text.TextField3D;
+	import molehill.core.text.TextField3DAlign;
 	import molehill.core.text.TextField3DFormat;
 	
 	import utils.CachingFactory;
@@ -41,9 +42,9 @@ package molehill.easy.debug
 			addChild(_containerMemoryGraph);
 			
 			_tfFps = new TextField3D();
-			_tfFps.x = 110;
+			_tfFps.x = 147;
 			_tfFps.y = -3;
-			_tfFps.defaultTextFormat = new TextField3DFormat("Officina", 10, 0xFFFFFF);
+			_tfFps.defaultTextFormat = new TextField3DFormat("Officina", 10, 0xFFFFFF, TextField3DAlign.RIGHT);
 			_tfFps.text = "0 FPS";
 			addChild(_tfFps);
 			

@@ -1086,6 +1086,12 @@ package molehill.core.sprite
 			}
 			
 		}
+		
+		override public function isPixelTransparent(localX:int, localY:int):Boolean
+		{
+			return false;
+		}
+		
 		/*
 		override public function set notifyParentOnChange(value:Boolean):void
 		{

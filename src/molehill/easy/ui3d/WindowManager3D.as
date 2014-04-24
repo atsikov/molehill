@@ -5,7 +5,7 @@ package molehill.easy.ui3d
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	
-	import molehill.core.events.Input3DEvent;
+	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
