@@ -2,6 +2,7 @@ package molehill.core.input
 {
 	import flash.display.DisplayObject;
 	import flash.display.InteractiveObject;
+	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -275,262 +276,90 @@ package molehill.core.input
 			var molehillObjects:Vector.<Sprite3D> = activeScene.getObjectsUnderPoint(mousePoint);
 			var numObjects:Number = molehillObjects.length;
 			
-			var topInteractiveParent:Sprite3DContainer;
+			var topInteractiveParent:InteractiveSprite3D;
+			var eventsProcessed:Boolean = false;
 			var triggerSprite:Sprite3D;
 			for (var i:int = numObjects - 1; i >= 0; i--)
 			{
 				var candidate:Sprite3D = molehillObjects[i] as Sprite3D;
-				if (candidate == null)
+				
+				if (topInteractiveParent == null)
 				{
-					continue;
+					topInteractiveParent = candidate.scene;
 				}
 				
 				if (!candidate.mouseEnabled)
 				{
-					parent = candidate.parent;
-					while (parent != null && !parent.mouseEnabled) 
+					var candidateParent:Sprite3DContainer = candidate.parent;
+					while (candidateParent != null && !candidateParent.mouseEnabled && candidateParent !== topInteractiveParent)
 					{
-						parent = parent.parent;
+						candidateParent = candidateParent.parent;
 					}
 					
-					if (parent == null)
+					if (candidateParent == null || candidateParent == topInteractiveParent)
 					{
 						continue;
-					}
-					
-					candidate = parent;
-				}
-				
-				if (topInteractiveParent != null)
-				{
-					 var candidateContainer:Sprite3DContainer = candidate is Sprite3DContainer ? candidate as Sprite3DContainer : candidate.parent;
-					 while (candidateContainer != null && candidateContainer !== topInteractiveParent)
-					 {
-						 candidateContainer = candidateContainer.parent;
-					 }
-					 
-					 if (candidateContainer == null)
-					 {
-						 candidate = topInteractiveParent;
-					 }
-				}
-				else
-				{
-					topInteractiveParent = parent as Sprite3DContainer;
-					triggerSprite = molehillObjects[i] as Sprite3D;
-				}
-				
-				if (_hashTypeByListeners[candidate] == null)
-				{
-					parent = candidate.parent;
-					while (parent != null && _hashTypeByListeners[parent] == null) 
-					{
-						parent = parent.parent;
-					}
-					
-					if (parent != null)
-					{
-						candidate = parent;
 					}
 					else
 					{
+						topInteractiveParent = candidateParent;
+						triggerSprite = candidate;
+						
 						continue;
 					}
 				}
-				
-				var localPoint:Point = new Point(_mouseStageX, _mouseStageY);
- 				candidate.globalToLocal(localPoint);
-				localShiftX = localPoint.x;
-				localShiftY = localPoint.y;
-				/*
-				parent = candidate is Sprite3DContainer ? candidate as Sprite3DContainer : candidate.parent;
-				while (parent != null)
+				else
 				{
-					if (parent.scrollRect != null)
+					if (!(topInteractiveParent is Scene3D))
 					{
-						localShiftX += parent.scrollRect.x;
-						localShiftY += parent.scrollRect.y;
-					}
-					
-					parent = parent.parent;
-				}
-				*/
-				/*
-				var eventTypes:Array = _hashTypeByListeners[candidate];
-				if (eventTypes != null)
-				{
-					for (var j:int = 0; j < eventTypes.length; j++)
-					{
-						var eventType:String = eventTypes[j];
-						switch (eventType)
+						candidateParent = candidate.parent;
+						while (candidateParent != null && candidateParent !== topInteractiveParent)
 						{
-							case Input3DEvent.MOUSE_OVER:
-								if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
-								{
-									if ((candidate as InteractiveSprite3D).onMouseOver(
-										_mouseStageX,
-										_mouseStageY,
-										localShiftX,
-										localShiftY,
-										triggerSprite
-									))
-									{
-										_objectsUnderMouse[candidate] = true;
-									}
-								}
-								break;
-							case Input3DEvent.CLICK:
-								if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
-								{
-									if ((candidate as InteractiveSprite3D).onMouseClick(
-										_mouseStageX,
-										_mouseStageY,
-										localShiftX,
-										localShiftY,
-										triggerSprite
-									))
-									{
-										_objectsUnderMouse[candidate] = true;
-									}
-								}
-								break;
-							case Input3DEvent.MOUSE_UP:
-								if (_mouseKeyStateChanged && !_mouseKeyPressed)
-								{
-									if ((candidate as InteractiveSprite3D).onMouseUp(
-										_mouseStageX,
-										_mouseStageY,
-										localShiftX,
-										localShiftY,
-										triggerSprite
-									))
-									{
-										_objectsUnderMouse[candidate] = true;
-									}
-								}
-								break;
-							case Input3DEvent.MOUSE_DOWN:
-								if (_mouseKeyStateChanged && _mouseKeyPressed)
-								{
-									if ((candidate as InteractiveSprite3D).onMouseDown(
-										_mouseStageX,
-										_mouseStageY,
-										localShiftX,
-										localShiftY,
-										triggerSprite
-									))
-									{
-										_objectsUnderMouse[candidate] = true;
-									}
-								}
-								break;
-							case Input3DEvent.MOUSE_MOVE:
-								if (_mouseCoordsChanged)
-								{
-									if ((candidate as InteractiveSprite3D).onMouseMove(
-										_mouseStageX,
-										_mouseStageY,
-										localShiftX,
-										localShiftY,
-										triggerSprite
-									))
-									{
-										_objectsUnderMouse[candidate] = true;
-									}
-								}
-								break;
+							candidateParent = candidateParent.parent;
+						}
+						
+						if (candidateParent == topInteractiveParent)
+						{
+							triggerSprite = candidate;
+							topInteractiveParent = triggerSprite is InteractiveSprite3D ? triggerSprite as InteractiveSprite3D : triggerSprite.parent;
+						}
+						else
+						{
+							continue;
 						}
 					}
+					
+					triggerSprite = candidate;
+					topInteractiveParent = triggerSprite is InteractiveSprite3D ? triggerSprite as InteractiveSprite3D : triggerSprite.parent;
+					
+					break;
 				}
-				*/
-				if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
+			}
+			
+			if (numObjects > 0)
+			{
+				if (triggerSprite == null)
 				{
-					if ((candidate as InteractiveSprite3D).onMouseOver(
-						_mouseStageX,
-						_mouseStageY,
-						localShiftX,
-						localShiftY,
-						triggerSprite
-					))
-					{
-						_objectsUnderMouse[candidate] = true;
-					}
+					triggerSprite = molehillObjects[numObjects - 1];
 				}
-				
-				if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
-				{
-					if ((candidate as InteractiveSprite3D).onMouseClick(
-						_mouseStageX,
-						_mouseStageY,
-						localShiftX,
-						localShiftY,
-						triggerSprite
-					))
-					{
-						_objectsUnderMouse[candidate] = true;
-					}
-				}
-				
-				if (_mouseKeyStateChanged && !_mouseKeyPressed)
-				{
-					if ((candidate as InteractiveSprite3D).onMouseUp(
-						_mouseStageX,
-						_mouseStageY,
-						localShiftX,
-						localShiftY,
-						triggerSprite
-					))
-					{
-						_objectsUnderMouse[candidate] = true;
-					}
-				}
-				
-				if (_mouseKeyStateChanged && _mouseKeyPressed)
-				{
-					if ((candidate as InteractiveSprite3D).onMouseDown(
-						_mouseStageX,
-						_mouseStageY,
-						localShiftX,
-						localShiftY,
-						triggerSprite
-					))
-					{
-						_objectsUnderMouse[candidate] = true;
-					}
-				}
-				
-				if (_mouseCoordsChanged)
-				{
-					if ((candidate as InteractiveSprite3D).onMouseMove(
-						_mouseStageX,
-						_mouseStageY,
-						localShiftX,
-						localShiftY,
-						triggerSprite
-					))
-					{
-						_objectsUnderMouse[candidate] = true;
-					}
-				}
+				processEvents(topInteractiveParent, triggerSprite);
 				
 				if (_mouseKeyStateChanged)
 				{
-					_lastMouseDownObject = _mouseKeyPressed ? candidate : null;
+					_lastMouseDownObject = _mouseKeyPressed ? topInteractiveParent : null;
 				}
-				
-				
-				break;
 			}
 			
 			for (objectUnderMouse in _objectsUnderMouse)
 			{
 				listener = objectUnderMouse as InteractiveSprite3D;
+				
 				if (_objectsUnderMouse[listener] == null)
 				{
 					continue;
 				}
 				
-				if (listener === candidate)
+				if (listener === topInteractiveParent)
 				{
 					continue;
 				}
@@ -553,22 +382,95 @@ package molehill.core.input
 					parent = parent.parent;
 				}
 				
-				if (listMouseOutListeners != null && listMouseOutListeners.indexOf(listener) != -1)
-				{
-					listener.onMouseOut(
-						_mouseStageX,
-						_mouseStageY,
-						_mouseStageX + localShiftX,
-						_mouseStageY + localShiftY,
-						listener
-					);
-				}
+				listener.onMouseOut(
+					_mouseStageX,
+					_mouseStageY,
+					_mouseStageX + localShiftX,
+					_mouseStageY + localShiftY,
+					listener
+				);
 				
 				_objectsUnderMouse[listener] = null;
 			}
 			
 			_mouseKeyStateChanged = false;
 			_mouseCoordsChanged = false;
+		}
+		
+		private function processEvents(candidate:InteractiveSprite3D, triggerSprite:Sprite3D):void
+		{
+			var localPoint:Point = new Point(_mouseStageX, _mouseStageY);
+			candidate.globalToLocal(localPoint);
+			
+			if (_mouseCoordsChanged && _objectsUnderMouse[candidate] == null)
+			{
+				if (candidate.onMouseOver(
+					_mouseStageX,
+					_mouseStageY,
+					localPoint.x,
+					localPoint.y,
+					triggerSprite
+				))
+				{
+					_objectsUnderMouse[candidate] = true;
+				}
+			}
+			
+			if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
+			{
+				if (candidate.onMouseClick(
+					_mouseStageX,
+					_mouseStageY,
+					localPoint.x,
+					localPoint.y,
+					triggerSprite
+				))
+				{
+					_objectsUnderMouse[candidate] = true;
+				}
+			}
+			
+			if (_mouseKeyStateChanged && !_mouseKeyPressed)
+			{
+				if (candidate.onMouseUp(
+					_mouseStageX,
+					_mouseStageY,
+					localPoint.x,
+					localPoint.y,
+					triggerSprite
+				))
+				{
+					_objectsUnderMouse[candidate] = true;
+				}
+			}
+			
+			if (_mouseKeyStateChanged && _mouseKeyPressed)
+			{
+				if (candidate.onMouseDown(
+					_mouseStageX,
+					_mouseStageY,
+					localPoint.x,
+					localPoint.y,
+					triggerSprite
+				))
+				{
+					_objectsUnderMouse[candidate] = true;
+				}
+			}
+			
+			if (_mouseCoordsChanged)
+			{
+				if ((candidate as InteractiveSprite3D).onMouseMove(
+					_mouseStageX,
+					_mouseStageY,
+					localPoint.x,
+					localPoint.y,
+					triggerSprite
+				))
+				{
+					_objectsUnderMouse[candidate] = true;
+				}
+			}
 		}
 		
 		private var _hashListenersByType:Dictionary;
