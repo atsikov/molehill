@@ -223,15 +223,24 @@ package molehill.core.text
 				updateBatchersFlag = true;
 			}
 			
+			_containerX = _shiftX * _parentScaleX + _parentShiftX;
+			_containerRight = _containerX + _textWidth;
+			
+			_x0 = _containerX;
+			_x1 = _containerX;
+			_x2 = _containerRight
+			_x3 = _containerRight
+				
 			_containerRight = _containerX + _textWidth;
 			_containerBottom = _containerY + _textHeight;
 			
+			_containerY = _shiftY + _parentShiftY * _parentScaleY;
+			_containerBottom = _containerY + _textHeight;
+			
+			_y0 = _containerY;
 			_y1 = _containerBottom;
-			
-			_x2 = _containerRight;
-			_y2 = _containerBottom;
-			
-			_x3 = _containerRight;
+			_y2 = _containerBottom
+			_y3 = _containerY;
 			
 			if (_scene != null)
 			{

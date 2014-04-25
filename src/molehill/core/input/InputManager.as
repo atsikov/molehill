@@ -276,6 +276,7 @@ package molehill.core.input
 			var molehillObjects:Vector.<Sprite3D> = activeScene.getObjectsUnderPoint(mousePoint);
 			var numObjects:Number = molehillObjects.length;
 			
+			var firstInteractiveContainer:Sprite3DContainer;
 			var topInteractiveParent:InteractiveSprite3D;
 			var eventsProcessed:Boolean = false;
 			var triggerSprite:Sprite3D;
@@ -291,18 +292,29 @@ package molehill.core.input
 				if (!candidate.mouseEnabled)
 				{
 					var candidateParent:Sprite3DContainer = candidate.parent;
-					while (candidateParent != null && !candidateParent.mouseEnabled && candidateParent !== topInteractiveParent)
+					while (candidateParent != null && !candidateParent.mouseEnabled)
 					{
 						candidateParent = candidateParent.parent;
 					}
 					
-					if (candidateParent == null || candidateParent == topInteractiveParent)
+					if (candidateParent == topInteractiveParent)
+					{
+						continue;
+					}
+					
+					firstInteractiveContainer = candidateParent;
+					while (candidateParent != null && candidateParent !== topInteractiveParent)
+					{
+						candidateParent = candidateParent.parent;
+					}
+					
+					if (candidateParent == null)
 					{
 						continue;
 					}
 					else
 					{
-						topInteractiveParent = candidateParent;
+						topInteractiveParent = firstInteractiveContainer;
 						triggerSprite = candidate;
 						
 						continue;

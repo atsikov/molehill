@@ -49,6 +49,7 @@ package molehill.core.render
 		
 		private function updateFocus(target:Sprite3D):void
 		{
+			var newFocusInitiator:Sprite3D = target;
 			while (target != null)
 			{
 				if (target is IFocusable)
@@ -59,16 +60,17 @@ package molehill.core.render
 				target = target.parent;
 			}
 			
-			target = _focusInitiator;
-			while (target != null)
+			while (_focusInitiator != null)
 			{
-				if (target is IFocusable)
+				if (_focusInitiator is IFocusable)
 				{
-					(target as IFocusable).onFocusLost();
+					(_focusInitiator as IFocusable).onFocusLost();
 				}
 				
-				target = target.parent;
+				_focusInitiator = _focusInitiator.parent;
 			}
+			
+			_focusInitiator = newFocusInitiator;
 		}
 		
 		private var _focusInitiator:Sprite3D;
