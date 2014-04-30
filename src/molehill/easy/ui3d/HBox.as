@@ -1,11 +1,12 @@
 package molehill.easy.ui3d
 {
-	import flash.display.DisplayObject;
 	import flash.geom.Rectangle;
+	
+	import molehill.core.sprite.Sprite3D;
 	
 	public class HBox extends VBox
 	{	
-		public override function resize():void
+		override public function resize():void
 		{
 			var numChildren:int = this.numChildren;
 			if (numChildren > 0)
@@ -14,7 +15,7 @@ package molehill.easy.ui3d
 				
 				var boundsWidth:Number = 0;
 				var boundsHeight:Number = 0;
-				var child:DisplayObject;
+				var child:Sprite3D;
 				for (i = 0; i < numChildren; i++)
 				{
 					child = getChildAt(i);

@@ -1,5 +1,6 @@
 package molehill.core.texture
 {
+	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DTextureFormat;
@@ -32,19 +33,21 @@ package molehill.core.texture
 			{
 				texture = tm.createFontTextureFromBitmapData(textureData);
 			}
-			else if (textureData is BitmapData)
+			else if (textureData is BitmapData || textureData is Bitmap)
 			{
+				var bitmapData:BitmapData = textureData is Bitmap ? (textureData as Bitmap).bitmapData : textureData;
+				
 				if (params[1] == null)
 				{
-					texture = tm.createTextureFromBitmapData(textureData, params[0]);
+					texture = tm.createTextureFromBitmapData(bitmapData, params[0]);
 				}
 				else if (params[2] == null)
 				{
-					texture = tm.createTextureFromBitmapData(textureData, params[0], params[1]);
+					texture = tm.createTextureFromBitmapData(bitmapData, params[0], params[1]);
 				}
 				else
 				{
-					texture = tm.createTextureFromBitmapData(textureData, params[0], params[1], params[2]);
+					texture = tm.createTextureFromBitmapData(bitmapData, params[0], params[1], params[2]);
 				}
 			}
 			else if (textureData == null)
@@ -277,21 +280,24 @@ package molehill.core.texture
 					atlas = new TextureAtlasBitmapData(width == 0 ? _textureWidth : width, height == 0 ? _textureHeight : height);
 					atlas.textureAtlasData.atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
 					atlas.insert(bitmapData, textureID);
-					texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false);
-					_hashTexturesByAtlasBitmap[atlas] = texture;
-					_hashTexturesByAtlasData[atlas.textureAtlasData] = texture;
-					_hashTexturesByAtlasID[atlas.textureAtlasData.atlasID] = texture;
+					
+					//texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false);
+					
+					//_hashTexturesByAtlasBitmap[atlas] = texture;
+					//_hashTexturesByAtlasData[atlas.textureAtlasData] = texture;
+					//_hashTexturesByAtlasID[atlas.textureAtlasData.atlasID] = texture;
 					_hashAtlasDataByAtlasID[atlas.textureAtlasData.atlasID] = atlas.textureAtlasData;
-					_hashAtlasIDByTexture[texture] = atlas.textureAtlasData.atlasID;
-					_hashTextureTypeByTexture[texture] = false;
+					//_hashAtlasIDByTexture[texture] = atlas.textureAtlasData.atlasID;
+					
+					//_hashTextureTypeByTexture[texture] = false;
 				}
 				else
 				{
-					texture = _hashTexturesByAtlasBitmap[atlas] as Texture;
+					//texture = _hashTexturesByAtlasBitmap[atlas] as Texture;
 				}
 				
 				
-				texture.uploadFromBitmapData(atlas as TextureAtlasBitmapData);
+				//texture.uploadFromBitmapData(atlas as TextureAtlasBitmapData);
 			}
 			
 			if (bitmapData is SpriteSheet)
@@ -300,11 +306,11 @@ package molehill.core.texture
 			}
 			
 			_hashAtlasIDByTextureID[textureID] = atlas.textureAtlasData.atlasID;
-			_hashTexturesByTextureID[textureID] = texture;
+			//_hashTexturesByTextureID[textureID] = texture;
 			_hashAtlasDataByTextureID[textureID] = atlas.textureAtlasData;
 			_hashAtlasBitmapByTextureID[textureID] = atlas;
 			
-			return texture;
+			return null;//texture;
 		}
 		
 		public function createCompressedTextureFromARF(textureData:ARFTextureData):Texture
@@ -333,6 +339,11 @@ package molehill.core.texture
 				
 				for (var textureID:String in textureData.textureAtlasData._hashTextures)
 				{
+					if (_hashAtlasIDByTextureID[textureID] != null)
+					{
+						throw new Error("Atlas with the same texture ID already created!");
+					}
+					
 					_hashAtlasIDByTextureID[textureID] = textureData.textureAtlasData.atlasID;
 					//_hashTexturesByTextureID[textureID] = texture;
 					_hashAtlasDataByTextureID[textureID] = textureData.textureAtlasData;
@@ -581,6 +592,12 @@ package molehill.core.texture
 		public function isAtlasCreated(atlasID:String):Boolean
 		{
 			return _hashAtlasDataByAtlasID[atlasID] != null;
+		}
+		
+		public function isARFUploaded(arf:ARFTextureData):Boolean
+		{
+			var listTextures:Array = arf.textureAtlasData.listTexturesNames;
+			return isTextureCreated(listTextures[0]);
 		}
 		
 		public function getTextureDataByID(textureID:String):TextureData

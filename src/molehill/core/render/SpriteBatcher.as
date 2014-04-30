@@ -18,6 +18,7 @@ package molehill.core.render
 	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureManager;
 	
 	use namespace molehill_internal;
 	
@@ -55,6 +56,10 @@ package molehill.core.render
 		
 		public function set textureAtlasID(value:String):void
 		{
+			if (value != null && TextureManager.getInstance().getAtlasDataByID(value) == null)
+			{
+				throw new Error("Bad atlas id!");
+			}
 			_textureAtlasID = value;
 		}
 		

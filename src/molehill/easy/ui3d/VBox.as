@@ -1,25 +1,13 @@
 package molehill.easy.ui3d
 {
-	import flash.display.DisplayObject;
-	import flash.events.Event;
-	import flash.geom.Rectangle;
-	
+	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	
 	public class VBox extends Sprite3DContainer
 	{
 		public function VBox()
 		{
-			addEventListener(Event.RESIZE, onResize);
-		}
-		
-		private function onResize(event:Event):void
-		{
-			var target:DisplayObject = event.target as DisplayObject;
-			if(target != this && this.contains(target))
-			{
-				resize();
-			}
+			
 		}
 		
 		public var isCenter:Boolean = true;
@@ -38,8 +26,8 @@ package molehill.easy.ui3d
 			_boxHeight = 0;
 		}
 		
-		protected var _background:DisplayObject;
-		public function setBackground(bg:DisplayObject, x:Number = 0, y:Number = 0):void
+		protected var _background:Sprite3D;
+		public function setBackground(bg:Sprite3D, x:Number = 0, y:Number = 0):void
 		{
 			if(bg != null)
 			{
@@ -57,7 +45,7 @@ package molehill.easy.ui3d
 			}
 		}
 		
-		override public function resize():void
+		public function resize():void
 		{
 			var numChildren:int = this.numChildren;
 			if (numChildren > 0)
@@ -66,7 +54,7 @@ package molehill.easy.ui3d
 				
 				var boundsWidth:Number = 0;
 				var boundsHeight:Number = 0;
-				var child:DisplayObject;
+				var child:Sprite3D;
 				for (i = 0; i < numChildren; i++)
 				{
 					child = getChildAt(i);

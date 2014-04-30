@@ -289,9 +289,29 @@ package molehill.core.sprite
 		}
 		
 		protected var _containerX:int = 0;
+		public function get containerX():int
+		{
+			return _containerX;
+		}
+
 		protected var _containerY:int = 0;
+		public function get containerY():int
+		{
+			return _containerY;
+		}
+
 		protected var _containerRight:int = 0;
+		public function get containerRight():int
+		{
+			return _containerRight;
+		}
+
 		protected var _containerBottom:int = 0;
+		public function get containerBottom():int
+		{
+			return _containerBottom;
+		}
+
 		molehill_internal function updateDimensions(child:Sprite3D):void
 		{
 			var needUpdateDimensions:Boolean = false;
@@ -959,7 +979,7 @@ package molehill.core.sprite
 		// self properties
 		override public function set x(value:Number):void
 		{
-			var dx:Number = _parentShiftX + value * _scaleX;
+			var dx:Number = _parentShiftX + value * _parentScaleX;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentShiftX = dx;
@@ -970,7 +990,7 @@ package molehill.core.sprite
 		
 		override public function set y(value:Number):void
 		{
-			var dy:Number = _parentShiftY + value * _scaleY;
+			var dy:Number = _parentShiftY + value * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentShiftY = dy;

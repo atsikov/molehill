@@ -42,6 +42,8 @@ package molehill.core.text
 			_align = value.align;
 			_fontSize = value.size;
 			_fontTextureSize = Font3DManager.getInstance().getSuitableFontSize(_fontName, value.size);
+			
+			updateLayout();
 		}
 		
 		private var _fontName:String;
@@ -223,25 +225,6 @@ package molehill.core.text
 				updateBatchersFlag = true;
 			}
 			
-			_containerX = _shiftX * _parentScaleX + _parentShiftX;
-			_containerRight = _containerX + _textWidth;
-			
-			_x0 = _containerX;
-			_x1 = _containerX;
-			_x2 = _containerRight
-			_x3 = _containerRight
-				
-			_containerRight = _containerX + _textWidth;
-			_containerBottom = _containerY + _textHeight;
-			
-			_containerY = _shiftY + _parentShiftY * _parentScaleY;
-			_containerBottom = _containerY + _textHeight;
-			
-			_y0 = _containerY;
-			_y1 = _containerBottom;
-			_y2 = _containerBottom
-			_y3 = _containerY;
-			
 			if (_scene != null)
 			{
 				// do not need to update batcher cause we assume that all fonts for one textfield are on the same atlas
@@ -260,6 +243,25 @@ package molehill.core.text
 			{
 				return;
 			}
+			
+			_containerX = _shiftX * _parentScaleX + _parentShiftX;
+			_containerRight = _containerX + _textWidth;
+			
+			_x0 = _containerX;
+			_x1 = _containerX;
+			_x2 = _containerRight
+			_x3 = _containerRight
+			
+			_containerRight = _containerX + _textWidth;
+			_containerBottom = _containerY + _textHeight;
+			
+			_containerY = _shiftY + _parentShiftY * _parentScaleY;
+			_containerBottom = _containerY + _textHeight;
+			
+			_y0 = _containerY;
+			_y1 = _containerBottom;
+			_y2 = _containerBottom
+			_y3 = _containerY;
 			
 			if (_parent != null)
 			{

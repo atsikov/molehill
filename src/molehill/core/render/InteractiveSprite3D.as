@@ -1,17 +1,14 @@
 package molehill.core.render
 {
 	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.geom.Point;
+	import flash.ui.MouseCursor;
 	
 	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.input.InputManager;
+	import molehill.core.input.MouseCursorManager;
 	import molehill.core.molehill_input_internal;
 	import molehill.core.molehill_internal;
 	import molehill.core.sprite.Sprite3D;
-	import molehill.core.texture.NormalizedAlphaChannel;
-	import molehill.core.texture.TextureData;
-	import molehill.core.texture.TextureManager;
 	
 	use namespace molehill_internal;
 	use namespace molehill_input_internal;
@@ -26,8 +23,43 @@ package molehill.core.render
 		override protected function onAddedToScene():void
 		{
 			super.onAddedToScene();
+		}
+		
+		private var _buttonMode:Boolean = false;
+		public function get buttonMode():Boolean
+		{
+			return _buttonMode;
+		}
+		
+		public function set buttonMode(value:Boolean):void
+		{
+			if (_buttonMode === value)
+			{
+				return;
+			}
 			
-			//InputManager.getInstance().sortListeners();
+			_buttonMode = value;
+			
+			if (_buttonMode)
+			{
+				addEventListener(Input3DMouseEvent.MOUSE_OVER, onSpriteMouseOver);
+				addEventListener(Input3DMouseEvent.MOUSE_OUT, onSpriteMouseOut);
+			}
+			else
+			{
+				removeEventListener(Input3DMouseEvent.MOUSE_OVER, onSpriteMouseOver);
+				removeEventListener(Input3DMouseEvent.MOUSE_OUT, onSpriteMouseOut);
+			}
+		}
+		
+		private function onSpriteMouseOver(event:Input3DMouseEvent):void
+		{
+			MouseCursorManager.getInstance().setCursor(MouseCursor.BUTTON);
+		}
+		
+		private function onSpriteMouseOut(event:Input3DMouseEvent):void
+		{
+			MouseCursorManager.getInstance().setCursor(MouseCursor.AUTO);
 		}
 		
 		molehill_input_internal function onMouseDown(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean

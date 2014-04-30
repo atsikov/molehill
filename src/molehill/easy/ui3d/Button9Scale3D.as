@@ -42,21 +42,21 @@ package molehill.easy.ui3d
 				scaleMethod
 			);
 			
-			_overState = overTextureID == null ? null :
+			_overState = overTextureID == null || overTextureID == normalTextureID ? null :
 				new Sprite3D9Scale(
 					overTextureID,
 					scaleRect,
 					scaleMethod
 				);
 			
-			_downState = downTextureID == null ? null :
+			_downState = downTextureID == null || downTextureID == normalTextureID ? null :
 				new Sprite3D9Scale(
 					downTextureID,
 					scaleRect,
 					scaleMethod
 				);
 			
-			_disabledState = disabledTextureID == null ? null :
+			_disabledState = disabledTextureID == null || disabledTextureID == normalTextureID ? null :
 				new Sprite3D9Scale(
 					disabledTextureID,
 					scaleRect,

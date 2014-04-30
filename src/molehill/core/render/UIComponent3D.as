@@ -86,7 +86,7 @@ package molehill.core.render
 				return true;
 			}
 			
-			if (spriteContainer.treeStructureChanged)
+			if (spriteContainer.treeStructureChanged || spriteContainer.textureAtlasChanged)
 			{
 				return false;
 			}

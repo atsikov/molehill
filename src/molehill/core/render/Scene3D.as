@@ -165,22 +165,23 @@ package molehill.core.render
 			
 			while (renderTree != null)
 			{
-				if (renderTree.value is UIComponent3D)
+				var sprite:Sprite3D = renderTree.value as Sprite3D;
+				if (sprite is UIComponent3D)
 				{
-					(renderTree.value as UIComponent3D).updateFlattnedTree();
+					(sprite as UIComponent3D).updateFlattnedTree();
 				}
 				
 				//trace(treeNode.value, batchingTree.value);
 				
 				// sprites in render and batching tree aren't the same in this node
 				// need to sync trees
-				if (renderTree.value !== (batchingTree.value as BatchingInfo).child)
+				if (sprite !== (batchingTree.value as BatchingInfo).child)
 				{
-					if (!(renderTree.value as Sprite3D).addedToScene)
+					if (!sprite.addedToScene)
 					{
 						// new child was added to render tree
 						batchNode = new TreeNode(
-							new BatchingInfo(renderTree.value)
+							new BatchingInfo(sprite)
 						);
 						
 						var treeParent:TreeNode = renderTree.parent;
@@ -227,7 +228,7 @@ package molehill.core.render
 							treeParent = renderTree.parent;
 							
 							batchNode = new TreeNode(
-								new BatchingInfo(renderTree.value)
+								new BatchingInfo(sprite)
 							);
 							treeParent.removeNode(renderTree);
 							prepareBatchers(renderTree, batchNode, cameraOwner);
@@ -243,6 +244,65 @@ package molehill.core.render
 							batchingParent.addNode(batchNode);
 							
 							batchingTree = batchNode;
+						}
+					}
+				}
+				else if (
+					sprite.currentAtlasData != null &&
+					sprite.currentAtlasData.atlasID !== (batchingTree.value as BatchingInfo).batcher.textureAtlasID)
+				{
+					// child's texture atlas changed
+					// need to remove child from current batcher and push to suitable one
+					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
+					if (currentBatcher != null)
+					{
+						var newBatcher:SpriteBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, sprite.currentAtlasData.atlasID, cameraOwner);
+						
+						if (currentBatcher !== newBatcher)
+						{
+							if (sprite !== currentBatcher.getFirstChild() && currentBatcher.numSprites > 1)
+							{
+								var tailBatcher:SpriteBatcher = currentBatcher.splitAfterChild(sprite);
+								if (tailBatcher != null)
+								{
+									_listSpriteBatchers.splice(_batcherInsertPosition, 0, tailBatcher);
+									
+									_hashBatchersNewToOld[tailBatcher] = currentBatcher;
+									while (_hashBatchersNewToOld[currentBatcher] != null)
+									{
+										currentBatcher = _hashBatchersNewToOld[currentBatcher];
+									}
+									_hashBatchersOldToNew[currentBatcher] = tailBatcher;
+								}
+							}
+							currentBatcher.removeChild(sprite);
+							
+							if (_currentBatcher !== newBatcher)
+							{
+								if (currentBatcher.numSprites > 0)
+								{
+									_listSpriteBatchers.splice(
+										_batcherInsertPosition,
+										0,
+										newBatcher
+									);
+								}
+								else
+								{
+									_listSpriteBatchers[_batcherInsertPosition] = newBatcher;
+								}
+							}
+							else
+							{
+								if (currentBatcher.numSprites == 0)
+								{
+									_listSpriteBatchers.splice(
+										_listSpriteBatchers.indexOf(currentBatcher),
+										0
+									);
+								}
+							}
+							(batchingTree.value as BatchingInfo).batcher = newBatcher;
 						}
 					}
 				}
@@ -266,7 +326,7 @@ package molehill.core.render
 				
 				if (renderTree.hasChildren)
 				{
-					var container:Sprite3DContainer = renderTree.value as Sprite3DContainer;
+					var container:Sprite3DContainer = sprite as Sprite3DContainer;
 					
 					// found new non-empty container in render tree
 					// adding children tom bacthing
@@ -286,7 +346,7 @@ package molehill.core.render
 					checkBatchingTree(
 						container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
 						batchingTree.firstChild,
-						(renderTree.value as Sprite3D).camera != null ? renderTree.value as Sprite3D : cameraOwner
+						sprite.camera != null ? sprite : cameraOwner
 					);
 					
 					// scroll rect changed
@@ -305,7 +365,7 @@ package molehill.core.render
 				{
 					// last child was removed from container
 					// cleaning up suitable batchers tree branch
-					removeNodeReferences(batchingTree);
+					removeNodeReferences(batchingTree.firstChild);
 					
 					while (batchingTree.hasChildren)
 					{
@@ -449,8 +509,8 @@ package molehill.core.render
 						if (newBatcher !== currentBatcher)
 						{
 							if (_lastBatchedChild != null &&
-								currentBatcher != null
-								&&_lastBatchedChild !== (currentBatcher as SpriteBatcher).getLastChild()
+								currentBatcher != null &&
+								_lastBatchedChild !== (currentBatcher as SpriteBatcher).getLastChild()
 							)
 							{
 								var tailBatcher:SpriteBatcher = (currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
@@ -469,6 +529,7 @@ package molehill.core.render
 							_listSpriteBatchers.splice(_batcherInsertPosition, 0, newBatcher);
 							_batcherInsertPosition++;
 							currentBatcher = newBatcher;
+							_currentBatcher = currentBatcher;
 						}
 						_lastBatchedChild = sprite;
 						(batcherTree.value as BatchingInfo).batcher = currentBatcher;
