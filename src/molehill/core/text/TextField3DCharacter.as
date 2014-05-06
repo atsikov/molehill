@@ -16,10 +16,5 @@ package molehill.core.text
 			
 			updateOnRender = true;
 		}
-		
-		override protected function updateParent():void
-		{
-			
-		}
 	}
 }

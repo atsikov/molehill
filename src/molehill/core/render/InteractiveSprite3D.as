@@ -13,6 +13,18 @@ package molehill.core.render
 	use namespace molehill_internal;
 	use namespace molehill_input_internal;
 
+	[Event(name="click", type="molehill.core.events.Input3DMouseEvent")]
+	
+	[Event(name="mouseUp", type="molehill.core.events.Input3DMouseEvent")]
+	
+	[Event(name="mouseDown", type="molehill.core.events.Input3DMouseEvent")]
+	
+	[Event(name="mouseOver", type="molehill.core.events.Input3DMouseEvent")]
+	
+	[Event(name="mouseOut", type="molehill.core.events.Input3DMouseEvent")]
+	
+	[Event(name="mouseMove", type="molehill.core.events.Input3DMouseEvent")]
+	
 	public class InteractiveSprite3D extends Sprite3D
 	{
 		public function InteractiveSprite3D()

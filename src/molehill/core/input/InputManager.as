@@ -22,6 +22,10 @@ package molehill.core.input
 	
 	use namespace molehill_input_internal;
 	
+	[Event(name="keyDown", type="molehill.core.events.Input3DKeyboardEvent")]
+	
+	[Event(name="keyUp", type="molehill.core.events.Input3DKeyboardEvent")]
+	
 	public class InputManager extends EventDispatcher
 	{
 		private static var _instance:InputManager;

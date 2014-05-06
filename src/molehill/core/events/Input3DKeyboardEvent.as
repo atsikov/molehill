@@ -4,7 +4,13 @@ package molehill.core.events
 	
 	public class Input3DKeyboardEvent extends KeyboardEvent
 	{
+		/**
+		 * @eventType keyDown
+		 **/
 		public static const KEY_DOWN:String = "keyDown";
+		/**
+		 * @eventType keyUp
+		 **/
 		public static const KEY_UP:String 	= "keyUp";
 		
 		public function Input3DKeyboardEvent(type:String, charCodeValue:uint, keyCodeValue:uint, keyLocationValue:uint, ctrlKeyValue:Boolean, altKeyValue:Boolean, shiftKeyValue:Boolean)

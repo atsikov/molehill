@@ -7,13 +7,31 @@ package molehill.core.events
 
 	public class Input3DMouseEvent extends Event
 	{
+		/**
+		 * @eventType click
+		 **/
 		public static const CLICK:String 		= "click";
 		
+		/**
+		 * @eventType mouseUp
+		 **/
 		public static const MOUSE_UP:String 	= "mouseUp";
+		/**
+		 * @eventType mouseDown
+		 **/
 		public static const MOUSE_DOWN:String 	= "mouseDown";
+		/**
+		 * @eventType mouseMove
+		 **/
 		public static const MOUSE_MOVE:String 	= "mouseMove";
 		
+		/**
+		 * @eventType mouseOver
+		 **/
 		public static const MOUSE_OVER:String 	= "mouseOver";
+		/**
+		 * @eventType mouseOut
+		 **/
 		public static const MOUSE_OUT:String 	= "mouseOut";
 		
 		public function Input3DMouseEvent(type:String, stageX:Number, stageY:Number, localX:Number, localY:Number, eventInitiator:Sprite3D)

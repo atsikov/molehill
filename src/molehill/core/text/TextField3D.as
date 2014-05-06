@@ -76,7 +76,8 @@ package molehill.core.text
 		}
 		
 		protected var _hashSymbolsByLine:Object;
-		protected var _numLines:uint = 0
+		protected var _numLines:uint = 0;
+		private var _lastChild:Sprite3D;
 		private function updateLayout():void
 		{
 			var textLength:int = _text.length;
@@ -225,6 +226,9 @@ package molehill.core.text
 				updateBatchersFlag = true;
 			}
 			
+			_lastChild = numChildren > 0 ? super.getChildAt(numChildren - 1) : null;
+				
+			
 			if (_scene != null)
 			{
 				// do not need to update batcher cause we assume that all fonts for one textfield are on the same atlas
@@ -240,6 +244,11 @@ package molehill.core.text
 		override molehill_internal function updateDimensions(child:Sprite3D):void
 		{
 			if (!_notifyParentOnChange)
+			{
+				return;
+			}
+			
+			if (child !== _lastChild)
 			{
 				return;
 			}

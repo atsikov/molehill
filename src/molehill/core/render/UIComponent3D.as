@@ -141,9 +141,46 @@ package molehill.core.render
 			var sprite:Sprite3D = src.value as Sprite3D;
 			if (sprite !== this && (sprite is UIComponent3D))
 			{
+				/*
+				(sprite as UIComponent3D).updateFlattnedTree();
 				flattenedRenderTree.addNode(
-					copyTree(src)
+					copyTree(
+						(sprite as UIComponent3D).flattenedRenderTree
+					)
 				);
+				*/
+				
+				(sprite as UIComponent3D).updateFlattnedTree();
+				if (sprite.isBackground)
+				{
+					_localTreeBack.addNode(
+						copyTree(
+							(sprite as UIComponent3D).flattenedRenderTree
+						)
+					);
+				}
+				else
+				{
+					_localTreeMisc.addNode(
+						copyTree(
+							(sprite as UIComponent3D).flattenedRenderTree
+						)
+					);
+				}
+				
+				/*
+				node = _cacheTreeNodes.newInstance();
+				node.value = sprite;
+				
+				if (sprite.isBackground)
+				{
+					_localTreeBack.addNode(node);
+				}
+				else
+				{
+					_localTreeMisc.addNode(node);
+				}
+				*/
 				return;
 			}
 			

@@ -448,7 +448,19 @@ package molehill.core.render
 		 **/
 		private function prepareBatchers(renderTree:TreeNode, batcherTree:TreeNode, cameraOwner:Sprite3D):void
 		{
-			var currentBatcher:IVertexBatcher = _currentBatcher != null ? _currentBatcher : (_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1]);
+			if (_currentBatcher == null)
+			{
+				_currentBatcher = _listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1];
+				if (_currentBatcher == null)
+				{
+					_batcherInsertPosition = 0;
+				}
+				else
+				{
+					_batcherInsertPosition = _listSpriteBatchers.length;
+				}
+			}
+			//var currentBatcher:IVertexBatcher = _currentBatcher != null ? _currentBatcher : (_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1]);
 			var node:TreeNode = renderTree;
 			if (node == null)
 			{
@@ -480,6 +492,8 @@ package molehill.core.render
 						batcherTree.firstChild,
 						sprite.camera != null ? sprite : cameraOwner
 					);
+					// restoring actual batcher to make insertions into 
+					// currentBatcher = _currentBatcher != null ? _currentBatcher : (_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1]);
 					sprite.addedToScene = true;
 				}
 				else
@@ -491,48 +505,48 @@ package molehill.core.render
 						(sprite as IVertexBatcher).cameraOwner = cameraOwner;
 						(batcherTree.value as BatchingInfo).batcher = sprite as IVertexBatcher;
 						_lastBatchedChild = sprite;
-						currentBatcher = null;
+						_currentBatcher = null;
 					}
 					else if (!(sprite is Sprite3DContainer))
 					{
 						var textureAtlasID:String = sprite.textureID == null ? null : _textureManager.getAtlasDataByTextureID(sprite.textureID).atlasID;
 						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
-						if (!(currentBatcher is SpriteBatcher) || 
-							(currentBatcher != null &&
-							(currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER)
+						if (!(_currentBatcher is SpriteBatcher) || 
+							(_currentBatcher != null &&
+							(_currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER)
 						)
 						{
-							currentBatcher = null;
+							_currentBatcher = null;
 						}
 						
-						var newBatcher:IVertexBatcher = pushToSuitableSpriteBacther(currentBatcher as SpriteBatcher, sprite, textureAtlasID, cameraOwner);
-						if (newBatcher !== currentBatcher)
+						var newBatcher:IVertexBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, textureAtlasID, cameraOwner);
+						if (newBatcher !== _currentBatcher)
 						{
 							if (_lastBatchedChild != null &&
-								currentBatcher != null &&
-								_lastBatchedChild !== (currentBatcher as SpriteBatcher).getLastChild()
+								_currentBatcher != null &&
+								_lastBatchedChild !== (_currentBatcher as SpriteBatcher).getLastChild()
 							)
 							{
-								var tailBatcher:SpriteBatcher = (currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
+								var tailBatcher:SpriteBatcher = (_currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
 								if (tailBatcher != null)
 								{
 									_listSpriteBatchers.splice(_batcherInsertPosition, 0, tailBatcher);
 									
-									_hashBatchersNewToOld[tailBatcher] = currentBatcher;
-									while (_hashBatchersNewToOld[currentBatcher] != null)
+									_hashBatchersNewToOld[tailBatcher] = _currentBatcher;
+									while (_hashBatchersNewToOld[_currentBatcher] != null)
 									{
-										currentBatcher = _hashBatchersNewToOld[currentBatcher];
+										_currentBatcher = _hashBatchersNewToOld[_currentBatcher];
 									}
-									_hashBatchersOldToNew[currentBatcher] = tailBatcher;
+									_hashBatchersOldToNew[_currentBatcher] = tailBatcher;
 								}
 							}
 							_listSpriteBatchers.splice(_batcherInsertPosition, 0, newBatcher);
 							_batcherInsertPosition++;
-							currentBatcher = newBatcher;
-							_currentBatcher = currentBatcher;
+							_currentBatcher = newBatcher;
+							//_currentBatcher = currentBatcher;
 						}
 						_lastBatchedChild = sprite;
-						(batcherTree.value as BatchingInfo).batcher = currentBatcher;
+						(batcherTree.value as BatchingInfo).batcher = _currentBatcher;
 					}
 				}
 				
