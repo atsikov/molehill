@@ -10,7 +10,7 @@ package molehill.easy.ui3d
 	import resources.ResourceTypes;
 	import resources.events.ResourceEvent;
 	
-	[Event(name="resize", type="flash.events.Event;")]
+	[Event(name="resize", type="flash.events.Event")]
 	[Event(name="ready", type="resources.events.ResourceEvent")]
 	
 	public class ResourceView extends Sprite3D
@@ -53,7 +53,14 @@ package molehill.easy.ui3d
 			reset();
 			
 			_resURL = value;
-			_urlToTextureID = _resURL.replace(/[\:\/\.\\\-\?]/g, '_');
+			if (_resURL != null)
+			{
+				_urlToTextureID = _resURL.replace(/[\:\/\.\\\-\?]/g, '_');
+			}
+			else
+			{
+				_urlToTextureID = null;
+			}
 			
 			if ((_resURL != null) && (_resURL != ''))
 			{
@@ -100,7 +107,7 @@ package molehill.easy.ui3d
 			setTexture(_urlToTextureID);
 			
 			dispatchEvent(
-				new Event(ResourceEvent.READY)
+				new ResourceEvent(ResourceEvent.READY)
 			);
 		}
 	}

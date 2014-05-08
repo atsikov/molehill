@@ -12,8 +12,6 @@ package molehill.core.texture
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	import flash.utils.Timer;
-	
-	import utils.MathUtils;
 
 	public class TextureManager extends EventDispatcher
 	{
@@ -274,7 +272,6 @@ package molehill.core.texture
 			
 			if (isReady)
 			{
-				var texture:Texture;
 				if (node == null)
 				{
 					atlas = new TextureAtlasBitmapData(width == 0 ? _textureWidth : width, height == 0 ? _textureHeight : height);
@@ -296,7 +293,11 @@ package molehill.core.texture
 					//texture = _hashTexturesByAtlasBitmap[atlas] as Texture;
 				}
 				
-				
+				if (_hashTexturesByAtlasBitmap[atlas] != null)
+				{
+					var texture:Texture = _hashTexturesByAtlasBitmap[atlas];
+					texture.uploadFromBitmapData(atlas as TextureAtlasBitmapData);
+				}
 				//texture.uploadFromBitmapData(atlas as TextureAtlasBitmapData);
 			}
 			

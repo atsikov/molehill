@@ -207,6 +207,7 @@ package molehill.core.render
 			}
 			
 			_needUpdateBuffers = true;
+			_numVisibleSprites = 0;
 		}
 		
 		internal function splitAfterChild(child:Sprite3D):SpriteBatcher
@@ -243,7 +244,7 @@ package molehill.core.render
 			
 			_needUpdateBuffers = true;
 			_numSprites = childIndex;
-			_numVisibleSprites = childIndex;
+			_numVisibleSprites = 0;
 			
 			return result;
 		}
@@ -697,6 +698,14 @@ package molehill.core.render
 			}
 			if (_needUploadTextureData)
 			{
+				/*
+				trace("Texture Data");
+				for (var i:int = 0; i < _vertexBufferTextureData.length; i+= 8)
+				{
+					_vertexBufferTextureData.position = i;
+					trace("texture coords: " + _vertexBufferTextureData.readFloat() + ", " + _vertexBufferTextureData.readFloat());
+				}
+				*/
 				_vertexBufferTexture.uploadFromByteArray(_vertexBufferTextureData, 0, 0, _numVisibleSprites * 4);
 				_needUploadTextureData = false;
 			}
