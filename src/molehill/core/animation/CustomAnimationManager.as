@@ -115,19 +115,8 @@ package molehill.core.animation
 			
 			var bytes:ByteArray = (event.target as URLLoader).data;
 			bytes.position = 6;
-			var listRawAnimations:Array = bytes.readObject();
-			for (var i:int = 0; i < listRawAnimations.length; i++)
-			{
-				var animation:CustomAnimationData = CustomAnimationData.fromRawData(listRawAnimations[i]);
-				_hashAnimations[animation.animationName] = animation;
-				
-				if (listAnimationNames.indexOf(animation.animationName) == -1)
-				{
-					listAnimationNames.push(animation.animationName);
-				}
-			}
 			
-			listAnimationNames.sort();
+			registerAnimations(bytes);
 			
 			if (_listLoadedAnimations == null)
 			{
@@ -142,6 +131,24 @@ package molehill.core.animation
 			);
 			
 			checkLoadingQueue();
+		}
+		
+		public function registerAnimations(animationBytes:ByteArray):void
+		{
+			animationBytes.position = 6;
+			var listRawAnimations:Array = animationBytes.readObject();
+			for (var i:int = 0; i < listRawAnimations.length; i++)
+			{
+				var animation:CustomAnimationData = CustomAnimationData.fromRawData(listRawAnimations[i]);
+				_hashAnimations[animation.animationName] = animation;
+				
+				if (listAnimationNames.indexOf(animation.animationName) == -1)
+				{
+					listAnimationNames.push(animation.animationName);
+				}
+			}
+			
+			listAnimationNames.sort();
 		}
 		
 		private function onAnimationLoadFailed(event:Event):void
