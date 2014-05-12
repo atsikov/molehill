@@ -174,7 +174,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		public function get y():Number
@@ -188,7 +188,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		public function get z():Number
@@ -235,7 +235,7 @@ package molehill.core.sprite
 			
 			_colorChanged = true;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _colorChanged:Boolean = true;
@@ -256,7 +256,7 @@ package molehill.core.sprite
 			
 			_colorChanged = true;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _redMultiplier:Number = 1;
@@ -280,7 +280,7 @@ package molehill.core.sprite
 			_redMultiplier = value;
 			_colorChanged = true;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _greenMultiplier:Number = 1;
@@ -304,7 +304,7 @@ package molehill.core.sprite
 			_greenMultiplier = value;
 			_colorChanged = true;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _blueMultiplier:Number = 1;
@@ -328,7 +328,7 @@ package molehill.core.sprite
 			_blueMultiplier = value;
 			_colorChanged = true;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		private var _textureID:String;
@@ -560,15 +560,13 @@ package molehill.core.sprite
 			_z1 = _shiftZ; 
 			_z2 = _shiftZ; 
 			_z3 = _shiftZ;
-			
-			updateParent();
 		}
 		
-		protected function updateParent():void
+		molehill_internal function updateParent(needUpdateParent:Boolean = true):void
 		{
 			if (_parent != null/* && _notifyParentOnChange*/)
 			{
-				_parent.updateDimensions(this);
+				_parent.updateDimensions(this, needUpdateParent);
 			}
 		}
 		
@@ -602,7 +600,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _rotation:Number = 0;
@@ -622,7 +620,7 @@ package molehill.core.sprite
 			
 			_rotation = value;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 	
 		protected var _croppedWidth:Number;
@@ -649,7 +647,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		protected var _croppedHeight:Number;
@@ -676,7 +674,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _visible:Boolean = true;
@@ -725,7 +723,7 @@ package molehill.core.sprite
 			_cachedWidth = _width * _scaleX;
 			_cachedHeight = _height * _scaleY;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _scaleX:Number = 1;
@@ -746,7 +744,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		molehill_internal var _scaleY:Number = 1;
@@ -767,7 +765,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		public function setScale(scaleX:Number, scaleY:Number):void
@@ -785,7 +783,7 @@ package molehill.core.sprite
 			
 			_fromMatrix = false;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		/**
@@ -849,7 +847,7 @@ package molehill.core.sprite
 			_updateOnRender = false;
 			//_notifyParentOnChange = true;
 			
-			hasChanged = true;
+			markChanged(true);
 		}
 		
 		/**
@@ -1120,7 +1118,7 @@ package molehill.core.sprite
 			return _hasChanged;
 		}
 		
-		molehill_internal function set hasChanged(value:Boolean):void
+		molehill_internal function markChanged(value:Boolean, needUpdateParent:Boolean = true):void
 		{
 			_hasChanged = value;
 			
@@ -1132,6 +1130,8 @@ package molehill.core.sprite
 			if (_hasChanged)
 			{
 				updateValues();
+				
+				updateParent(needUpdateParent);
 			}
 		}
 		

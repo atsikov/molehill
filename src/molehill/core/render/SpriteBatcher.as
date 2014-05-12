@@ -461,7 +461,7 @@ package molehill.core.render
 				var isOnScreen:Boolean = true;
 				if (!sprite.visible)
 				{
-					sprite.hasChanged = false;
+					sprite.markChanged(false);
 					sprite._textureChanged = false;
 				}
 				else
@@ -521,7 +521,7 @@ package molehill.core.render
 							_right = sprite._vertexX2;
 						}
 						
-						sprite.hasChanged = false;
+						sprite.markChanged(false);
 						
 						_needUploadVertexData = true;
 					}

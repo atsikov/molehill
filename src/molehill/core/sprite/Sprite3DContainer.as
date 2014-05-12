@@ -4,7 +4,6 @@ package molehill.core.sprite
 	import easy.collections.TreeNode;
 	
 	import flash.geom.Point;
-	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	
 	import molehill.core.molehill_internal;
@@ -312,7 +311,7 @@ package molehill.core.sprite
 			return _containerBottom;
 		}
 
-		molehill_internal function updateDimensions(child:Sprite3D):void
+		molehill_internal function updateDimensions(child:Sprite3D, needUpdateParent:Boolean = true):void
 		{
 			var needUpdateDimensions:Boolean = false;
 			if (child is Sprite3DContainer)
@@ -381,9 +380,9 @@ package molehill.core.sprite
 			}
 			
 			var dimensionsChanged:Boolean = updateContainerSize();
-			if (dimensionsChanged && _parent != null/* && notifyParentOnChange*/)
+			if (dimensionsChanged && _parent != null && needUpdateParent)
 			{
-				_parent.updateDimensions(this);
+				_parent.updateDimensions(this, needUpdateParent);
 			}
 		}
 		
@@ -675,14 +674,14 @@ package molehill.core.sprite
 			}
 		}
 		
-		override molehill_internal function set hasChanged(value:Boolean):void
+		override molehill_internal function markChanged(value:Boolean, updateParent:Boolean=false):void
 		{
 			for each (var child:Sprite3D in _listChildren)
 			{
-				child.hasChanged = value;
+				child.markChanged(value, false);
 			}
 			
-			super.hasChanged = value;
+			super.markChanged(value);
 		}
 		
 		override molehill_internal function updateValues():void

@@ -223,6 +223,7 @@ package molehill.core.text
 			{
 				_cacheSprites.push(super.removeChildAt(numChildren - 1));
 				
+				treeStructureChanged = true;
 				updateBatchersFlag = true;
 			}
 			
@@ -235,13 +236,13 @@ package molehill.core.text
 				_scene._needUpdateBatchers = updateBatchersFlag;
 			}
 			
-			treeStructureChanged = textureAtlasChanged;
+			treeStructureChanged ||= textureAtlasChanged;
 			_notifyParentOnChange = true;
 			updateDimensions(this);
 		}
 		
 		private var _notifyParentOnChange:Boolean = true;
-		override molehill_internal function updateDimensions(child:Sprite3D):void
+		override molehill_internal function updateDimensions(child:Sprite3D, needUpdateParent:Boolean=true):void
 		{
 			if (!_notifyParentOnChange)
 			{
@@ -272,9 +273,9 @@ package molehill.core.text
 			_y2 = _containerBottom
 			_y3 = _containerY;
 			
-			if (_parent != null)
+			if (_parent != null && needUpdateParent)
 			{
-				_parent.updateDimensions(this);
+				_parent.updateDimensions(this, needUpdateParent);
 			}
 		}
 		
@@ -399,9 +400,9 @@ package molehill.core.text
 			super.parentShiftY = value;
 		}
 		
-		override molehill_internal function set hasChanged(value:Boolean):void
+		override molehill_internal function markChanged(value:Boolean, updateParent:Boolean=true):void
 		{
-			super.hasChanged = value;
+			super.markChanged(value);
 			
 			if (hasChanged)
 			{

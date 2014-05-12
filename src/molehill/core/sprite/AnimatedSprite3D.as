@@ -170,7 +170,7 @@ package molehill.core.sprite
 				}
 			}
 			updateOnRender = false;
-			hasChanged = true;
+			markChanged(true);
 		}
 	}
 }
