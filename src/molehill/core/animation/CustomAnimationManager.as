@@ -135,7 +135,10 @@ package molehill.core.animation
 		
 		public function registerAnimations(animationBytes:ByteArray):void
 		{
-			animationBytes.position = 6;
+			animationBytes.position = 0;
+			var header:String = animationBytes.readUTFBytes(3);
+			
+			animationBytes.position = header == 'SAP' ? 6 : 0; 
 			var listRawAnimations:Array = animationBytes.readObject();
 			for (var i:int = 0; i < listRawAnimations.length; i++)
 			{

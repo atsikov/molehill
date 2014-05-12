@@ -7,6 +7,8 @@ package molehill.core.texture
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.utils.ByteArray;
+	
+	import molehill.core.animation.CustomAnimationManager;
 
 	public class BRFTextureData extends TextureAtlasBitmapData
 	{
@@ -45,6 +47,11 @@ package molehill.core.texture
 						chunkData.writeBytes(rawData, rawData.position, chunkSize);
 						chunkData.position = 0;
 						_rawSpriteAnimationData = chunkData.readObject();
+						break;
+					
+					case 'SAP': // Sprite Animation Package
+						chunkData.writeBytes(rawData, rawData.position, chunkSize);
+						CustomAnimationManager.getInstance().registerAnimations(chunkData);
 						break;
 				}
 				rawData.position += chunkSize;
