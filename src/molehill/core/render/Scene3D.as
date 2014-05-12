@@ -415,6 +415,11 @@ package molehill.core.render
 				{
 					var batchingInfo:BatchingInfo = node.value as BatchingInfo;
 					var batcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
+					while (_hashBatchersOldToNew[batcher] != null)
+					{
+						batcher = _hashBatchersOldToNew[batcher];
+					}
+					
 					if (batcher != null)
 					{
 						batcher.removeChild(batchingInfo.child);
@@ -422,7 +427,7 @@ package molehill.core.render
 						if (batcher.numSprites <= 0)
 						{
 							_listSpriteBatchers.splice(
-								_listSpriteBatchers.indexOf(batchingInfo.batcher), 1
+								_listSpriteBatchers.indexOf(batcher), 1
 							);
 						}
 					}
@@ -527,7 +532,15 @@ package molehill.core.render
 								_lastBatchedChild !== (_currentBatcher as SpriteBatcher).getLastChild()
 							)
 							{
-								var tailBatcher:SpriteBatcher = (_currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
+								var tailBatcher:SpriteBatcher;
+								if (_lastBatchedChild == (_currentBatcher as SpriteBatcher).getFirstChild())
+								{
+									_batcherInsertPosition--;
+								}
+								else
+								{
+									tailBatcher = (_currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
+								}
 								if (tailBatcher != null)
 								{
 									_listSpriteBatchers.splice(_batcherInsertPosition, 0, tailBatcher);

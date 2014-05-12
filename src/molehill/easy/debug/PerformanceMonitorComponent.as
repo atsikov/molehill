@@ -196,9 +196,12 @@ package molehill.easy.debug
 			_tfMemory.text = int(currentConsumedMemory / 1024 / 1024) + "/" + int(_maxMemory / 1024 / 1024) + " Mb";
 			//_tfMemory.appendText("\nCPU: " + System.processCPUUsage.toFixed(2));
 			
-			var renderInfo:Object = scene.renderInfo;
-			_tfDrawCalls.text = "Draw calls: " + renderInfo.drawCalls;
-			_tfTriangles.text = "Triangles: " + renderInfo.totalTris;
+			if (scene != null)
+			{
+				var renderInfo:Object = scene.renderInfo;
+				_tfDrawCalls.text = "Draw calls: " + renderInfo.drawCalls;
+				_tfTriangles.text = "Triangles: " + renderInfo.totalTris;
+			}
 		}
 	}
 }
