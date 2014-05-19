@@ -82,6 +82,9 @@ package molehill.core.sprite
 				child.parent.removeChild(child);
 			}
 			
+			updateChildParentValues(child);
+			child.updateValues();
+			
 			child._parent = this;
 			child.setScene(_scene);
 			
@@ -150,9 +153,6 @@ package molehill.core.sprite
 				child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
 			}
 			
-			updateChildParentValues(child);
-			child.updateValues();
-			
 			updateContainerSize();
 			
 			if (_parent != null)
@@ -169,6 +169,10 @@ package molehill.core.sprite
 			{
 				child.parent.removeChild(child);
 			}
+			
+			updateChildParentValues(child);
+			child.updateValues();
+			
 			child._parent = this;
 			child.setScene(_scene);
 			
@@ -248,9 +252,6 @@ package molehill.core.sprite
 			
 			var dimensionsChanged:Boolean = updateContainerSize();
 			
-			updateChildParentValues(child);
-			child.updateValues();
-			
 			if (dimensionsChanged && _parent != null/* && notifyParentOnChange*/)
 			{
 				_parent.updateDimensions(this);
@@ -310,7 +311,8 @@ package molehill.core.sprite
 		{
 			return _containerBottom;
 		}
-
+		
+		private var _dimensionsChanged:Boolean = false;
 		molehill_internal function updateDimensions(child:Sprite3D, needUpdateParent:Boolean = true):void
 		{
 			var needUpdateDimensions:Boolean = false;
@@ -380,9 +382,11 @@ package molehill.core.sprite
 			}
 			
 			var dimensionsChanged:Boolean = updateContainerSize();
-			if (dimensionsChanged && _parent != null && needUpdateParent)
+			_dimensionsChanged ||= dimensionsChanged;
+			if (_dimensionsChanged && _parent != null && needUpdateParent)
 			{
 				_parent.updateDimensions(this, needUpdateParent);
+				_dimensionsChanged = false;
 			}
 		}
 		
@@ -674,7 +678,7 @@ package molehill.core.sprite
 			}
 		}
 		
-		override molehill_internal function markChanged(value:Boolean, updateParent:Boolean=false):void
+		override molehill_internal function markChanged(value:Boolean, updateParent:Boolean=true):void
 		{
 			for each (var child:Sprite3D in _listChildren)
 			{
@@ -689,6 +693,12 @@ package molehill.core.sprite
 			for each (var child:Sprite3D in _listChildren)
 			{
 				child.updateValues();
+				child.updateParent(false);
+			}
+			
+			if (child != null)
+			{
+				child.updateParent(true);
 			}
 		}
 		

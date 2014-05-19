@@ -396,18 +396,21 @@ package molehill.core.sprite
 		molehill_internal function set parentShiftX(value:Number):void
 		{
 			_parentShiftX = value;
+			_valuesUpdated = false;
 		}
 
 		molehill_internal var _parentShiftY:Number = 0;
 		molehill_internal function set parentShiftY(value:Number):void
 		{
 			_parentShiftY = value;
+			_valuesUpdated = false;
 		}
 
 		molehill_internal var _parentShiftZ:Number = 0;
 		molehill_internal function set parentShiftZ(value:Number):void
 		{
 			_parentShiftZ = value;
+			_valuesUpdated = false;
 		}
 
 		
@@ -415,12 +418,14 @@ package molehill.core.sprite
 		molehill_internal function set parentScaleX(value:Number):void
 		{
 			_parentScaleX = value;
+			_valuesUpdated = false;
 		}
 
 		molehill_internal var _parentScaleY:Number = 1;
 		molehill_internal function set parentScaleY(value:Number):void
 		{
 			_parentScaleY = value;
+			_valuesUpdated = false;
 		}
 
 		molehill_internal var _parentRed:Number = 1;
@@ -455,10 +460,16 @@ package molehill.core.sprite
 		molehill_internal function set parentRotation(value:Number):void
 		{
 			_parentRotation = value;
+			_valuesUpdated = false;
 		}
 		
 		molehill_internal function updateValues():void
 		{
+			if (_valuesUpdated)
+			{
+				return;
+			}
+			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
 			var cos:Number;
@@ -560,11 +571,13 @@ package molehill.core.sprite
 			_z1 = _shiftZ; 
 			_z2 = _shiftZ; 
 			_z3 = _shiftZ;
+			
+			_valuesUpdated = true;
 		}
 		
 		molehill_internal function updateParent(needUpdateParent:Boolean = true):void
 		{
-			if (_parent != null/* && _notifyParentOnChange*/)
+			if (_parent != null)
 			{
 				_parent.updateDimensions(this, needUpdateParent);
 			}
@@ -713,7 +726,7 @@ package molehill.core.sprite
 				_width = w;
 				_height = h;
 				
-				_cachedWidth = w;
+				_croppedWidth = w;
 				_croppedHeight = h;
 			}
 			
@@ -1118,10 +1131,12 @@ package molehill.core.sprite
 			return _hasChanged;
 		}
 		
+		private var _valuesUpdated:Boolean = false;
 		molehill_internal function markChanged(value:Boolean, needUpdateParent:Boolean = true):void
 		{
 			_hasChanged = value;
 			
+			_valuesUpdated &&= !value;
 			if (_updateOnRender)
 			{
 				return;
