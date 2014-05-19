@@ -712,6 +712,10 @@ package molehill.core.sprite
 			_visible = value;
 			
 			_visibilityChanged = _visible == visible;
+			
+			_colorChanged &&= _visible;
+			_textureChanged &&= _visible;
+			_hasChanged &&= _visible;
 		}
 		
 		public function setSize(w:Number, h:Number):void
