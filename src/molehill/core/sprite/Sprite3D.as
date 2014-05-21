@@ -864,6 +864,9 @@ package molehill.core.sprite
 			_updateOnRender = false;
 			//_notifyParentOnChange = true;
 			
+			_textureRegion = null;
+			currentAtlasData = null;
+			
 			markChanged(true);
 		}
 		
