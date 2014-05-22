@@ -26,7 +26,7 @@ package molehill.core.texture
 		}
 		
 		private var _hashNodesByTextureID:Object;
-		public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
+		public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, extrudeEdges:Boolean = false, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
 		{
 			if (nextNode == null)
 			{
@@ -35,12 +35,15 @@ package molehill.core.texture
 			
 			if (nextNode.textureID == "")
 			{
-				if (bitmapData.width > nextNode.rc.width || bitmapData.height > nextNode.rc.height)
+				var bitmapWidth:int = bitmapData.width + (extrudeEdges ? 2 : 0);
+				var bitmapHeight:int = bitmapData.height + (extrudeEdges ? 2 : 0);
+				
+				if (bitmapWidth > nextNode.rc.width || bitmapHeight > nextNode.rc.height)
 				{
 					return null;
 				}
 				
-				if (bitmapData.width + nextNode.rc.x > this.width || bitmapData.height + nextNode.rc.y > this.height)
+				if (bitmapWidth + nextNode.rc.x > this.width || bitmapHeight + nextNode.rc.y > this.height)
 				{
 					return null;
 				}
@@ -56,16 +59,49 @@ package molehill.core.texture
 				}
 				*/
 				nextNode.textureID = textureID;
+				if (extrudeEdges)
+				{
+					copyPixels(
+						bitmapData,
+						new Rectangle(0, 0, bitmapData.width, 1),
+						new Point(nextNode.rc.x + 1, nextNode.rc.y)
+					);
+					
+					copyPixels(
+						bitmapData,
+						new Rectangle(0, 0, 1, bitmapData.height),
+						new Point(nextNode.rc.x, nextNode.rc.y + 1)
+					);
+					
+					copyPixels(
+						bitmapData,
+						new Rectangle(0, bitmapData.height - 1, bitmapData.width, 1),
+						new Point(nextNode.rc.x + 1, nextNode.rc.y + bitmapHeight - 1)
+					);
+					
+					copyPixels(
+						bitmapData,
+						new Rectangle(bitmapData.width - 1, 0, 1, bitmapData.height),
+						new Point(nextNode.rc.x + bitmapWidth - 1, nextNode.rc.y + 1)
+					);
+				}
+				
+				var bitmapPoint:Point = new Point(nextNode.rc.x, nextNode.rc.y);
+				if (extrudeEdges)
+				{
+					bitmapPoint.offset(1, 1);
+				}
+				
 				copyPixels(
 					bitmapData,
 					bitmapData.rect,
-					new Point(nextNode.rc.x, nextNode.rc.y)
+					bitmapPoint
 				);
 				
 				nextNode.child = new Vector.<TextureAtlasDataNode>(2);
 				
-				var dw:int = nextNode.rc.width - bitmapData.width;
-				var dh:int = nextNode.rc.height - bitmapData.height;
+				var dw:int = nextNode.rc.width - bitmapWidth;
+				var dh:int = nextNode.rc.height - bitmapHeight;
 				
 				nextNode.child[0] = new TextureAtlasDataNode();
 				nextNode.child[1] = new TextureAtlasDataNode();
@@ -74,32 +110,32 @@ package molehill.core.texture
 				{
 					(nextNode.child[0] as TextureAtlasDataNode).rc = new Rectangle(
 						nextNode.rc.x,
-						nextNode.rc.y + textureGap + bitmapData.height,
-						bitmapData.width,
-						nextNode.rc.height - bitmapData.height - textureGap
+						nextNode.rc.y + textureGap + bitmapHeight,
+						bitmapWidth,
+						nextNode.rc.height - bitmapHeight - textureGap
 					);
 					
 					(nextNode.child[1] as TextureAtlasDataNode).rc = new Rectangle(
-						nextNode.rc.x + textureGap + bitmapData.width,
+						nextNode.rc.x + textureGap + bitmapWidth,
 						nextNode.rc.y,
-						nextNode.rc.width - bitmapData.width - textureGap,
+						nextNode.rc.width - bitmapWidth - textureGap,
 						nextNode.rc.height
 					);
 				}
 				else
 				{
 					(nextNode.child[0] as TextureAtlasDataNode).rc = new Rectangle(
-						nextNode.rc.x + textureGap + bitmapData.width,
+						nextNode.rc.x + textureGap + bitmapWidth,
 						nextNode.rc.y,
-						nextNode.rc.width - bitmapData.width - textureGap,
-						bitmapData.height
+						nextNode.rc.width - bitmapWidth - textureGap,
+						bitmapHeight
 					);
 					
 					(nextNode.child[1] as TextureAtlasDataNode).rc = new Rectangle(
 						nextNode.rc.x,
-						nextNode.rc.y + textureGap + bitmapData.height,
+						nextNode.rc.y + textureGap + bitmapHeight,
 						nextNode.rc.width,
-						nextNode.rc.height - bitmapData.height - textureGap
+						nextNode.rc.height - bitmapHeight - textureGap
 					);
  				}
 				
@@ -112,13 +148,14 @@ package molehill.core.texture
 					));
 				}
 				
+				// nextNode.rc represents texture size to be used in render
 				nextNode.rc.width = bitmapData.width;
 				nextNode.rc.height = bitmapData.height;
 				
 				_atlasData.addTextureDesc(
 					textureID,
-					nextNode.rc.left,
-					nextNode.rc.top,
+					bitmapPoint.x,
+					bitmapPoint.y,
 					nextNode.rc.width,
 					nextNode.rc.height
 				);
@@ -133,10 +170,10 @@ package molehill.core.texture
 				return null;
 			}
 			
-			var newNode:TextureAtlasDataNode = insert(bitmapData, textureID, textureGap, nextNode.child[0]);
+			var newNode:TextureAtlasDataNode = insert(bitmapData, textureID, textureGap, extrudeEdges, nextNode.child[0]);
 			if (newNode == null)
 			{
-				newNode = insert(bitmapData, textureID, textureGap, nextNode.child[1]);
+				newNode = insert(bitmapData, textureID, textureGap, extrudeEdges, nextNode.child[1]);
 			}
 			
 			return newNode;
