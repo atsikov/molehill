@@ -14,7 +14,7 @@ package molehill.core.texture
 			_atlasData = fontTextureData;
 		}
 		
-		override public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
+		override public function insert(bitmapData:BitmapData, textureID:String, textureGap:int=1, extrudeEdges:Boolean=false, nextNode:TextureAtlasDataNode=null):TextureAtlasDataNode 
 		{
 			return null;
 		}
