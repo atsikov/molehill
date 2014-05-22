@@ -37,9 +37,16 @@ package molehill.core.texture
 						_textureAtlasData = TextureAtlasData.fromRawData(chunkData.readObject());
 						break;
 					
+					case 'NA_': // Normalized Alpha Channel with LZMA compression
 					case 'NAC': // Normalized Alpha Channel
 						chunkData.writeBytes(rawData, rawData.position, chunkSize);
 						chunkData.position = 0;
+						
+						if (header == 'NA_')
+						{
+							chunkData.uncompress('lzma');
+						}
+						
 						_textureAtlasData.addNormalizedAplhaData(chunkData);
 						break;
 					
