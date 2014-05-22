@@ -7,17 +7,26 @@ package molehill.core.texture
 		private var _rawData:ByteArray;
 		private var _width:int = 0;
 		private var _height:int = 0;
-		public function NormalizedAlphaChannel(rawData:ByteArray)
+		
+		private var _offsetX:int = 0;
+		private var _offsetY:int = 0;
+		public function NormalizedAlphaChannel(rawData:ByteArray, offsetX:int, offsetY:int)
 		{
 			_rawData = rawData;
 			_rawData.position = 0;
 			
 			_width = _rawData.readUnsignedShort();
 			_height = _rawData.readUnsignedShort();
+			
+			_offsetX = offsetX;
+			_offsetY = offsetY;
 		}
 		
 		public function hitTestPoint(x:int, y:int):Boolean
 		{
+			x -= _offsetX;
+			y -= _offsetY;
+			
 			if (x < 0 || x >= _width || y < 0 || y >= _height)
 			{
 				return false;

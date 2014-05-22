@@ -199,8 +199,13 @@ package molehill.core.texture
 				chunkData.writeBytes(rawData, rawData.position, chunkSize);
 				rawData.position += chunkSize;
 				
-				getTextureData(textureID).setNormalizedAlpha(
-					new NormalizedAlphaChannel(chunkData)
+				var textureData:TextureData = getTextureData(textureID);
+				textureData.setNormalizedAlpha(
+					new NormalizedAlphaChannel(
+						chunkData,
+						textureData.blankOffsetX,
+						textureData.blankOffsetY
+					)
 				);
 			}
 		}
