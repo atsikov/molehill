@@ -526,7 +526,7 @@ package molehill.core.render
 							var atlasData:TextureAtlasData = _textureManager.getAtlasDataByTextureID(sprite.textureID);
 							if (atlasData == null)
 							{
-								throw new Scene3DError("Scene3D/prepareBatchers(): Texture with id " + sprite.textureID + " is used but was never created!");
+								throw new Scene3DError("Scene3D/prepareBatchers(): Texture with id \"" + sprite.textureID + "\" is referenced but was never created!");
 							}
 							
 							textureAtlasID = atlasData.atlasID;
