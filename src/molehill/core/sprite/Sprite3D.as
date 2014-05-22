@@ -6,6 +6,7 @@ package molehill.core.sprite
 	import easy.collections.LinkedList;
 	
 	import flash.events.EventDispatcher;
+	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
@@ -182,8 +183,6 @@ package molehill.core.sprite
 		{
 			_shiftX = value;
 			
-			_fromMatrix = false;
-			
 			markChanged(true);
 		}
 		
@@ -195,8 +194,6 @@ package molehill.core.sprite
 		public function set y(value:Number):void
 		{
 			_shiftY = value;
-			
-			_fromMatrix = false;
 			
 			markChanged(true);
 		}
@@ -478,7 +475,11 @@ package molehill.core.sprite
 			if (_valuesUpdated)
 			{
 				return;
+
 			}
+			
+			var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
+			var parentRad:Number = _parentRotation / 180 * Math.PI;
 			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
@@ -490,91 +491,82 @@ package molehill.core.sprite
 			var dy0:Number;
 			var dx:Number;
 			var dy:Number;
-			if (!_fromMatrix)
-			{
-				scaledWidth = _width * _parentScaleX * _scaleX;
-				scaledHeight = _height * _parentScaleY * _scaleY;
-				
-				var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
-				cos = Math.cos(rad);
-				sin = Math.sin(rad);
-				
-				rad = _parentRotation / 180 * Math.PI;
-				parentCos = Math.cos(rad);
-				parentSin = Math.sin(rad);
-				
-				dx0 = _shiftX * _parentScaleX;
-				dy0 = _shiftY * _parentScaleY;
-				
-				dx = _parentShiftX + dx0 * parentCos - dy0 * parentSin;
-				dy = _parentShiftY + dx0 * parentSin + dy0 * parentCos;
-				
-				_x0 = -scaledHeight * sin + dx;
-				_y0 = scaledHeight * cos + dy;
-				
-				_x1 = dx;
-				_y1 = dy;
-				
-				_x2 = scaledWidth * cos + dx;
-				_y2 = scaledWidth * sin + dy;
-				
-				_x3 = scaledWidth * cos - scaledHeight * sin + dx;
-				_y3 = scaledWidth * sin + scaledHeight * cos + dy;
+		
+			scaledWidth = _width * _parentScaleX * _scaleX;
+			scaledHeight = _height * _parentScaleY * _scaleY;
+			
+			cos = Math.cos(rad);
+			sin = Math.sin(rad);
+			
+			parentCos = Math.cos(parentRad);
+			parentSin = Math.sin(parentRad);
+			
+			dx0 = _shiftX * _parentScaleX;
+			dy0 = _shiftY * _parentScaleY;
+			
+			dx = _parentShiftX + dx0 * parentCos - dy0 * parentSin;
+			dy = _parentShiftY + dx0 * parentSin + dy0 * parentCos;
+			
+			var x0:Number = -scaledHeight * sin + dx;
+			var y0:Number = scaledHeight * cos + dy;
+			
+			var x1:Number = dx;
+			var y1:Number = dy;
+			
+			var x2:Number = scaledWidth * cos + dx;
+			var y2:Number = scaledWidth * sin + dy;
+			
+			var x3:Number = scaledWidth * cos - scaledHeight * sin + dx;
+			var y3:Number = scaledWidth * sin + scaledHeight * cos + dy;
+			
+			_x0 = x0
+			_y0 = y0;
+			
+			_x1 = x1;
+			_y1 = y1;
+			
+			_x2 = x2;
+			_y2 = y2;
+			
+			_x3 = x3;
+			_y3 = y3;
 
-				if (_blankOffsetX == 0 && _blankOffsetY == 0)
-				{
-					_vertexX0 = _x0;
-					_vertexY0 = _y0;
-					
-					_vertexX1 = _x1;
-					_vertexY1 = _y1;
-					
-					_vertexX2 = _x2;
-					_vertexY2 = _y2;
-					
-					_vertexX3 = _x3;
-					_vertexY3 = _y3;
-				}
-				else
-				{
-					var scaledCroppedWidth:Number = _croppedWidth * _parentScaleX * _scaleX;
-					var scaledCroppedHeight:Number = _croppedHeight * _parentScaleY * _scaleY;
-					
-					var dx0Cropped:Number = dx0 + _blankOffsetX * _parentScaleX * _scaleX;
-					var dy0Cropped:Number = dy0 + _blankOffsetY * _parentScaleY * _scaleY;
-					
-					var dxCropped:Number = _parentShiftX + dx0Cropped * parentCos - dy0Cropped * parentSin;
-					var dyCropped:Number = _parentShiftY + dx0Cropped * parentSin + dy0Cropped * parentCos;
-					
-					_vertexX0 = -scaledCroppedHeight * sin + dxCropped;
-					_vertexY0 = scaledCroppedHeight * cos + dyCropped;
-					
-					_vertexX1 = dxCropped;
-					_vertexY1 = dyCropped;
-					
-					_vertexX2 = scaledCroppedWidth * cos + dxCropped;
-					_vertexY2 = scaledCroppedWidth * sin + dyCropped;
-					
-					_vertexX3 = scaledCroppedWidth * cos - scaledCroppedHeight * sin + dxCropped;
-					_vertexY3 = scaledCroppedWidth * sin + scaledCroppedHeight * cos + dyCropped;
-				}
+			if (_blankOffsetX == 0 && _blankOffsetY == 0)
+			{
+				_vertexX0 = x0;
+				_vertexY0 = y0;
+				
+				_vertexX1 = x1;
+				_vertexY1 = y1;
+				
+				_vertexX2 = x2;
+				_vertexY2 = y2;
+				
+				_vertexX3 = x3;
+				_vertexY3 = y3;
 			}
 			else
 			{
-				dx = _matrix.tx;
-				dy = _matrix.ty;
+				var scaledCroppedWidth:Number = _croppedWidth * _parentScaleX * _scaleX;
+				var scaledCroppedHeight:Number = _croppedHeight * _parentScaleY * _scaleY;
 				
-				_x0 = -_croppedHeight * _matrix.c + dx;
-				_y0 = _croppedHeight * _matrix.d + dy;
+				var dx0Cropped:Number = dx0 + _blankOffsetX * _parentScaleX * _scaleX;
+				var dy0Cropped:Number = dy0 + _blankOffsetY * _parentScaleY * _scaleY;
 				
-				_x1 = dx;
-				_y1 = dy;
+				var dxCropped:Number = _parentShiftX + dx0Cropped * parentCos - dy0Cropped * parentSin;
+				var dyCropped:Number = _parentShiftY + dx0Cropped * parentSin + dy0Cropped * parentCos;
 				
-				_x2 = _croppedWidth * _matrix.a + dx;
-				_y2 = _croppedWidth * _matrix.b + dy;
+				_vertexX0 = -scaledCroppedHeight * sin + dxCropped;
+				_vertexY0 = scaledCroppedHeight * cos + dyCropped;
 				
-				_x3 = _croppedWidth * _matrix.a - _croppedHeight * _matrix.c + dx;
-				_y3 = _croppedWidth * _matrix.b + _croppedHeight * _matrix.d + dy;
+				_vertexX1 = dxCropped;
+				_vertexY1 = dyCropped;
+				
+				_vertexX2 = scaledCroppedWidth * cos + dxCropped;
+				_vertexY2 = scaledCroppedWidth * sin + dyCropped;
+				
+				_vertexX3 = scaledCroppedWidth * cos - scaledCroppedHeight * sin + dxCropped;
+				_vertexY3 = scaledCroppedWidth * sin + scaledCroppedHeight * cos + dyCropped;
 			}
 			
 			_z0 = _shiftZ; 
@@ -593,20 +585,6 @@ package molehill.core.sprite
 			}
 		}
 		
-		private var _matrix:Object = {'a': 1, 'b': 0, 'c': 0, 'd': 1, 'tx': 0, 'ty': 0};
-		private var _fromMatrix:Boolean = false;
-		public function applyMatrix(a:Number, b:Number, c:Number, d:Number, tx:Number, ty:Number):void
-		{
-			_matrix.a = a;
-			_matrix.b = b;
-			_matrix.c = c;
-			_matrix.d = d;
-			_matrix.tx = tx;
-			_matrix.ty = ty;
-			
-			_fromMatrix = true;
-		}
-		
 		molehill_internal var _shiftX:Number = 0;
 		molehill_internal var _shiftY:Number = 0;
 		molehill_internal var _shiftZ:Number = 0;
@@ -620,8 +598,6 @@ package molehill.core.sprite
 			_shiftX = x;
 			_shiftY = y;
 			_shiftZ = z;
-			
-			_fromMatrix = false;
 			
 			markChanged(true);
 		}
@@ -638,8 +614,6 @@ package molehill.core.sprite
 			{
 				return;
 			}
-			
-			_fromMatrix = false;
 			
 			_rotation = value;
 			
@@ -668,8 +642,6 @@ package molehill.core.sprite
 			_scaleX = value / _width; 
 			_cachedWidth = _width * _scaleX;
 			
-			_fromMatrix = false;
-			
 			markChanged(true);
 		}
 		
@@ -694,8 +666,6 @@ package molehill.core.sprite
 			
 			_scaleY = value / _height;
 			_cachedHeight = _height * _scaleY;
-			
-			_fromMatrix = false;
 			
 			markChanged(true);
 		}
@@ -769,8 +739,6 @@ package molehill.core.sprite
 			_scaleX = value;
 			_cachedWidth = _width * _scaleX;
 			
-			_fromMatrix = false;
-			
 			markChanged(true);
 		}
 		
@@ -790,8 +758,6 @@ package molehill.core.sprite
 			_scaleY = value;
 			_cachedHeight = _height * _scaleY;
 			
-			_fromMatrix = false;
-			
 			markChanged(true);
 		}
 		
@@ -807,8 +773,6 @@ package molehill.core.sprite
 			
 			_cachedWidth = _width * _scaleX;
 			_cachedHeight = _height * _scaleY;
-			
-			_fromMatrix = false;
 			
 			markChanged(true);
 		}
@@ -1014,23 +978,100 @@ package molehill.core.sprite
 			
 			var localX:Number = point.x - _parentShiftX;
 			var localY:Number = point.y - _parentShiftY;
-
-			var scaledShiftX:Number = _shiftX * _parentScaleX;
-			var scaledShiftY:Number = _shiftY * _parentScaleY;
 			
-			if (_ignoreTransparentPixels && isPixelTransparent((localX - scaledShiftX) / _scaleX, (localY - scaledShiftY) / _scaleY))
+			var minX:Number = Math.min(_x0, _x1, _x2, _x3);
+			var minY:Number = Math.min(_y0, _y1, _y2, _y3);
+			var maxX:Number = Math.max(_x0, _x1, _x2, _x3);
+			var maxY:Number = Math.max(_y0, _y1, _y2, _y3);
+			
+			minX -= _parentShiftX;
+			maxX -= _parentShiftX;
+			minY -= _parentShiftY;
+			maxY -= _parentShiftY;
+			
+			
+			if (_ignoreTransparentPixels)
+			{
+				var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
+				
+				var cos:Number;
+				var sin:Number;
+				var dx0:Number;
+				var dy0:Number;
+				var dx:Number;
+				var dy:Number;
+				
+				cos = Math.cos(rad);
+				sin = Math.sin(rad);
+				
+				dx0 = localX / _parentScaleX / _scaleX - _shiftX;
+				dy0 = localY / _parentScaleY / _scaleY - _shiftY;
+				
+				dx = dx0 * cos - dy0 * sin;
+				dy = dx0 * sin + dy0 * cos;
+				
+				if (isPixelTransparent(dx, dy))
+				{
+					return false;
+				}
+			}
+			
+			return	(minX <= localX) &&
+				(maxX >= localX) &&
+				(minY <= localY) &&
+				(maxY >= localY);
+		}
+		
+		molehill_internal function hitTestCoords(globalX:Number, globalY:Number):Boolean
+		{
+			if (_scene == null)
 			{
 				return false;
 			}
 			
-			var a:int = Math.min(scaledShiftX, scaledShiftX + _cachedWidth);
-			var b:int = Math.max(scaledShiftX, scaledShiftX + _cachedWidth);
-			var c:int = Math.min(scaledShiftY, scaledShiftY + _cachedHeight);
-			var d:int = Math.max(scaledShiftY, scaledShiftY + _cachedHeight);
-			return	(a <= localX) &&
-				(b >= localX) &&
-				(c <= localY) &&
-				(d >= localY);
+			var localX:Number = globalX - _parentShiftX;
+			var localY:Number = globalY - _parentShiftY;
+			
+			var minX:Number = Math.min(_x0, _x1, _x2, _x3);
+			var minY:Number = Math.min(_y0, _y1, _y2, _y3);
+			var maxX:Number = Math.max(_x0, _x1, _x2, _x3);
+			var maxY:Number = Math.max(_y0, _y1, _y2, _y3);
+			
+			minX -= _parentShiftX;
+			maxX -= _parentShiftX;
+			minY -= _parentShiftY;
+			maxY -= _parentShiftY;
+			
+			if (_ignoreTransparentPixels)
+			{
+				var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
+				
+				var cos:Number;
+				var sin:Number;
+				var dx0:Number;
+				var dy0:Number;
+				var dx:Number;
+				var dy:Number;
+				
+				cos = Math.cos(rad);
+				sin = Math.sin(rad);
+				
+				dx0 = localX / _parentScaleX / _scaleX - _shiftX;
+				dy0 = localY / _parentScaleY / _scaleY - _shiftY;
+				
+				dx = dx0 * cos - dy0 * sin;
+				dy = dx0 * sin + dy0 * cos;
+				
+				if (isPixelTransparent(dx, dy))
+				{
+					return false;
+				}
+			}
+			
+			return	(minX <= localX) &&
+				(maxX >= localX) &&
+				(minY <= localY) &&
+				(maxY >= localY);
 		}
 		
 		/**
@@ -1066,31 +1107,6 @@ package molehill.core.sprite
 			}
 			
 			return !alphaData.hitTestPoint(localX, localY);
-		}
-		
-		molehill_internal function hitTestCoords(globalX:Number, globalY:Number):Boolean
-		{
-			if (_scene == null)
-			{
-				return false;
-			}
-			
-			var localX:Number = globalX - _parentShiftX;
-			var localY:Number = globalY - _parentShiftY;
-			
-			if (_ignoreTransparentPixels && isPixelTransparent(localX, localY))
-			{
-				return false;
-			}
-			
-			var a:int = Math.min(_shiftX, _shiftX + _cachedWidth);
-			var b:int = Math.max(_shiftX, _shiftX + _cachedWidth);
-			var c:int = Math.min(_shiftY, _shiftY + _cachedHeight);
-			var d:int = Math.max(_shiftY, _shiftY + _cachedHeight);
-			return	(a <= localX) &&
-				(b >= localX) &&
-				(c <= localY) &&
-				(d >= localY);
 		}
 		
 		molehill_internal var _textureChanged:Boolean = false;
