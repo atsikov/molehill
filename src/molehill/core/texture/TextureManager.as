@@ -12,6 +12,8 @@ package molehill.core.texture
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	import flash.utils.Timer;
+	
+	import molehill.core.errors.TextureManagerError;
 
 	public class TextureManager extends EventDispatcher
 	{
@@ -50,11 +52,11 @@ package molehill.core.texture
 			}
 			else if (textureData == null)
 			{
-				throw new Error("TextureManager::createTexture(): Parameter textureData cannot be null!")
+				throw new TextureManagerError("TextureManager::createTexture(): Parameter textureData cannot be null!")
 			}
 			else
 			{
-				throw new Error("TextureManager::createTexture(): Unknown texture format!")
+				throw new TextureManagerError("TextureManager::createTexture(): Unknown texture format!")
 			}
 			
 			return texture;
@@ -342,7 +344,7 @@ package molehill.core.texture
 				{
 					if (_hashAtlasIDByTextureID[textureID] != null)
 					{
-						throw new Error("Atlas with the same texture ID already created!");
+						throw new TextureManagerError("Atlas with the same texture ID already created!");
 					}
 					
 					_hashAtlasIDByTextureID[textureID] = textureData.textureAtlasData.atlasID;
@@ -668,7 +670,8 @@ package molehill.core.texture
 		
 		public function getAtlasDataByTextureID(textureID:String):TextureAtlasData
 		{
-			return _hashAtlasDataByAtlasID[_hashAtlasIDByTextureID[textureID]];
+			var atlasID:String = _hashAtlasIDByTextureID[textureID];
+			return _hashAtlasDataByAtlasID[atlasID];
 		}
 		
 		public function getAtlasBitmapByID(atlasID:String):TextureAtlasBitmapData

@@ -11,12 +11,14 @@ package molehill.core.render
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
+	import molehill.core.errors.Scene3DError;
 	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.focus.IFocusable;
 	import molehill.core.molehill_internal;
 	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.ObjectUtils;
@@ -514,7 +516,21 @@ package molehill.core.render
 					}
 					else if (!(sprite is Sprite3DContainer))
 					{
-						var textureAtlasID:String = sprite.textureID == null ? null : _textureManager.getAtlasDataByTextureID(sprite.textureID).atlasID;
+						var textureAtlasID:String;
+						if (sprite.textureID == null)
+						{
+							textureAtlasID = null;
+						}
+						else
+						{
+							var atlasData:TextureAtlasData = _textureManager.getAtlasDataByTextureID(sprite.textureID);
+							if (atlasData == null)
+							{
+								throw new Scene3DError("Scene3D/prepareBatchers(): Texture with id " + sprite.textureID + " is used but was never created!");
+							}
+							
+							textureAtlasID = atlasData.atlasID;
+						}
 						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
 						if (!(_currentBatcher is SpriteBatcher) || 
 							(_currentBatcher != null &&
