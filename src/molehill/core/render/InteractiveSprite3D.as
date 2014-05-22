@@ -254,14 +254,14 @@ package molehill.core.render
 			}
 			
 			var currentParent:Sprite3D = parent;
-			while (currentParent != null)
+			while (currentParent != null && !currentParent.hasEventListener(event.type))
 			{
-				if (currentParent.hasEventListener(event.type))
-				{
-					result = currentParent.dispatchEvent(event);
-				}
-				
 				currentParent = currentParent.parent;
+			}
+			
+			if (currentParent != null)
+			{
+				result = currentParent.dispatchEvent(event);
 			}
 			
 			return result;

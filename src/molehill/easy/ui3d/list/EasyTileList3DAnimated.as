@@ -27,6 +27,7 @@ package molehill.easy.ui3d.list
 	public class EasyTileList3DAnimated extends EasyTileList3D
 	{
 		private var _itemsContainer:UIComponent3D;
+		private var _itemsContainerBack:Sprite3D;
 		private var _itemsContainerCamera:CustomCamera;
 		private var _scrollingMask:InteractiveSprite3D;
 		public function EasyTileList3DAnimated()
@@ -37,6 +38,7 @@ package molehill.easy.ui3d.list
 			
 			_scrollingMask = new InteractiveSprite3D();
 			_scrollingMask.setTexture(FormsTextures.bg_blue_plate);
+			_scrollingMask.mouseEnabled = true;
 			addChild(_scrollingMask);
 			
 			_itemsContainerCamera = new CustomCamera();
@@ -44,6 +46,12 @@ package molehill.easy.ui3d.list
 			_itemsContainer = new UIComponent3D();
 			_itemsContainer.camera = _itemsContainerCamera;
 			addChild(_itemsContainer);
+			
+			_itemsContainerBack = new Sprite3D();
+			_itemsContainerBack.setTexture(FormsTextures.bg_blue_plate);
+			_itemsContainerBack.mouseEnabled = true;
+			_itemsContainerBack.alpha = 0;
+			_itemsContainer.addChild(_itemsContainerBack);
 			
 			_maskRect = new Rectangle();
 			
@@ -56,12 +64,15 @@ package molehill.easy.ui3d.list
 			_maskRect = value;
 			_scrollingMask.moveTo(value.x, value.y);
 			_scrollingMask.setSize(value.width, value.height);
+			
+			_itemsContainerBack.moveTo(value.x, value.y);
+			_itemsContainerBack.setSize(value.width, value.height);
 		}
 			
 		
 		override protected function onAddedToScene():void
 		{
-			_itemsContainer.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onMouseDown);
+			_itemsContainer.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			super.onAddedToScene();
 			
 			_stage = Application.getInstance().stage;
@@ -106,7 +117,7 @@ package molehill.easy.ui3d.list
 				_stage = null;
 			}
 			
-			removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onMouseDown);
+			removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			
 			_itemsContainerCamera.scrollX = 0;
 			_itemsContainerCamera.scrollY = 0;
@@ -304,7 +315,7 @@ package molehill.easy.ui3d.list
 		
 		//Start Scrolling
 		
-		private function onMouseDown(event:Input3DMouseEvent):void
+		private function onItemsContainerMouseDown(event:Input3DMouseEvent):void
 		{
 			if (!_mouseScrollingEnabled)
 			{
@@ -489,9 +500,9 @@ package molehill.easy.ui3d.list
 		
 		// animate per page and per item scrolling
 		
-		private var _numLinesPageSlide:int = 1;
+		private var _numLinesPageSlide:int = 0;
 		
-		/** num lines to animated slide on page change */
+		/** num lines to animated slide on page change, default is page size (rowCount/columncount) */
 		public function set numLinesPageSlide(value:int):void
 		{
 			_numLinesPageSlide = Math.max(
@@ -505,6 +516,11 @@ package molehill.easy.ui3d.list
 		
 		private function get pageSlideSize():Number
 		{
+			if (_numLinesPageSlide == 0)
+			{
+				_numLinesPageSlide = _direction == Direction.HORIZONTAL ? _rowCount : _columnCount;
+			}
+			
 			return _numLinesPageSlide * lineSize;
 		}
 		
@@ -589,11 +605,11 @@ package molehill.easy.ui3d.list
 			
 			if (_direction == Direction.HORIZONTAL)
 			{
-				props.scrollX = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
+				props.scrollY = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
 			}
 			else
 			{
-				props.scrollY = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
+				props.scrollX = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
 			}
 			
 			OpenTween.go(
@@ -791,6 +807,13 @@ package molehill.easy.ui3d.list
 		{
 			_updateCallback = value;
 		}
+		
+		private var _numAdditionalDrawingLines:uint = 0;
+
+		public function set numAdditionalDrawingLines(value:uint):void
+		{
+			_numAdditionalDrawingLines = value;
+		}
 
 		
 		private var _listItemRenderers:Array = new Array();
@@ -813,7 +836,8 @@ package molehill.easy.ui3d.list
 			_listItemRenderers.splice(0, _listItemRenderers.length);
 			
 			var dataBeginIdx:int = Math.max(0, _scrollPosition - numItemsPerLine);
-			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + (_scrollPosition == 0 ? numItemsPerLine : numItemsPerLine * 2);
+			var numAdditionalItemsCoeff:uint = _scrollPosition == 0 ? (1 + _numAdditionalDrawingLines) : (2 + _numAdditionalDrawingLines);
+			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + numItemsPerLine * numAdditionalItemsCoeff;
 			
 			var numItems:int = this.numItems;
 			if (dataEndIdx >= numItems)

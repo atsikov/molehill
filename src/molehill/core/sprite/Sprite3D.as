@@ -399,7 +399,7 @@ package molehill.core.sprite
 			_cachedWidth = 0;
 			_cachedHeight = 0;
 			
-			setSize(textureData.width, textureData.height);
+			setSize(textureData.width * _scaleX, textureData.height * _scaleY);
 		}
 		
 		molehill_internal var _parentShiftX:Number = 0;

@@ -120,7 +120,6 @@ package molehill.easy.ui3d
 						if (textureID != _normalTextureData.textureID)
 						{
 							setTexture(_normalTextureData.textureID);
-							setSize(_normalTextureData.width, _normalTextureData.height);
 						}
 						break;
 					
@@ -128,7 +127,6 @@ package molehill.easy.ui3d
 						if (textureID != _overTextureData.textureID)
 						{
 							setTexture(_overTextureData.textureID);
-							setSize(_overTextureData.width, _overTextureData.height);
 						}
 						break;
 					
@@ -136,7 +134,6 @@ package molehill.easy.ui3d
 						if (textureID != _downTextureData.textureID)
 						{
 							setTexture(_downTextureData.textureID);
-							setSize(_downTextureData.width, _downTextureData.height);
 						}
 						break;
 				}
@@ -148,7 +145,6 @@ package molehill.easy.ui3d
 					if (textureID != _disabledTextureData.textureID)
 					{
 						setTexture(_disabledTextureData.textureID);
-						setSize(_disabledTextureData.width, _disabledTextureData.height);
 					}
 				}
 				else
@@ -156,8 +152,6 @@ package molehill.easy.ui3d
 					if (textureID != _normalTextureData.textureID)
 					{
 						setTexture(_normalTextureData.textureID);
-						textureRegion = tm.getTextureRegion(_normalTextureData.textureID);
-						setSize(_normalTextureData.width, _normalTextureData.height);
 					}
 				}
 			}

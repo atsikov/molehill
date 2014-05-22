@@ -409,9 +409,9 @@ package molehill.easy.ui3d.list
 			itemRenderer.highlighted = false;
 			
 			var displayObject:Sprite3D = itemRenderer as Sprite3D;
-			if ( displayObject != null && contains(displayObject) )
+			if ( displayObject != null && displayObject.parent != null )
 			{
-				removeChild(displayObject);
+				displayObject.parent.removeChild(displayObject);
 			}
 			
 			_listFreeItemRenderers.push(
