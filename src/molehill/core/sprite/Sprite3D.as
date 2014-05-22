@@ -131,6 +131,16 @@ package molehill.core.sprite
 			{
 				onAddedToScene();
 			}
+			else
+			{
+				onRemovedFromScene();
+			}
+		}
+		
+		protected function onRemovedFromScene():void
+		{
+			// TODO Auto Generated method stub
+			
 		}
 		
 		protected function onAddedToScene():void

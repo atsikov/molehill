@@ -12,6 +12,7 @@ package molehill.easy.ui3d.list
 	import flash.events.MouseEvent;
 	import flash.utils.Dictionary;
 	
+	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	
@@ -371,9 +372,9 @@ package molehill.easy.ui3d.list
 		private function createItemRenderer():IEasyItemRenderer
 		{
 			var itemRenderer:Sprite3D = _itemRendererFactory.newInstance() as Sprite3D;
-			itemRenderer.addEventListener(MouseEvent.CLICK, onItemRendererClick);
-			itemRenderer.addEventListener(MouseEvent.ROLL_OVER, onItemRendererRollOver);
-			itemRenderer.addEventListener(MouseEvent.ROLL_OUT, onItemRendererRollOut);
+			itemRenderer.addEventListener(Input3DMouseEvent.CLICK, onItemRendererClick);
+			itemRenderer.addEventListener(Input3DMouseEvent.MOUSE_OVER, onItemRendererRollOver);
+			itemRenderer.addEventListener(Input3DMouseEvent.MOUSE_OUT, onItemRendererRollOut);
 			
 			initItemRenderer(itemRenderer as IEasyItemRenderer);
 			
@@ -487,7 +488,7 @@ package molehill.easy.ui3d.list
 		/*** --------------------------------------------------------- ***/
 		/***                           Mouse                           ***/
 		/*** --------------------------------------------------------- ***/
-		private function onItemRendererClick(event:MouseEvent):void
+		private function onItemRendererClick(event:Input3DMouseEvent):void
 		{
 			var itemRenderer:IEasyItemRenderer = event.currentTarget as IEasyItemRenderer;
 			if (itemRenderer == null)
@@ -527,7 +528,7 @@ package molehill.easy.ui3d.list
 			update();
 		}
 		//---
-		private function onItemRendererRollOver(event:MouseEvent):void
+		private function onItemRendererRollOver(event:Input3DMouseEvent):void
 		{
 			var itemRenderer:IEasyItemRenderer = event.currentTarget as IEasyItemRenderer;
 			if (itemRenderer == null)
@@ -540,7 +541,7 @@ package molehill.easy.ui3d.list
 			}
 		}
 		//---
-		private function onItemRendererRollOut(event:MouseEvent):void
+		private function onItemRendererRollOut(event:Input3DMouseEvent):void
 		{
 			var itemRenderer:IEasyItemRenderer = event.currentTarget as IEasyItemRenderer;
 			if (itemRenderer == null)
@@ -582,7 +583,7 @@ package molehill.easy.ui3d.list
 		
 		public function update():void
 		{
-			if ((getScene() != null) || (_updateAnyway))
+			if ((scene != null) || (_updateAnyway))
 			{
 				doUpdate();
 			}

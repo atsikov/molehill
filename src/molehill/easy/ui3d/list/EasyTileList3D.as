@@ -16,7 +16,7 @@ package molehill.easy.ui3d.list
 			super();
 		}
 		
-		private var _direction:String = Direction.VERTICAL;
+		protected var _direction:String = Direction.VERTICAL;
 		public function get direction():String
 		{
 			return _direction;
@@ -148,7 +148,7 @@ package molehill.easy.ui3d.list
 			return rowCount * columnCount;
 		}
 		
-		private var _autoSize:Boolean = false;
+		protected var _autoSize:Boolean = false;
 		public function get autoSize():Boolean
 		{
 			return _autoSize;
@@ -158,7 +158,7 @@ package molehill.easy.ui3d.list
 			_autoSize = value;
 		}
 		
-		private var _rowCount:int;
+		protected var _rowCount:int;
 		public function get rowCount():int
 		{
 			if (_autoSize && direction == Direction.VERTICAL)
@@ -176,7 +176,7 @@ package molehill.easy.ui3d.list
 			_rowCount = value;
 		}
 		
-		private var _columnCount:int = 1;
+		protected var _columnCount:int = 1;
 		public function get columnCount():int
 		{
 			if (_autoSize && direction == Direction.HORIZONTAL)
@@ -194,7 +194,7 @@ package molehill.easy.ui3d.list
 			_columnCount = value;
 		}
 		
-		private var _rowHeight:int;
+		protected var _rowHeight:int;
 		public function get rowHeight():int
 		{
 			return _rowHeight;
@@ -204,7 +204,7 @@ package molehill.easy.ui3d.list
 			_rowHeight = value;
 		}
 		
-		private var _columnWidth:int;
+		protected var _columnWidth:int;
 		public function get columnWidth():int
 		{
 			return _columnWidth;
@@ -214,7 +214,7 @@ package molehill.easy.ui3d.list
 			_columnWidth = value;
 		}
 		
-		private var _rowsGap:int;
+		protected var _rowsGap:int;
 		public function get rowsGap():int
 		{
 			return _rowsGap;
@@ -224,7 +224,7 @@ package molehill.easy.ui3d.list
 			_rowsGap = value;
 		}
 		
-		private var _columnsGap:int;
+		protected var _columnsGap:int;
 		public function get columnsGap():int
 		{
 			return _columnsGap;
@@ -234,7 +234,7 @@ package molehill.easy.ui3d.list
 			_columnsGap = value;
 		}
 		
-		private var _showEmptyCells:Boolean = true;
+		protected var _showEmptyCells:Boolean = true;
 		public function get showEmptyCells():Boolean
 		{
 			return _showEmptyCells;
