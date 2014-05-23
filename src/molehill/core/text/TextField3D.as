@@ -125,6 +125,9 @@ package molehill.core.text
 						case TextField3DAlign.CENTER:
 							lineStart = -lineWidth / 2;
 							break;
+						default:
+							lineStart = 0;
+							break;
 					}
 					
 					for (var j:int = placedChildIndex; j < childIndex; j++)
@@ -203,6 +206,9 @@ package molehill.core.text
 					break;
 				case TextField3DAlign.CENTER:
 					lineStart = -lineWidth / 2;
+					break;
+				default:
+					lineStart = 0;
 					break;
 			}
 			
