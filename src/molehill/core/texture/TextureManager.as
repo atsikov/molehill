@@ -587,6 +587,11 @@ package molehill.core.texture
 			return atlasData.getTextureRegion(textureID);
 		}
 		
+		public function getTextureBitmap(textureID:String):TextureAtlasBitmapData
+		{
+			return _hashAtlasBitmapByTextureID[textureID];
+		}
+		
 		public function isTextureCreated(textureID:String):Boolean
 		{
 			return _hashAtlasBitmapByTextureID[textureID] != null || _hashARFDataByTextureID[textureID] != null;

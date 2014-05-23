@@ -5,6 +5,7 @@ package molehill.core.sprite
 	import easy.collections.BinarySearchTreeNode;
 	import easy.collections.LinkedList;
 	
+	import flash.display.BitmapData;
 	import flash.events.EventDispatcher;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -992,25 +993,7 @@ package molehill.core.sprite
 			
 			if (_ignoreTransparentPixels)
 			{
-				var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
-				
-				var cos:Number;
-				var sin:Number;
-				var dx0:Number;
-				var dy0:Number;
-				var dx:Number;
-				var dy:Number;
-				
-				cos = Math.cos(rad);
-				sin = Math.sin(rad);
-				
-				dx0 = localX / _parentScaleX / _scaleX - _shiftX;
-				dy0 = localY / _parentScaleY / _scaleY - _shiftY;
-				
-				dx = dx0 * cos - dy0 * sin;
-				dy = dx0 * sin + dy0 * cos;
-				
-				if (isPixelTransparent(dx, dy))
+				if (isPixelTransparent(localX - _shiftX, localY - _shiftY))
 				{
 					return false;
 				}
@@ -1090,20 +1073,50 @@ package molehill.core.sprite
 		
 		public function isPixelTransparent(localX:int, localY:int):Boolean
 		{
-			var textureData:TextureData = currentAtlasData.getTextureData(textureID);
-			if (localX < textureData.blankOffsetX ||
-				localY < textureData.blankOffsetY ||
-				localX > textureData.blankOffsetX + textureData.croppedWidth ||
-				localY > textureData.blankOffsetY + textureData.croppedHeight) 
+			var rad:Number = (-_rotation - _parentRotation) / 180 * Math.PI;
+			
+			var cos:Number;
+			var sin:Number;
+			var dx0:Number;
+			var dy0:Number;
+			var dx:Number;
+			var dy:Number;
+			
+			cos = Math.cos(rad);
+			sin = Math.sin(rad);
+			
+			dx0 = localX / _parentScaleX / _scaleX;
+			dy0 = localY / _parentScaleY / _scaleY;
+			
+			dx = dx0 * cos - dy0 * sin;
+			dy = dx0 * sin + dy0 * cos;
+			
+			if (currentAtlasData == null)
 			{
-				return false;
+				return dx < 0 || dy < 0 || dx > _width || dy > _height;
+			}
+			
+			var textureData:TextureData = currentAtlasData.getTextureData(textureID);
+			if (dx < textureData.blankOffsetX ||
+				dy < textureData.blankOffsetY ||
+				dx > textureData.blankOffsetX + textureData.croppedWidth ||
+				dy > textureData.blankOffsetY + textureData.croppedHeight) 
+			{
+				return true;
 			}
 			
 			var alphaData:NormalizedAlphaChannel = textureData.getNormalizedAlpha();
-			
 			if (alphaData == null)
 			{
-				return false;
+				var bitmapData:BitmapData = TextureManager.getInstance().getTextureBitmap(textureID);
+				if (bitmapData == null)
+				{
+					return false;
+				}
+				
+				var alphaValue:uint = bitmapData.getPixel32(textureData.left + dx, textureData.top + dy) >>> 24;
+				
+				return alphaValue == 0;
 			}
 			
 			return !alphaData.hitTestPoint(localX, localY);
@@ -1382,12 +1395,12 @@ package molehill.core.sprite
 		{
 			globalToLocalCoords(point.x, point.y);
 			
-			point.x = _localX;
-			point.y = _localY;
+			point.x = _localPointX;
+			point.y = _localPointY;
 		}
 		
-		private var _localX:Number;
-		private var _localY:Number;
+		private var _localPointX:Number;
+		private var _localPointY:Number;
 		
 		private var _cameraOwners:LinkedList;
 		private function globalToLocalCoords(globalX:Number, globalY:Number):void
@@ -1427,8 +1440,8 @@ package molehill.core.sprite
 			globalX /= _scaleX;
 			globalY /= _scaleY;
 			
-			_localX = globalX;
-			_localY = globalY;
+			_localPointX = globalX;
+			_localPointY = globalY;
 		}
 		
 		molehill_internal function get isOnScreen():Boolean
@@ -1436,13 +1449,13 @@ package molehill.core.sprite
 			var renderEngine:RenderEngine = SCENE_MANAGER.renderEngine;
 			
 			globalToLocalCoords(0, 0);
-			if (_localX > width || _localY > height)
+			if (_localPointX > width || _localPointY > height)
 			{
 				return false;
 			}
 			
 			globalToLocalCoords(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
-			if (_localX < 0 || _localY < 0)
+			if (_localPointX < 0 || _localPointY < 0)
 			{
 				return false;
 			}
