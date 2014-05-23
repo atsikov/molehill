@@ -439,7 +439,7 @@ package molehill.core.texture
 				
 				//_hashTextureTypeByTexture[texture] = false;
 			}
-			
+			/*
 			var mipWidth:int = fontBitmap.width / 2;
 			var mipHeight:int = fontBitmap.height / 2;
 			
@@ -460,7 +460,7 @@ package molehill.core.texture
 			}
 			
 			mipImage.dispose();
-			
+			*/
 			return null; //texture;
 		}
 		

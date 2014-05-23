@@ -151,6 +151,11 @@ package molehill.core.text
 			return _hashLoadedFonts[fontName] != null;
 		}
 		
+		public function getFontTextureData(fontName:String):FontTextureData
+		{
+			return _hashLoadedFonts[fontName];
+		}
+		
 		public function getSuitableFontSize(fontName:String, size:int):int
 		{
 			if (!isFontLoaded(fontName))

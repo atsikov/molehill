@@ -16,10 +16,9 @@ package molehill.core.render.shader.species.base
 				
 				"mov ft2, ft1\n" +
 				"seq ft2.x, ft1.w, fc0.x\n" +
-				"sub ft2.z, ft1.w, ft2.x\n" +
-				"kil ft2.z\n" +
-				"add ft2.y, ft2.x, ft1.w\n" +
-				"div ft1.xyz, ft1.xyz, ft2.y\n" +
+				"add ft2.x, ft1.w, ft2.x\n" +
+				"div ft1.xyz, ft1.xyz, ft2.x\n" +
+				
 				"mul ft1.xyzw, ft1.xyzw, v0.xyzw\n" +
 				
 				"mov oc, ft1\n";
