@@ -76,11 +76,12 @@ package molehill.core.render
 		
 		molehill_input_internal function onMouseDown(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
+			/*
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				return false;
 			}
-			
+			*/
 			dispatchEvent(
 				new Input3DMouseEvent(
 					Input3DMouseEvent.MOUSE_DOWN,
@@ -97,11 +98,12 @@ package molehill.core.render
 		
 		molehill_input_internal function onMouseUp(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
+			/*
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				return false;
 			}
-			
+			*/
 			dispatchEvent(
 				new Input3DMouseEvent(
 					Input3DMouseEvent.MOUSE_UP,
@@ -118,11 +120,12 @@ package molehill.core.render
 		
 		molehill_input_internal function onMouseClick(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
+			/*
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				return false;
 			}
-			
+			*/
 			dispatchEvent(
 				new Input3DMouseEvent(
 					Input3DMouseEvent.CLICK,
@@ -139,6 +142,7 @@ package molehill.core.render
 		
 		molehill_input_internal function onMouseMove(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
+			/*
 			if (ignoreTransparentPixels)
 			{
 				if (isPixelTransparent(localX, localY))
@@ -157,7 +161,7 @@ package molehill.core.render
 					}
 				}
 			}
-			
+			*/
 			dispatchEvent(
 				new Input3DMouseEvent(
 					Input3DMouseEvent.MOUSE_MOVE,
@@ -192,6 +196,7 @@ package molehill.core.render
 		private var _mouseIsOver:Boolean = false;
 		molehill_input_internal function onMouseOver(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
+			/*
 			if (ignoreTransparentPixels && isPixelTransparent(localX, localY))
 			{
 				if (_mouseIsOver)
@@ -200,7 +205,7 @@ package molehill.core.render
 				}
 				return false;
 			}
-			
+			*/
 			_mouseIsOver = true;
 			dispatchEvent(
 				new Input3DMouseEvent(

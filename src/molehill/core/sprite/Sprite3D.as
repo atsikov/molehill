@@ -1402,44 +1402,78 @@ package molehill.core.sprite
 		private var _localPointX:Number;
 		private var _localPointY:Number;
 		
-		private var _cameraOwners:LinkedList;
+		private var _listParents:LinkedList;
 		private function globalToLocalCoords(globalX:Number, globalY:Number):void
 		{
-			var cameraOwner:Sprite3D = this;
-			while (cameraOwner != null)
+			var spriteParent:Sprite3D = this;
+			while (spriteParent != null)
 			{
-				if (cameraOwner.camera != null)
+				if (_listParents == null)
 				{
-					if (_cameraOwners == null)
+					_listParents = new LinkedList();
+				}
+					
+				_listParents.enqueue(spriteParent);
+				
+				spriteParent = spriteParent.parent;
+			}
+			
+			var rad:Number;
+			
+			var cos:Number;
+			var sin:Number;
+			var dx0:Number;
+			var dy0:Number;
+			var dx:Number;
+			var dy:Number;
+			
+			if (_listParents != null)
+			{
+				while (!_listParents.empty)
+				{
+					spriteParent = _listParents.pop() as Sprite3D;
+					
+					var currentCamera:CustomCamera = spriteParent.camera;
+					if (currentCamera != null)
 					{
-						_cameraOwners = new LinkedList();
+						globalX += currentCamera.scrollX;
+						globalY += currentCamera.scrollY;
+						
+						globalX /= currentCamera.scale;
+						globalY /= currentCamera.scale;
 					}
 					
-					_cameraOwners.enqueue(cameraOwner.camera);
-				}
-				cameraOwner = cameraOwner.parent;
-			}
-			
-			if (_cameraOwners != null)
-			{
-				while (!_cameraOwners.empty)
-				{
-					var currentCamera:CustomCamera = _cameraOwners.pop() as CustomCamera;
+					globalX -= spriteParent._shiftX;
+					globalY -= spriteParent._shiftY;
 					
-					globalX += currentCamera.scrollX;
-					globalY += currentCamera.scrollY;
+					rad = -spriteParent._rotation / 180 * Math.PI;
 					
-					globalX /= currentCamera.scale;
-					globalY /= currentCamera.scale;
+					
+					cos = rad == 0 ? 1 : Math.cos(rad);
+					sin = rad == 0 ? 0 : Math.sin(rad);
+					
+					dx0 = globalX / spriteParent._scaleX;
+					dy0 = globalY / spriteParent._scaleY;
+					
+					globalX = dx0 * cos - dy0 * sin;
+					globalY = dx0 * sin + dy0 * cos;
 				}
 			}
+			/*
+			globalX -= _shiftX;
+			globalY -= _shiftY;
 			
-			globalX += -_parentShiftX - _shiftX * _parentScaleX;
-			globalY += -_parentShiftY - _shiftY * _parentScaleY;
+			rad = -_rotation / 180 * Math.PI;
 			
-			globalX /= _scaleX;
-			globalY /= _scaleY;
+			cos = rad == 0 ? 1 : Math.cos(rad);
+			sin = rad == 0 ? 0 : Math.sin(rad);
 			
+			dx0 = globalX / _scaleX;
+			dy0 = globalY / _scaleY;
+			
+			globalX = dx0 * cos - dy0 * sin;
+			globalY = dx0 * sin + dy0 * cos;
+			*/
 			_localPointX = globalX;
 			_localPointY = globalY;
 		}
