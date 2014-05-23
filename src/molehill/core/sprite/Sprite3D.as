@@ -1082,8 +1082,8 @@ package molehill.core.sprite
 			var dx:Number;
 			var dy:Number;
 			
-			cos = Math.cos(rad);
-			sin = Math.sin(rad);
+			cos = rad == 0 ? 1 : Math.cos(rad);
+			sin = rad == 0 ? 0 : Math.sin(rad);
 			
 			dx0 = localX / _parentScaleX / _scaleX;
 			dy0 = localY / _parentScaleY / _scaleY;
@@ -1406,7 +1406,7 @@ package molehill.core.sprite
 		private function globalToLocalCoords(globalX:Number, globalY:Number):void
 		{
 			var spriteParent:Sprite3D = this;
-			while (spriteParent != null)
+			while (spriteParent.parent != null)
 			{
 				if (_listParents == null)
 				{
