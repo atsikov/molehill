@@ -1119,7 +1119,7 @@ package molehill.core.sprite
 				return alphaValue == 0;
 			}
 			
-			return !alphaData.hitTestPoint(localX, localY);
+			return !alphaData.hitTestPoint(dx, dy);
 		}
 		
 		molehill_internal var _textureChanged:Boolean = false;
