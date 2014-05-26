@@ -62,16 +62,16 @@ package molehill.core.render.camera
 		
 		public function copyValues(camera:CustomCamera):void
 		{
-			_scrollX = camera.scrollX;
-			_scrollY = camera.scrollY;
-			_scale = camera.scale;
+			_scrollX = camera._scrollX;
+			_scrollY = camera._scrollY;
+			_scale = camera._scale;
 			
-			var referenceRect:Rectangle = camera.scissorRect;
+			var referenceRect:Rectangle = camera._scissorRect;
 			if (referenceRect != null)
 			{
 				if (_scissorRect == null)
 				{
-					_scissorRect = camera.scissorRect.clone();
+					_scissorRect = referenceRect.clone();
 				}
 				else
 				{
@@ -82,11 +82,12 @@ package molehill.core.render.camera
 		
 		public function isEqual(reference:CustomCamera):Boolean
 		{
-			return _scrollX == reference.scrollX &&
-				_scrollY == reference.scrollY &&
-				scale == reference.scale &&
-				(_scissorRect == null && reference.scissorRect == null ||
-				 _scissorRect != null && reference.scissorRect != null && _scissorRect.equals(reference._scissorRect));
+			var referenceScissorRect:Rectangle = reference._scissorRect;
+			return _scrollX == reference._scrollX &&
+				_scrollY == reference._scrollY &&
+				scale == reference._scale &&
+				(_scissorRect == null && referenceScissorRect == null ||
+				 _scissorRect != null && referenceScissorRect != null && _scissorRect.equals(referenceScissorRect));
 		}
 	}
 }

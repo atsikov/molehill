@@ -10,6 +10,7 @@ package molehill.core.sprite
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3D;
 	
 	import utils.CachingFactory;
@@ -768,18 +769,19 @@ package molehill.core.sprite
 			{
 				var child:Sprite3D = _listChildren[i];
 				
-				if (child.scene == null)
+				if (child is Sprite3DContainer && child.scene == null)
 				{
 					continue;
 				}
 				
-				if (child.camera != null)
+				var childCamera:CustomCamera = child.camera;
+				if (childCamera != null)
 				{
-					point.x += child.camera.scrollX;
-					point.y += child.camera.scrollY;
+					point.x += childCamera.scrollX;
+					point.y += childCamera.scrollY;
 					
-					point.x /= child.camera.scale;
-					point.y /= child.camera.scale;
+					point.x /= childCamera.scale;
+					point.y /= childCamera.scale;
 				}
 				
 				if (child is Sprite3DContainer)
@@ -792,13 +794,13 @@ package molehill.core.sprite
 						point.y > container._containerBottom
 					)
 					{
-						if (child.camera != null)
+						if (childCamera != null)
 						{
-							point.x *= child.camera.scale;
-							point.y *= child.camera.scale;
+							point.x *= childCamera.scale;
+							point.y *= childCamera.scale;
 							
-							point.x -= child.camera.scrollX;
-							point.y -= child.camera.scrollY;
+							point.x -= childCamera.scrollX;
+							point.y -= childCamera.scrollY;
 						}
 						
 						continue;
@@ -806,13 +808,13 @@ package molehill.core.sprite
 					
 					if (!container.visible)
 					{
-						if (child.camera != null)
+						if (childCamera != null)
 						{
-							point.x *= child.camera.scale;
-							point.y *= child.camera.scale;
+							point.x *= childCamera.scale;
+							point.y *= childCamera.scale;
 							
-							point.x -= child.camera.scrollX;
-							point.y -= child.camera.scrollY;
+							point.x -= childCamera.scrollX;
+							point.y -= childCamera.scrollY;
 						}
 						
 						continue;
@@ -824,13 +826,13 @@ package molehill.core.sprite
 				{
 					if (!child.visible)
 					{
-						if (child.camera != null)
+						if (childCamera != null)
 						{
-							point.x *= child.camera.scale;
-							point.y *= child.camera.scale;
+							point.x *= childCamera.scale;
+							point.y *= childCamera.scale;
 							
-							point.x -= child.camera.scrollX;
-							point.y -= child.camera.scrollY;
+							point.x -= childCamera.scrollX;
+							point.y -= childCamera.scrollY;
 						}
 						
 						continue;
@@ -839,13 +841,13 @@ package molehill.core.sprite
 					childrenUnderPoint.push(child);
 				}
 				
-				if (child.camera != null)
+				if (childCamera != null)
 				{
-					point.x *= child.camera.scale;
-					point.y *= child.camera.scale;
+					point.x *= childCamera.scale;
+					point.y *= childCamera.scale;
 					
-					point.x -= child.camera.scrollX;
-					point.y -= child.camera.scrollY;
+					point.x -= childCamera.scrollX;
+					point.y -= childCamera.scrollY;
 				}
 			}
 			

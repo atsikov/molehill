@@ -990,7 +990,6 @@ package molehill.core.sprite
 			minY -= _parentShiftY;
 			maxY -= _parentShiftY;
 			
-			
 			if (_ignoreTransparentPixels)
 			{
 				if (isPixelTransparent(localX - _shiftX, localY - _shiftY))
@@ -1073,7 +1072,10 @@ package molehill.core.sprite
 		
 		public function isPixelTransparent(localX:int, localY:int):Boolean
 		{
-			var rad:Number = (-_rotation - _parentRotation) / 180 * Math.PI;
+			var rad:Number
+			
+			var totalRotation:Number = -_rotation - _parentRotation;
+			rad = totalRotation == 0 ? 0 : totalRotation / 180 * Math.PI;
 			
 			var cos:Number;
 			var sin:Number;
@@ -1085,8 +1087,23 @@ package molehill.core.sprite
 			cos = rad == 0 ? 1 : Math.cos(rad);
 			sin = rad == 0 ? 0 : Math.sin(rad);
 			
-			dx0 = localX / _parentScaleX / _scaleX;
-			dy0 = localY / _parentScaleY / _scaleY;
+			if (_parentScaleX != 1 || _scaleX != 1)
+			{
+				dx0 = localX / _parentScaleX / _scaleX;
+			}
+			else
+			{
+				dx0 = localX;
+			}
+			
+			if (_parentScaleY != 1 || _scaleY != 1)
+			{
+				dy0 = localY / _parentScaleY / _scaleY;
+			}
+			else
+			{
+				dy0 = localY;
+			}
 			
 			dx = dx0 * cos - dy0 * sin;
 			dy = dx0 * sin + dy0 * cos;
