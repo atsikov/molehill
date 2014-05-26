@@ -13,12 +13,12 @@ package molehill.easy.ui3d
 	[Event(name="resize", type="flash.events.Event")]
 	[Event(name="ready", type="resources.events.ResourceEvent")]
 	
-	public class ResourceView extends Sprite3D
+	public class ResourceView3D extends Sprite3D
 	{
 		private var _res:Resource;
 		private var _type:int;
 		
-		public function ResourceView(type:int = ResourceTypes.UNKNOWN)
+		public function ResourceView3D(type:int = ResourceTypes.UNKNOWN)
 		{
 			_type = type;
 			super();

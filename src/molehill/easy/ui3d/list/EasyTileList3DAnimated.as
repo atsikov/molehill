@@ -593,8 +593,8 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			_itemsContainerCamera.scrollX = 0;
-			_itemsContainerCamera.scrollY = 0;
+			//_itemsContainerCamera.scrollX = 0;
+			//_itemsContainerCamera.scrollY = 0;
 			
 			_isAnimated = true;
 			_lockUpdate = true;
@@ -602,14 +602,24 @@ package molehill.easy.ui3d.list
 			lockItems();
 			
 			var props:Object = new Object();
+			var isHalf:Boolean = false;
 			
 			if (_direction == Direction.HORIZONTAL)
 			{
 				props.scrollY = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
+				isHalf = nextPage ? _itemsContainerCamera.scrollY > props.scrollY : _itemsContainerCamera.scrollY < props.scrollY;
 			}
 			else
 			{
 				props.scrollX = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
+				isHalf = nextPage ? _itemsContainerCamera.scrollX > props.scrollX : _itemsContainerCamera.scrollX < props.scrollX;
+			}
+			
+			if (isHalf)
+			{
+				trace("isHalf!")
+				onAnimationPageHalfCompleted(nextPage, false);
+				return;
 			}
 			
 			OpenTween.go(
@@ -625,20 +635,34 @@ package molehill.easy.ui3d.list
 				
 		}
 		
-		private function onAnimationPageHalfCompleted(nextPage:Boolean):void
+		private function onAnimationPageHalfCompleted(nextPage:Boolean, fromTween:Boolean = true):void
 		{
 			_lockUpdate = false;
 			update();
 			
 			var props:Object = new Object();
 			
-			if (_direction == Direction.HORIZONTAL)
+			if (fromTween)
 			{
-				_itemsContainerCamera.scrollY = nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
+				if (_direction == Direction.HORIZONTAL)
+				{
+					_itemsContainerCamera.scrollY = nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
+				}
+				else
+				{
+					_itemsContainerCamera.scrollX = nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
+				}
 			}
 			else
 			{
-				_itemsContainerCamera.scrollX = nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
+				if (_direction == Direction.HORIZONTAL)
+				{
+					_itemsContainerCamera.scrollY += nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
+				}
+				else
+				{
+					_itemsContainerCamera.scrollX += nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
+				}
 			}
 			
 			OpenTween.go(
