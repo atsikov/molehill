@@ -314,7 +314,7 @@ package molehill.easy.ui3d.list
 		
 		
 		//Start Scrolling
-		
+		private var _mouseCheckPoint:Point = new Point(); 
 		private function onItemsContainerMouseDown(event:Input3DMouseEvent):void
 		{
 			if (!_mouseScrollingEnabled)
@@ -328,6 +328,14 @@ package molehill.easy.ui3d.list
 				{
 					return;
 				}
+			}
+			
+			_mouseCheckPoint.x = event.stageX;
+			_mouseCheckPoint.y = event.stageY;
+			
+			if (!_scrollingMask.hitTestPoint(_mouseCheckPoint))
+			{
+				return;
 			}
 			
 			_isAnimated = true;
@@ -932,8 +940,7 @@ package molehill.easy.ui3d.list
 					}
 				}
 				
-				itemRenderer.x = viewColumn * (_columnWidth + _columnsGap);
-				itemRenderer.y = viewRow * (_rowHeight + _rowsGap);
+				(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
 				itemRenderer.itemData = itemData;
 				itemRenderer.selected = isItemSelected(itemData);
 				itemRenderer.highlighted = false;
@@ -974,8 +981,7 @@ package molehill.easy.ui3d.list
 					for (; viewColumn < columnCount; viewColumn++)
 					{
 						itemRenderer = getEmptyItemRenderer();
-						itemRenderer.x = viewColumn * (_columnWidth + _columnsGap);
-						itemRenderer.y = viewRow * (_rowHeight + _rowsGap);
+						(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
 					}
 				}
 			}
