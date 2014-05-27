@@ -687,6 +687,11 @@ package molehill.core.render
 			}
 		}
 		
+		molehill_internal function set needUpdateBatchers(value:Boolean):void
+		{
+			_needUpdateBatchers = value;
+		}
+		
 		private function renderScene():void
 		{
 			var i:int = 0;

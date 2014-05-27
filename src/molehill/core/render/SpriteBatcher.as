@@ -463,6 +463,7 @@ package molehill.core.render
 				{
 					sprite.markChanged(false);
 					sprite._textureChanged = false;
+					sprite._colorChanged = false;
 				}
 				else
 				{
@@ -589,7 +590,12 @@ package molehill.core.render
 					}
 					_numVisibleSprites++;
 				}
-				
+				/*
+				if (_numVisibleSprites > _vertexBufferVerticesData.length / 32 || _numVisibleSprites > _vertexBufferTextureData.length / 32)
+				{
+					throw new Error('Broken batcher');
+				}
+				*/
 				sprite.resetVisibilityChanged();
 				
 				cursor = cursor.next;

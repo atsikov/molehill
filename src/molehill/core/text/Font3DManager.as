@@ -16,7 +16,9 @@ package molehill.core.text
 	import molehill.core.texture.FontBRFTextureData;
 	import molehill.core.texture.FontTextureData;
 	import molehill.core.texture.TextureManager;
-
+	
+	[Event(name="fontReady", type="molehill.core.events.Font3DManagerEvent")]
+	[Event(name="fontLoadError", type="molehill.core.events.Font3DManagerEvent")]
 	public class Font3DManager extends EventDispatcher
 	{
 		private static var _instance:Font3DManager;
@@ -67,6 +69,7 @@ package molehill.core.text
 		
 		private function onFontLoadError(event:Event):void
 		{
+			trace("Error loading font!");
 			dispatchEvent(
 				new Font3DManagerEvent(Font3DManagerEvent.FONT_LOAD_ERROR)
 			);
@@ -90,6 +93,7 @@ package molehill.core.text
 		private function onBitmapFontLoaded(event:Event):void
 		{
 			var bytes:ByteArray = (event.currentTarget as URLLoader).data;
+			parseFontBytes(bytes)
 		}
 		
 		private function parseFontBytes(bytes:ByteArray):void

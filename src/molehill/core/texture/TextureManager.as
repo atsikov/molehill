@@ -257,12 +257,18 @@ package molehill.core.texture
 			var atlas:TextureAtlasBitmapData;
 			var node:TextureAtlasDataNode;
 			
-			for (var field:Object in _hashTexturesByAtlasBitmap)
+			var hashCheckedBitmapTextures:Dictionary = new Dictionary();
+			for each (var value:Object in _hashAtlasBitmapByTextureID)
 			{
-				atlas = field as TextureAtlasBitmapData;
+				atlas = value as TextureAtlasBitmapData;
+				if (hashCheckedBitmapTextures[atlas])
+				{
+					continue;
+				}
+				
 				if (atlas.textureAtlasData.getTextureData(textureID) != null)
 				{
-					return _hashTexturesByAtlasBitmap[field] as Texture;
+					throw new Error("Texture with id " + textureID + " already created!");
 				}
 				
 				node = (atlas as TextureAtlasBitmapData).insert(bitmapData, textureID);
@@ -270,6 +276,8 @@ package molehill.core.texture
 				{
 					break;
 				}
+				
+				hashCheckedBitmapTextures[atlas] = true;
 			}
 			
 			if (isReady)

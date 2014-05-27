@@ -43,8 +43,8 @@ package molehill.core.render.shader.species.mask
 		
 		override public function prepareContext(context3D:Context3D):void
 		{
-			context3D.setStencilReferenceValue(0);
-			context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, Context3DCompareMode.ALWAYS, Context3DStencilAction.INCREMENT_SATURATE);
+			context3D.setStencilReferenceValue(1);
+			context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, Context3DCompareMode.ALWAYS, Context3DStencilAction.SET);
 		}
 	}
 }

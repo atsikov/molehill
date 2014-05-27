@@ -364,7 +364,7 @@ package molehill.core.sprite
 					_parent.textureAtlasChanged = true;
 					if (_scene != null)
 					{
-						_scene._needUpdateBatchers = true;
+						_scene.needUpdateBatchers = true;
 					}
 				}
 				
@@ -675,7 +675,9 @@ package molehill.core.sprite
 		molehill_internal var _parentVisible:Boolean = true;
 		molehill_internal function set parentVisible(value:Boolean):void
 		{
+			var currentVisibility:Boolean = visible;
 			_parentVisible = value;
+			_visibilityChanged ||= currentVisibility != visible;
 		}
 		
 		public function get visible():Boolean 
@@ -690,9 +692,10 @@ package molehill.core.sprite
 				return;
 			}
 			
+			var currentVisibility:Boolean = visible;
 			_visible = value;
 			
-			_visibilityChanged = _visible == visible;
+			_visibilityChanged ||= currentVisibility != visible;
 			
 			_colorChanged &&= _visible;
 			_textureChanged &&= _visible;
@@ -835,6 +838,10 @@ package molehill.core.sprite
 			_cutout = null;
 			
 			_camera = null;
+			
+			_shader = null;
+			_parentShader = null;
+			_parentShaderChanged = true;
 			
 			_updateOnRender = false;
 			//_notifyParentOnChange = true;
@@ -1214,28 +1221,46 @@ package molehill.core.sprite
 		}
 		
 		molehill_internal var addedToScene:Boolean = false;
+		molehill_internal var _parentShaderChanged:Boolean = false;
+		molehill_internal function set parentShaderChanged(value:Boolean):void
+		{
+			_parentShaderChanged = value;
+		}
+		
 		private var _shader:Shader3D;
+		private var _parentShader:Shader3D;
 		/**
 		 * Shader program to be used with this sprite.
 		 **/
 		public function get shader():Shader3D
 		{
-			var currentParent:Sprite3DContainer = parent;
-			var shader:Shader3D;
-			while (currentParent != null)
+			if (_parentShaderChanged)
 			{
-				if (currentParent.shader != null)
+				_parentShader == null;
+				var currentParent:Sprite3D = parent;
+				while (currentParent != null)
 				{
-					shader = currentParent.shader;
+					if (currentParent.shader != null)
+					{
+						_parentShader = currentParent.shader;
+					}
+					
+					currentParent = currentParent.parent;
 				}
 				
-				currentParent = currentParent.parent;
+				_parentShaderChanged = false;
 			}
-			return shader != null ? shader : _shader;
+			
+			return _parentShader != null ? _parentShader : _shader;
 		}
 
 		public function set shader(value:Shader3D):void
 		{
+			if (_shader !== value && _scene != null)
+			{
+				_scene.needUpdateBatchers = true;
+			}
+			
 			_shader = value;
 		}
 		private var _mask:Sprite3D;
@@ -1329,7 +1354,7 @@ package molehill.core.sprite
 				if (_scene != null)
 				{
 					cameraChanged = true;
-					_scene._needUpdateBatchers = true;
+					_scene.needUpdateBatchers = true;
 				}
 			}
 			else if (value == null)
@@ -1338,7 +1363,7 @@ package molehill.core.sprite
 				if (_scene != null)
 				{
 					cameraChanged = true;
-					_scene._needUpdateBatchers = true;
+					_scene.needUpdateBatchers = true;
 				}
 			}
 			else

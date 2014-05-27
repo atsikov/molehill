@@ -17,13 +17,13 @@ package molehill.core.render.shader.species.mask
 		override public function prepareContext(context3D:Context3D):void
 		{
 			context3D.setStencilReferenceValue(1);
-			context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, Context3DCompareMode.EQUAL, Context3DStencilAction.KEEP);
+			context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, Context3DCompareMode.EQUAL, Context3DStencilAction.KEEP, Context3DStencilAction.ZERO);
 		}
 		
 		override public function cleanUpContext(context3D:Context3D):void
 		{
 			context3D.setStencilReferenceValue(0);
-			context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, Context3DCompareMode.ALWAYS, Context3DStencilAction.DECREMENT_SATURATE);
+			context3D.setStencilActions(Context3DTriangleFace.FRONT_AND_BACK, Context3DCompareMode.ALWAYS, Context3DStencilAction.SET);
 		}
 	}
 }

@@ -373,6 +373,11 @@ package molehill.core.render.engine
 			_currentScrollY = int.MIN_VALUE;
 			_currentScale = 1;
 			
+			m.identity();
+			m.append(_orthoMatrix);
+			
+			_context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, m, true);
+			
 			var currentCamera:CustomCamera;
 			
 			while (_listRenderChunks.length > 0)

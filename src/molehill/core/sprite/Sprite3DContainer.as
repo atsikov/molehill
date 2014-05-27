@@ -277,6 +277,10 @@ package molehill.core.sprite
 			child.parentGreen = _parentGreen * _greenMultiplier;
 			child.parentBlue = _parentBlue * _blueMultiplier;
 			
+			child.parentShaderChanged = true;
+			
+			child.parentVisible = visible;
+			
 			if (!child.updateOnRenderChanged)
 			{
 				child.updateOnRender = updateOnRender;
@@ -663,7 +667,7 @@ package molehill.core.sprite
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
-				child._visibilityChanged = _visibilityChanged;
+				child._visibilityChanged ||= _visibilityChanged;
 				
 				child.parentVisible = value;
 			}
@@ -1148,5 +1152,32 @@ package molehill.core.sprite
 			
 		}
 		*/
+		
+		override public function set shader(value:Shader3D):void
+		{
+			if (shader === value)
+			{
+				return;
+			}
+			
+			super.shader = value;
+			
+			for (var i:int = 0; i < children.length; i++)
+			{
+				children[i].parentShaderChanged = true;
+			}
+		}
+		
+		override molehill_internal function set parentShaderChanged(value:Boolean):void
+		{
+			super.parentShaderChanged = value;
+			
+			for (var i:int = 0; i < children.length; i++)
+			{
+				children[i].parentShaderChanged = true;
+			}
+		}
+		
 	}
+	
 }

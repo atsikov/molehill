@@ -4,7 +4,13 @@ package molehill.core.events
 	
 	public class Font3DManagerEvent extends Event
 	{
+		/**
+		 * @eventType fontReady
+		 **/
 		public static const FONT_READY:String = "fontReady";
+		/**
+		 * @eventType fontLoadError
+		 **/
 		public static const FONT_LOAD_ERROR:String = "fontLoadError";
 		
 		public function Font3DManagerEvent(type:String, fontName:String = "")
