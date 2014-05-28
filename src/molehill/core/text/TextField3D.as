@@ -435,12 +435,12 @@ package molehill.core.text
 		private var _textHeight:Number = 0;
 		public function get textHeight():Number
 		{
-			return wordWrap ? _height : _textHeight;
+			return _textHeight;
 		}
 		
 		override public function get height():Number
 		{
-			return _height;
+			return wordWrap ? _height : _textHeight;
 		}
 		
 		override public function set height(value:Number):void

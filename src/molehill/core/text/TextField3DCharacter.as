@@ -16,5 +16,14 @@ package molehill.core.text
 			
 			updateOnRender = true;
 		}
+		
+		override public function toString():String
+		{
+			var value:String = super.toString();
+			var charCode:int = textureID == null ? 0 : int(textureID.substr(textureID.lastIndexOf('_') + 1));
+			value += "; character == " + String.fromCharCode(charCode);
+			
+			return value;
+		}
 	}
 }
