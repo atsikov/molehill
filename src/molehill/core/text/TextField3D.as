@@ -148,9 +148,8 @@ package molehill.core.text
 					continue;
 				}
 				
-				if (lineWidth > width)
+				if (lineWidth > _width)
 				{
-					trace(lastSpaceWidth);
 					currentLineWidth = placeCharacters(
 						lastSpaceIndex == 0 ? i : lastSpaceIndex,
 						numLineBreaks,
@@ -294,7 +293,6 @@ package molehill.core.text
 				
 				for (var j:int = lastPlacedChildIndex; j < lastChildIndex; j++)
 				{
-					trace(_text.charAt(j + numLineBreaks + _numSpaces));
 					if (_text.charCodeAt(j + numLineBreaks + _numSpaces) == SPACE_CHARCODE)
 					{
 						if (lastLineWidth > 0)
@@ -303,11 +301,10 @@ package molehill.core.text
 						}
 						_numSpaces++;
 						lastSpaceIndex = j - 1;
-						trace(_text.charAt(j + numLineBreaks + _numSpaces));
 					}
 					
 					var child:TextField3DCharacter = super.getChildAt(j) as TextField3DCharacter;
-					if (wordWrap && lastLineWidth > 0 && lastLineWidth + Math.ceil(child.width) > width)
+					if (wordWrap && lastLineWidth > 0 && lastLineWidth + Math.ceil(child.width) > _width)
 					{
 						if (lastSpaceIndex != 0)
 						{
@@ -426,7 +423,7 @@ package molehill.core.text
 
 		override public function get width():Number
 		{
-			return _width;
+			return wordWrap ? _width : _textWidth;
 		}
 		
 		override public function set width(value:Number):void
@@ -438,7 +435,7 @@ package molehill.core.text
 		private var _textHeight:Number = 0;
 		public function get textHeight():Number
 		{
-			return _textHeight;
+			return wordWrap ? _height : _textHeight;
 		}
 		
 		override public function get height():Number
