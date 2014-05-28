@@ -800,10 +800,10 @@ package molehill.easy.ui3d.list
 		{
 			for (var i:int = 0; i < _listItemRenderers.length; i++) 
 			{
-				var item:Sprite3D = _listItemRenderers[i] as Sprite3D;
+				var item:ILockableEasyItemRenderer = _listItemRenderers[i] as ILockableEasyItemRenderer;
 				if (item != null)
 				{
-					item.updateOnRender = true;
+					item.locked = true;
 				}
 			}
 		}
@@ -812,10 +812,10 @@ package molehill.easy.ui3d.list
 		{
 			for (var i:int = 0; i < _listItemRenderers.length; i++) 
 			{
-				var item:Sprite3D = _listItemRenderers[i] as Sprite3D;
+				var item:ILockableEasyItemRenderer = _listItemRenderers[i] as ILockableEasyItemRenderer;
 				if (item != null)
 				{
-					item.updateOnRender = false;
+					item.locked = false;
 				}
 			}
 		}
@@ -865,10 +865,10 @@ package molehill.easy.ui3d.list
 				_scrollPosition = maxScrollPosition;
 			}
 			
-			_listItemRenderers.splice(0, _listItemRenderers.length);
+			//_listItemRenderers.splice(0, _listItemRenderers.length);
 			
-			var dataBeginIdx:int = Math.max(0, _scrollPosition - numItemsPerLine);
-			var numAdditionalItemsCoeff:uint = _scrollPosition == 0 ? (1 + _numAdditionalDrawingLines) : (2 + _numAdditionalDrawingLines);
+			var dataBeginIdx:int = _scrollPosition - numItemsPerLine;
+			var numAdditionalItemsCoeff:uint = 2 + _numAdditionalDrawingLines;
 			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + numItemsPerLine * numAdditionalItemsCoeff;
 			
 			var numItems:int = this.numItems;
@@ -887,105 +887,120 @@ package molehill.easy.ui3d.list
 			var rowHeight:int = 0;
 			var i:int = 0;
 			
-			
+			/*
 			for (var previousItemData:* in _dictCurrentStateItemRenderersByData)
 			{
-				for (i = dataBeginIdx; i < dataEndIdx; i++)
-				{
-					var newItemData:* = getItemData(i);
-					if (previousItemData === newItemData)
-					{
-						break;
-					}
-				}
-				
-				if (i < dataEndIdx)
-				{
-					continue;
-				}
-				
-				_listFreeItemRenderers.push(_dictCurrentStateItemRenderersByData[previousItemData]);
-				
-				delete _dictCurrentStateItemRenderersByData[previousItemData];
+			for (i = dataBeginIdx; i < dataEndIdx; i++)
+			{
+			var newItemData:* = getItemData(i);
+			if (previousItemData === newItemData)
+			{
+			break;
+			}
 			}
 			
+			if (i < dataEndIdx)
+			{
+			continue;
+			}
+			
+			_listFreeItemRenderers.push(_dictCurrentStateItemRenderersByData[previousItemData]);
+			
+			delete _dictCurrentStateItemRenderersByData[previousItemData];
+			}
+			*/
 			for (i = dataBeginIdx; i < dataEndIdx; i++)
 			{
 				
 				switch (_direction)
 				{
 					case Direction.HORIZONTAL:
-						viewRow		= Math.floor((i - dataBeginIdx) / columnCount) - (_scrollPosition >= numItemsPerLine ? 1 : 0);
+						viewRow		= Math.floor((i - dataBeginIdx) / columnCount) - 1;
 						viewColumn	= (i - dataBeginIdx) % columnCount;
 						break;
 					
 					case Direction.VERTICAL:
 						viewRow		= (i - dataBeginIdx) % rowCount;
-						viewColumn	= Math.floor((i - dataBeginIdx) / rowCount) - (_scrollPosition >= numItemsPerLine ? 1 : 0);
+						viewColumn	= Math.floor((i - dataBeginIdx) / rowCount) - 1;
 						break;
 				}
 				
-				var itemData:* = getItemData(i);
-				itemRenderer = _dictCurrentStateItemRenderersByData[itemData] as IEasyItemRenderer;
-				if (itemRenderer == null)
-				{
-					if (_listFreeItemRenderers.length == 0)
-					{
-						itemRenderer = getItemRenderer();
-						_itemsContainer.addChild(itemRenderer as Sprite3D);
-					}
-					else
-					{
-						itemRenderer = _listFreeItemRenderers.shift();
-					}
-				}
+				trace(viewRow, viewColumn);
 				
-				(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
+				var itemData:* = i < 0 ? null : getItemData(i);
+				//itemRenderer = _dictCurrentStateItemRenderersByData[itemData] as IEasyItemRenderer;
+				//if (itemRenderer == null)
+				//{
+				if (_listItemRenderers.length < (i - dataBeginIdx) + 1)
+				{
+					itemRenderer = getItemRenderer();
+					_itemsContainer.addChild(itemRenderer as Sprite3D);
+					(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
+					_listItemRenderers.push(itemRenderer);
+				}
+				else
+				{
+					itemRenderer = _listItemRenderers[i - dataBeginIdx];
+				}
+				//}
+				
 				itemRenderer.itemData = itemData;
 				itemRenderer.selected = isItemSelected(itemData);
 				itemRenderer.highlighted = false;
-				if (!(itemRenderer is ILockableEasyItemRenderer) || !(itemRenderer as ILockableEasyItemRenderer).locked)
-					itemRenderer.update();
+				(itemRenderer as Sprite3D).visible = itemData != null;
+				//if (!(itemRenderer is ILockableEasyItemRenderer) || !(itemRenderer as ILockableEasyItemRenderer).locked)
+				itemRenderer.update();
 				
-				_listItemRenderers.push(itemRenderer);
 				
 				rowHeight = Math.max(rowHeight, itemRenderer.height);
 				
 				_dictCurrentStateItemRenderersByData[itemData] = itemRenderer;
 			}
+			
+			var numShownItems:int = dataEndIdx - dataBeginIdx;
+			
+			if (numShownItems < _listItemRenderers.length)
+			{
+				var itemsToRemove:Array = _listItemRenderers.splice(numShownItems, _listItemRenderers.length - numShownItems);
+				for (var j:int = 0; j < itemsToRemove.length; j++) 
+				{
+					freeItemRenderer(itemsToRemove[j]);
+				}
+				
+			}
 			/*
 			height = Math.max(
-				cy + rowHeight,
-				0
+			cy + rowHeight,
+			0
 			);
 			*/
 			//---
 			
-			
+			/*
 			while (_listFreeItemRenderers.length > 0)
 			{
-				itemRenderer = _listFreeItemRenderers.shift();
-				if (itemRenderer == null)
-					continue;
-				
-				freeItemRenderer(itemRenderer);
+			itemRenderer = _listFreeItemRenderers.shift();
+			if (itemRenderer == null)
+			continue;
+			
+			freeItemRenderer(itemRenderer);
 			}
 			
 			freeAllEmptyItemRenderers();
 			
 			if (_showEmptyCells)
 			{
-				viewColumn++;
-				for (; viewRow < rowCount; viewRow++, viewColumn = 0)
-				{
-					for (; viewColumn < columnCount; viewColumn++)
-					{
-						itemRenderer = getEmptyItemRenderer();
-						(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
-					}
-				}
+			viewColumn++;
+			for (; viewRow < rowCount; viewRow++, viewColumn = 0)
+			{
+			for (; viewColumn < columnCount; viewColumn++)
+			{
+			itemRenderer = getEmptyItemRenderer();
+			(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
 			}
-			
+			}
+			}
+			*/
 			if (_updateCallback != null)
 			{
 				_updateCallback();
