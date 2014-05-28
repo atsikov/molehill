@@ -772,8 +772,6 @@ package molehill.easy.ui3d.list
 			var numItemsLength:int = numItems;
 			trace("update");
 			
-			updateOnRender = true;
-			
 			for (var i:int = 0; i < numItemsLength; i++) 
 			{
 				var itemRenderer:IEasyItemRenderer = _listItemRenderers.length > i ? _listItemRenderers[i] : getItemRenderer();
@@ -827,8 +825,6 @@ package molehill.easy.ui3d.list
 			{
 				_updateCallback();
 			}
-			
-			updateOnRender = false;
 		}
 		
 		private var _gradientBorderEnabled:Boolean = false;
