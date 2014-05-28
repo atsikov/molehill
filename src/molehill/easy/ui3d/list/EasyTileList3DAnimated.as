@@ -23,39 +23,130 @@ package molehill.easy.ui3d.list
 	import org.opentween.OpenTween;
 	
 	import tempire.model.types.textures.FormsTextures;
-
-	public class EasyTileList3DAnimated extends EasyTileList3D
+	
+	public class EasyTileList3DAnimated extends EasyList3D
 	{
 		private var _itemsContainer:UIComponent3D;
-		private var _itemsContainerBack:Sprite3D;
+		private var _itemsContainerBack:InteractiveSprite3D;
 		private var _itemsContainerCamera:CustomCamera;
-		private var _scrollingMask:InteractiveSprite3D;
+		private var _scrollingMask:Sprite3D;
 		public function EasyTileList3DAnimated()
 		{
 			super();
 			
 			mouseEnabled = true;
 			
-			_scrollingMask = new InteractiveSprite3D();
+			_scrollingMask = new Sprite3D();
 			_scrollingMask.setTexture(FormsTextures.bg_blue_plate);
 			_scrollingMask.mouseEnabled = true;
 			addChild(_scrollingMask);
 			
 			_itemsContainerCamera = new CustomCamera();
 			
+			_itemsContainerBack = new InteractiveSprite3D();
+			_itemsContainerBack.setTexture(FormsTextures.bg_blue_plate);
+			_itemsContainerBack.mouseEnabled = true;
+			_itemsContainerBack.alpha = 0;
+			addChild(_itemsContainerBack);
+			
 			_itemsContainer = new UIComponent3D();
 			_itemsContainer.camera = _itemsContainerCamera;
 			addChild(_itemsContainer);
 			
-			_itemsContainerBack = new Sprite3D();
-			_itemsContainerBack.setTexture(FormsTextures.bg_blue_plate);
-			_itemsContainerBack.mouseEnabled = true;
-			_itemsContainerBack.alpha = 0;
-			_itemsContainer.addChild(_itemsContainerBack);
-			
 			_maskRect = new Rectangle();
 			
 			_itemsContainer.mask = _scrollingMask;
+		}
+		
+		protected var _direction:String = Direction.VERTICAL;
+		public function get direction():String
+		{
+			return _direction;
+		}
+		public function set direction(value:String):void
+		{
+			if (_direction == value)
+				return;
+			
+			_direction = value;
+			
+			var maxItem:int = scrollItemMax;
+			var crntItem:int = currentItem;
+			if (crntItem > maxItem)
+			{
+				crntItem = maxItem;
+			}
+			if (crntItem < 0)
+			{
+				crntItem = 0;
+			}
+			
+			switch (_direction)
+			{
+				case Direction.HORIZONTAL:
+					_scrollPosition = crntItem * columnCount;
+					break;
+				
+				case Direction.VERTICAL:
+					_scrollPosition = crntItem * rowCount;
+					break;
+			}
+			
+			//update();
+		}
+		
+		protected var _rowCount:int;
+		public function get rowCount():int
+		{
+			if (direction == Direction.VERTICAL)
+			{
+				if (dataSource != null)
+				{
+					return Math.ceil( uint(dataSource['length']) / columnCount );
+				}
+			}
+			
+			return _rowCount;
+		}
+		
+		protected var _columnCount:int = 1;
+		public function get columnCount():int
+		{
+			return _columnCount;
+		}
+		
+		protected var _rowHeight:int;
+		public function get rowHeight():int
+		{
+			return _rowHeight;
+		}
+		
+		protected var _columnWidth:int;
+		public function get columnWidth():int
+		{
+			return _columnWidth;
+		}
+		
+		protected var _rowsGap:int;
+		public function get rowsGap():int
+		{
+			return _rowsGap;
+		}
+		
+		protected var _columnsGap:int;
+		public function get columnsGap():int
+		{
+			return _columnsGap;
+		}
+		
+		protected var _showEmptyCells:Boolean = true;
+		public function get showEmptyCells():Boolean
+		{
+			return _showEmptyCells;
+		}
+		public function set showEmptyCells(value:Boolean):void
+		{
+			_showEmptyCells = value;
 		}
 		
 		private var _maskRect:Rectangle;
@@ -68,11 +159,12 @@ package molehill.easy.ui3d.list
 			_itemsContainerBack.moveTo(value.x, value.y);
 			_itemsContainerBack.setSize(value.width, value.height);
 		}
-			
+		
 		
 		override protected function onAddedToScene():void
 		{
 			_itemsContainer.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_itemsContainerBack.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			super.onAddedToScene();
 			
 			_stage = Application.getInstance().stage;
@@ -81,30 +173,6 @@ package molehill.easy.ui3d.list
 			FRICTION = FRICTION_BASE + FRICTION_FPS_COEFF * ((currentFPS - FRICTION_DEFAULT_FPS) / FRICTION_DEFAULT_FPS);
 			
 			FRICTION = Math.min(FRICTION, 0.98); //just in case
-			/*
-			var rect:Rectangle = scrollRect;
-			
-			if (rect == null)
-			{
-				return;
-			}
-			
-			//Do this hack here to not changing parent form size when it centered first time
-			
-			_itemsContainer.graphics.clear();
-			_itemsContainer.graphics.beginFill(0, 0.01); //hack for removing black back
-			
-			if (_direction == Direction.HORIZONTAL)
-			{
-				_itemsContainer.graphics.drawRect(rect.x, rect.y - 2 * (_rowHeight + _rowsGap), rect.width, rect.height + 4 * (_rowHeight + _rowsGap));
-			}
-			else
-			{
-				_itemsContainer.graphics.drawRect(rect.x - 2 * (_columnsGap + _columnWidth), rect.y, rect.width + 4 * (_columnWidth + _columnsGap), rect.height);
-			}
-			
-			_itemsContainer.graphics.endFill();
-			*/
 		}
 		
 		override protected function onRemovedFromScene():void
@@ -117,7 +185,8 @@ package molehill.easy.ui3d.list
 				_stage = null;
 			}
 			
-			removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_itemsContainer.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_itemsContainerBack.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			
 			_itemsContainerCamera.scrollX = 0;
 			_itemsContainerCamera.scrollY = 0;
@@ -150,12 +219,11 @@ package molehill.easy.ui3d.list
 		{
 			_snapToClosestItem = value;
 		}
-
+		
 		
 		/* ANIMATION */
 		
 		private var _isAnimated:Boolean = false;
-		private var _lockUpdate:Boolean = false;
 		
 		private var _startPoint:Point = new Point();
 		
@@ -180,130 +248,87 @@ package molehill.easy.ui3d.list
 		
 		private function get scrollDiffMax():int
 		{
-			return scrollPageMax == 0 ? -(lineSize / 3) : (-( Math.ceil(numItems / numItemsPerLine) - (_scrollPosition + numItemsPerPage) / numItemsPerLine)) * lineSize - (lineSize / 3);
+			return scrollPageMax * pageSize + (lineSize / 3);
 		}
 		
 		private function get scrollDiffMin():int
 		{
-			return (_scrollPosition / numItemsPerLine) * lineSize + (lineSize / 3);
+			return -lineSize / 3;
 		}
 		
 		/** Scrolls list on @diff from current position and returns num lines scrolled on this iteration
 		 *  numLines > 0 - forward, numLines < 0 - backward
 		 */
-		private function scrollOn(diff:Number):int
+		
+		private function scrollOn(diff:Number):void
 		{
-			var numLines:int = 0;
-			var coeff:int = diff >= 0 ? -1 : 1;
+			var numLines:Number = (_direction == Direction.HORIZONTAL ? _itemsContainerCamera.scrollY : _itemsContainerCamera.scrollX) / lineSize;
 			
-			if (diff < 0)
-			{
-				diff = Math.max(scrollDiffMax, diff);
-			}
-			else
-			{
-				diff = Math.min(scrollDiffMin, diff);
-			}
+			var newPosition:int = Math.min(Math.ceil(numLines) * numItemsPerLine, scrollPositionMax);
 			
-			numLines = Math.floor(Math.abs(diff) / lineSize);
-			
-			if (numLines != 0)
+			if (_scrollPosition != newPosition)
 			{
-				_scrollPosition += coeff * numItemsPerLine * numLines;
+				_scrollPosition = newPosition;
 				
-				update();
+				if (_updateCallback != null)
+				{
+					_updateCallback();
+				}
 			}
 			
 			
-			diff += coeff * numLines * lineSize;
+			//diff += coeff * numLines * lineSize;
 			
 			if (_direction == Direction.HORIZONTAL)
 			{
-				_itemsContainerCamera.scrollY = -diff;
+				_itemsContainerCamera.scrollY = diff < 0 ? 
+					Math.min(scrollDiffMax, _itemsContainerCamera.scrollY - diff) :
+					Math.max(scrollDiffMin, _itemsContainerCamera.scrollY - diff);
 			}
 			else
 			{
-				_itemsContainerCamera.scrollX = -diff;
+				_itemsContainerCamera.scrollX = diff < 0 ? 
+					Math.min(scrollDiffMax, _itemsContainerCamera.scrollX - diff) :
+					Math.max(scrollDiffMin, _itemsContainerCamera.scrollX - diff);
 			}
-			
-			return numLines * coeff;
 		}
 		
 		private function moveToClosestLine():void
 		{
-			if (!_snapToClosestItem)
+			var pageToScroll:int = -1;
+			
+			var cameraScroll:Number = _direction == Direction.HORIZONTAL ? _itemsContainerCamera.scrollY : _itemsContainerCamera.scrollX;
+			if (_snapToClosestItem)
 			{
-				if ((currentItem == 0 && (-_itemsContainerCamera.scrollY > 0 || -_itemsContainerCamera.scrollX > 0)) ||
-					(currentItem == scrollItemMax && (-_itemsContainerCamera.scrollY < 0 || -_itemsContainerCamera.scrollX < 0)))
+				var diff:Number = cameraScroll - currentPage * pageSize;
+				if (Math.abs(diff) < (lineSize / 2))
 				{
-					OpenTween.go(
-						_itemsContainerCamera,
-						{
-							scrollX : 0,
-							scrollY : 0
-						},
-						PAGE_ANIMATION_DURATION / 4,
-						0,
-						Linear.easeNone,
-						onAnimationCompleted
-					);
-					return;
+					pageToScroll = currentPage;
 				}
-				
-				onAnimationCompleted();
-				return;
+				else
+				{
+					pageToScroll = diff > 0 ? currentPage + 1 : currentPage - 1;
+					_scrollPosition += diff > 0 ? 1 : -1;
+				}
+			}
+			else if	(cameraScroll > scrollPageMax * pageSize ||
+					cameraScroll < 0)
+			{
+				pageToScroll = currentPage;
 			}
 			
-			if (_direction == Direction.HORIZONTAL)
+			
+			if (pageToScroll == -1)
 			{
-				if (_itemsContainerCamera.scrollY > 0)
-				{
-					if (_itemsContainerCamera.scrollY < -(lineSize / 2))
-					{
-						_scrollPosition -= numItemsPerLine;
-						_scrollPosition = Math.max(0, _scrollPosition);
-						update();
-						_itemsContainerCamera.scrollY += lineSize;
-					}
-				}
-				else
-				{
-					if (_itemsContainerCamera.scrollY > (lineSize / 2))
-					{
-						_scrollPosition += numItemsPerLine;
-						update();
-						_itemsContainerCamera.scrollY -= lineSize;
-					}
-				}
-			}
-			else
-			{
-				if (_itemsContainerCamera.scrollX > 0)
-				{
-					if (_itemsContainerCamera.scrollX < -(lineSize / 2))
-					{
-						_scrollPosition -= numItemsPerLine;
-						_scrollPosition = Math.max(0, _scrollPosition);
-						update();
-						_itemsContainerCamera.scrollX += lineSize;
-					}
-				}
-				else
-				{
-					if (_itemsContainerCamera.scrollX > +(lineSize / 2))
-					{
-						_scrollPosition += numItemsPerLine;
-						update();
-						_itemsContainerCamera.scrollX == lineSize;
-					}
-				}
+				onAnimationCompleted();
+				return;
 			}
 			
 			OpenTween.go(
 				_itemsContainerCamera,
 				{
-					scrollX : 0,
-					scrollY : 0
+					scrollX : _direction == Direction.HORIZONTAL ? 0 : pageToScroll * pageSize,
+					scrollY : _direction == Direction.HORIZONTAL ? pageToScroll * pageSize : 0
 				},
 				PAGE_ANIMATION_DURATION / 4,
 				0,
@@ -342,8 +367,8 @@ package molehill.easy.ui3d.list
 			
 			_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 			
-			_startPoint.x = event.stageX + _itemsContainerCamera.scrollX;
-			_startPoint.y = event.stageY + _itemsContainerCamera.scrollY;
+			_startPoint.x = event.stageX;
+			_startPoint.y = event.stageY;
 			
 			_listVelocity.splice(0, _listVelocity.length);
 			
@@ -363,8 +388,6 @@ package molehill.easy.ui3d.list
 			
 			diff = _direction == Direction.HORIZONTAL ? (event.stageY - _startPoint.y) : (event.stageX - _startPoint.x);
 			
-			
-			
 			if (Math.abs(diff) < MIN_DIFF_TO_SCROLL)
 			{
 				return;
@@ -379,13 +402,10 @@ package molehill.easy.ui3d.list
 				_stage.addEventListener(Event.ENTER_FRAME, onScrollEnterFrame);
 			}
 			
-			var numLines:int = scrollOn(diff);
+			scrollOn(diff);
 			
-			if (numLines != 0)
-			{
-				_startPoint.y -= numLines * lineSize;
-				_startPoint.x -= numLines * lineSize;
-			}
+			_startPoint.y += diff;
+			_startPoint.x += diff;
 		}
 		
 		private function onScrollEnterFrame(event:Event):void
@@ -400,7 +420,13 @@ package molehill.easy.ui3d.list
 			_newTime = getTimer();
 			_newPosition = _direction == Direction.HORIZONTAL ? _stage.mouseY : _stage.mouseX;
 			
+			if (_newTime == _lastTime)
+			{
+				_newTime = _lastTime + 1;
+			}
+			
 			_velocity = (_newPosition - _lastPosition) / (_newTime - _lastTime);
+			
 			
 			_listVelocity.push(_velocity);
 			
@@ -419,7 +445,6 @@ package molehill.easy.ui3d.list
 		private const FRICTION_BASE:Number = 0.92;
 		private const FRICTION_FPS_COEFF:Number = 0.026;
 		private const FRICTION_DEFAULT_FPS:Number = 24;
-		private var _diff:int = 0;
 		
 		private function onStageMouseUp(event:MouseEvent):void
 		{
@@ -464,19 +489,12 @@ package molehill.easy.ui3d.list
 			
 			_velocity = _velocity * SPEED_COEFF;
 			
-			_diff = _direction == Direction.HORIZONTAL ? -_itemsContainerCamera.scrollY : -_itemsContainerCamera.scrollX;
-			
 			_stage.addEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 		}
 		
 		private function onKineticEnterFrame(event:Event):void
 		{
-			_diff += _velocity;
-			
-			if (scrollOn(_diff) != 0)
-			{
-				_diff -= _diff;
-			}
+			scrollOn(_velocity);
 			
 			_velocity *= FRICTION;
 			
@@ -484,66 +502,88 @@ package molehill.easy.ui3d.list
 			{
 				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 				moveToClosestLine();
+				return;
 			}
 			
-			if (_diff < 0)
+			var checkValue:Number = _direction == Direction.HORIZONTAL ? _itemsContainerCamera.scrollY : _itemsContainerCamera.scrollX;
+			if (checkValue >= scrollDiffMax)
 			{
-				if (_diff < scrollDiffMax)
-				{
-					_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
-					moveToClosestLine();
-				}
+				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
+				moveToClosestLine();
 			}
-			else 
+			else if (checkValue <= scrollDiffMin)
 			{
-				if (_diff > scrollDiffMin)
-				{
-					_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
-					moveToClosestLine();
-				}
+				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
+				moveToClosestLine();
 			}
 		}
 		
 		
-		
-		// animate per page and per item scrolling
-		
-		private var _numLinesPageSlide:int = 0;
-		
-		/** num lines to animated slide on page change, default is page size (rowCount/columncount) */
-		public function set numLinesPageSlide(value:int):void
-		{
-			_numLinesPageSlide = Math.max(
-				1,
-				Math.min(
-					_direction == Direction.HORIZONTAL ? _rowCount : _columnCount,
-					value
-				)
-			);
-		}
-		
-		private function get pageSlideSize():Number
-		{
-			if (_numLinesPageSlide == 0)
-			{
-				_numLinesPageSlide = _direction == Direction.HORIZONTAL ? _rowCount : _columnCount;
-			}
-			
-			return _numLinesPageSlide * lineSize;
-		}
 		
 		private function get scrollPositionMax():int
 		{
 			return Math.max(0, Math.ceil(numItems / numItemsPerLine) * numItemsPerLine - numItemsPerPage);
 		}
 		
-		override public function get currentPage():int
+		public function get scrollPageMax():int
+		{
+			if (dataSource == null)
+				return 0;
+			
+			var numItemsRest:int = numItems - numItemsPerPage;
+			if (numItemsRest <= 0)
+				return 0;
+			
+			var valueMax:int = 0;
+			switch (_direction)
+			{
+				case Direction.HORIZONTAL:
+					valueMax = Math.ceil(numItemsRest / numItemsPerPage);
+					break;
+				
+				case Direction.VERTICAL:
+					valueMax = Math.ceil(numItemsRest / numItemsPerPage);
+					break;
+			}
+			
+			return valueMax;
+		}
+		
+		public function get scrollItemMax():int
+		{
+			if (dataSource == null)
+				return 0;
+			
+			var numItemsRest:int = numItems - numItemsPerPage;
+			if (numItemsRest <= 0)
+				return 0;
+			
+			var valueMax:int = 0;
+			switch (_direction)
+			{
+				case Direction.HORIZONTAL:
+					valueMax = Math.ceil(numItemsRest / columnCount);
+					break;
+				
+				case Direction.VERTICAL:
+					valueMax = Math.ceil(numItemsRest / rowCount);
+					break;
+			}
+			
+			return valueMax;
+		}
+		
+		protected var _scrollPosition:int = 0;
+		public function get currentPage():int
 		{
 			return _scrollPosition > (numItems - numItemsPerPage) ? Math.ceil(_scrollPosition / numItemsPerPage) : Math.floor(_scrollPosition / numItemsPerPage);
 		}
 		
-		override public function set currentPage(value:int):void
+		// animate per page and per item scrolling
+		
+		public function set currentPage(value:int):void
 		{
+			//TODO currentPage
 			var pageMax:int = this.scrollPageMax;			
 			if (value > pageMax)
 				value = pageMax;
@@ -553,16 +593,32 @@ package molehill.easy.ui3d.list
 			if ((value * numItemsPerPage) == _scrollPosition)
 				return;
 			
+			_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
+			
 			if (_stage != null)
 			{
-				animatePage(value);
+				lockItems();
+				OpenTween.go(
+					_itemsContainerCamera,
+					{
+						scrollX : _direction == Direction.HORIZONTAL ? 0 : currentPage * pageSize,
+						scrollY : _direction == Direction.HORIZONTAL ? currentPage * pageSize : 0
+					},
+					PAGE_ANIMATION_DURATION,
+					0,
+					Linear.easeNone,
+					onAnimationCompleted
+				);
 			}
 			else
 			{
-				_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
-				_itemsContainerCamera.scrollX = 0;
-				_itemsContainerCamera.scrollY = 0;
-				update();
+				_itemsContainerCamera.scrollX = _direction == Direction.HORIZONTAL ? 0 : currentPage * pageSize;
+				_itemsContainerCamera.scrollY = _direction == Direction.HORIZONTAL ? currentPage * pageSize : 0;
+			}
+			
+			if (_updateCallback != null)
+			{
+				_updateCallback();
 			}
 		}
 		
@@ -573,121 +629,25 @@ package molehill.easy.ui3d.list
 		{
 			_lockMoreThanOnePageAnimation = value;
 		}
-
 		
-		private function animatePage(value:int):void
+		public function get currentItem():int
 		{
-			var nextPage:Boolean = value > currentPage;
-			var immediate:Boolean = Math.abs(value - currentPage) > 1;
-			
-			if (_velocity != 0)
+			var scrollPosition:int = _scrollPosition;
+			switch (_direction)
 			{
-				removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
-				_itemsContainerCamera.scrollX = 0;
-				_itemsContainerCamera.scrollY = 0;
-				onAnimationCompleted();
-			}
-			
-			_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
-			
-			if (_isAnimated || (_lockMoreThanOnePageAnimation && immediate))
-			{
-				if (immediate)
-				{
-					_itemsContainerCamera.scrollX = 0;
-					_itemsContainerCamera.scrollY = 0;
-				}
-				update();
-				return;
-			}
-			
-			//_itemsContainerCamera.scrollX = 0;
-			//_itemsContainerCamera.scrollY = 0;
-			
-			_isAnimated = true;
-			_lockUpdate = true;
-			
-			lockItems();
-			
-			var props:Object = new Object();
-			var isHalf:Boolean = false;
-			
-			if (_direction == Direction.HORIZONTAL)
-			{
-				props.scrollY = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
-				isHalf = nextPage ? _itemsContainerCamera.scrollY > props.scrollY : _itemsContainerCamera.scrollY < props.scrollY;
-			}
-			else
-			{
-				props.scrollX = nextPage ? pageSlideSize / 2 : -pageSlideSize / 2;
-				isHalf = nextPage ? _itemsContainerCamera.scrollX > props.scrollX : _itemsContainerCamera.scrollX < props.scrollX;
-			}
-			
-			if (isHalf)
-			{
-				trace("isHalf!")
-				onAnimationPageHalfCompleted(nextPage, false);
-				return;
-			}
-			
-			OpenTween.go(
-				_itemsContainerCamera,
-				props,
-				PAGE_ANIMATION_DURATION / 2,
-				0,
-				Linear.easeNone,
-				onAnimationPageHalfCompleted,
-				null,
-				[nextPage]
-			);
+				case Direction.HORIZONTAL:
+					scrollPosition /= columnCount;
+					break;
 				
-		}
-		
-		private function onAnimationPageHalfCompleted(nextPage:Boolean, fromTween:Boolean = true):void
-		{
-			_lockUpdate = false;
-			update();
-			
-			var props:Object = new Object();
-			
-			if (fromTween)
-			{
-				if (_direction == Direction.HORIZONTAL)
-				{
-					_itemsContainerCamera.scrollY = nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
-				}
-				else
-				{
-					_itemsContainerCamera.scrollX = nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
-				}
+				case Direction.VERTICAL:
+					scrollPosition /= rowCount;
+					break;
 			}
-			else
-			{
-				if (_direction == Direction.HORIZONTAL)
-				{
-					_itemsContainerCamera.scrollY += nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
-				}
-				else
-				{
-					_itemsContainerCamera.scrollX += nextPage ? -pageSlideSize / 2 : pageSlideSize / 2;
-				}
-			}
-			
-			OpenTween.go(
-				_itemsContainerCamera,
-				{
-					scrollX : 0,
-					scrollY : 0
-				},
-				PAGE_ANIMATION_DURATION / 2,
-				0,
-				Linear.easeNone,
-				onAnimationCompleted
-			);
+			return scrollPosition;
 		}
-		
+				
 		/** use currentItem++ / currentItem-- only with list with single row for Direction.VERTICAL or with single column for Direction.HORIZONTAL */ 
-		override public function set currentItem(value:int):void
+		public function set currentItem(value:int):void
 		{
 			var maxItem:int = scrollItemMax;
 			if (value > maxItem)
@@ -699,94 +659,37 @@ package molehill.easy.ui3d.list
 				value = 0;
 			}
 			
-			if (_stage != null)
-			{
-				animateItem(value);
-			}
-			else
-			{
-				_scrollPosition = _direction == Direction.HORIZONTAL ? value * columnCount : value * rowCount;
-				_scrollPosition = Math.min(scrollPositionMax, _scrollPosition);
-				_itemsContainerCamera.scrollX = 0;
-				_itemsContainerCamera.scrollY = 0;
-				update();
-			}
-		}
-		
-		private function animateItem(value:int):void
-		{
-			var nextItem:Boolean = value > currentItem;
-			var immediate:Boolean = Math.abs(value - currentItem) > 1;
-			
-			if (_velocity != 0)
-			{
-				removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
-				_itemsContainerCamera.scrollX = 0;
-				_itemsContainerCamera.scrollY = 0;
-				onAnimationCompleted();
-			}
-			
-			if (_isAnimated || immediate)
-			{
-				_scrollPosition = _direction == Direction.HORIZONTAL ? value * columnCount : value * rowCount;
-				_scrollPosition = Math.min(scrollPositionMax, _scrollPosition);
-				
-				if (immediate)
-				{
-					_itemsContainerCamera.scrollX = 0;
-					_itemsContainerCamera.scrollY = 0;
-				}
-				
-				update();
-				return;
-			}
-			
-			_isAnimated = true;
-			_lockUpdate = true;
-			
-			lockItems();
-			
-			var props:Object = new Object();
-			
-			if (_direction == Direction.HORIZONTAL)
-			{
-				props.scrollY = nextItem ? (_rowHeight + _rowsGap) : -(_rowHeight + _rowsGap);
-			}
-			else
-			{
-				props.scrollX = nextItem ? (_columnWidth + _columnsGap) : -(_columnWidth + _columnsGap);
-			}
-			
-			if ((currentItem == 0 && (props.y > 0 || props.x > 0)) ||
-				(currentItem == scrollItemMax && (props.y < 0 || props.x < 0)))
-			{
-				props.scrollX = 0;
-				props.scrollY = 0;
-			}
-			
 			_scrollPosition = _direction == Direction.HORIZONTAL ? value * columnCount : value * rowCount;
 			_scrollPosition = Math.min(scrollPositionMax, _scrollPosition);
 			
-			OpenTween.go(
-				_itemsContainerCamera,
-				props,
-				PAGE_ANIMATION_DURATION,
-				0,
-				Linear.easeNone,
-				onItemAnimationCompleted
-			);
-		}		
-		
-		private function onItemAnimationCompleted():void
-		{
-			onAnimationCompleted();
-			_lockUpdate = false;
+			if (_stage != null)
+			{
+				lockItems();
+				OpenTween.go(
+					_itemsContainerCamera,
+					{
+						scrollX : _direction == Direction.HORIZONTAL ? 0 : currentPage * pageSize,
+						scrollY : _direction == Direction.HORIZONTAL ? currentPage * pageSize : 0
+					},
+					PAGE_ANIMATION_DURATION,
+					0,
+					Linear.easeNone,
+					onAnimationCompleted
+				);
+			}
+			else
+			{
+				_itemsContainerCamera.scrollX = _direction == Direction.HORIZONTAL ? 0 : currentPage * pageSize;
+				_itemsContainerCamera.scrollY = _direction == Direction.HORIZONTAL ? currentPage * pageSize : 0;
+			}
 			
-			update();
-			
-			_itemsContainerCamera.scrollX = 0;
-			_itemsContainerCamera.scrollY = 0;
+			if (_updateCallback != null)
+			{
+				_updateCallback();
+			}
 		}
+		
+		
 		
 		private function onAnimationCompleted():void
 		{
@@ -800,10 +703,10 @@ package molehill.easy.ui3d.list
 		{
 			for (var i:int = 0; i < _listItemRenderers.length; i++) 
 			{
-				var item:Sprite3D = _listItemRenderers[i] as Sprite3D;
+				var item:ILockableEasyItemRenderer = _listItemRenderers[i] as ILockableEasyItemRenderer;
 				if (item != null)
 				{
-					item.mouseEnabled = false;
+					item.locked = true;
 				}
 			}
 		}
@@ -812,16 +715,30 @@ package molehill.easy.ui3d.list
 		{
 			for (var i:int = 0; i < _listItemRenderers.length; i++) 
 			{
-				var item:Sprite3D = _listItemRenderers[i] as Sprite3D;
+				var item:ILockableEasyItemRenderer = _listItemRenderers[i] as ILockableEasyItemRenderer;
 				if (item != null)
 				{
-					item.mouseEnabled = true;
+					item.locked = false;
 				}
 			}
 		}
 		
 		/* end of animation */
 		
+		protected function get numItemsPerPage():int
+		{
+			return rowCount * columnCount;
+		}
+		
+		private function get pageSize():uint
+		{
+			return _direction == Direction.HORIZONTAL ? _rowCount * (_rowHeight + _rowsGap) : _columnCount * (_columnWidth + _columnsGap);
+		}
+		
+		private function get numLinesPerPage():uint
+		{
+			return _direction == Direction.HORIZONTAL ? _rowCount : _columnCount;
+		}
 		
 		private function get lineSize():Number
 		{
@@ -834,162 +751,84 @@ package molehill.easy.ui3d.list
 		}
 		
 		private var _updateCallback:Function;
-
+		
 		public function set updateCallback(value:Function):void
 		{
 			_updateCallback = value;
 		}
 		
 		private var _numAdditionalDrawingLines:uint = 0;
-
+		
 		public function set numAdditionalDrawingLines(value:uint):void
 		{
 			_numAdditionalDrawingLines = value;
 		}
-
 		
 		private var _listItemRenderers:Array = new Array();
-		private var _listFreeItemRenderers:Array = new Array();
+		private var _updatePositions:Boolean = true;
 		
 		override protected function doUpdate():void
 		{
-			if (_lockUpdate)
+			var numItemsLength:int = numItems;
+			trace("update");
+			
+			updateOnRender = true;
+			
+			for (var i:int = 0; i < numItemsLength; i++) 
 			{
-				return;
-			}
-			
-			var maxScrollPosition:int = scrollPositionMax;
-			
-			if (_scrollPosition > maxScrollPosition)
-			{
-				_scrollPosition = maxScrollPosition;
-			}
-			
-			_listItemRenderers.splice(0, _listItemRenderers.length);
-			
-			var dataBeginIdx:int = Math.max(0, _scrollPosition - numItemsPerLine);
-			var numAdditionalItemsCoeff:uint = _scrollPosition == 0 ? (1 + _numAdditionalDrawingLines) : (2 + _numAdditionalDrawingLines);
-			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + numItemsPerLine * numAdditionalItemsCoeff;
-			
-			var numItems:int = this.numItems;
-			if (dataEndIdx >= numItems)
-				dataEndIdx = numItems;
-			
-			//---
-			var offsetRows:int = dataBeginIdx / columnCount;
-			var offsetColumns:int = dataBeginIdx % columnCount;
-			//---
-			var viewRow:int = 0;
-			var viewColumn:int = -1;
-			var itemRenderer:IEasyItemRenderer;
-			
-			var cy:int = 0;
-			var rowHeight:int = 0;
-			var i:int = 0;
-			
-			
-			for (var previousItemData:* in _dictCurrentStateItemRenderersByData)
-			{
-				for (i = dataBeginIdx; i < dataEndIdx; i++)
+				var itemRenderer:IEasyItemRenderer = _listItemRenderers.length > i ? _listItemRenderers[i] : getItemRenderer();
+				var containsItem:Boolean = _itemsContainer.contains(itemRenderer as Sprite3D);
+				if (!containsItem)
 				{
-					var newItemData:* = getItemData(i);
-					if (previousItemData === newItemData)
+					_itemsContainer.addChild(itemRenderer as Sprite3D);
+				}
+				if (!containsItem || _updatePositions)
+				{
+					if (_direction == Direction.HORIZONTAL)
 					{
-						break;
-					}
-				}
-				
-				if (i < dataEndIdx)
-				{
-					continue;
-				}
-				
-				_listFreeItemRenderers.push(_dictCurrentStateItemRenderersByData[previousItemData]);
-				
-				delete _dictCurrentStateItemRenderersByData[previousItemData];
-			}
-			
-			for (i = dataBeginIdx; i < dataEndIdx; i++)
-			{
-				
-				switch (_direction)
-				{
-					case Direction.HORIZONTAL:
-						viewRow		= Math.floor((i - dataBeginIdx) / columnCount) - (_scrollPosition >= numItemsPerLine ? 1 : 0);
-						viewColumn	= (i - dataBeginIdx) % columnCount;
-						break;
-					
-					case Direction.VERTICAL:
-						viewRow		= (i - dataBeginIdx) % rowCount;
-						viewColumn	= Math.floor((i - dataBeginIdx) / rowCount) - (_scrollPosition >= numItemsPerLine ? 1 : 0);
-						break;
-				}
-				
-				var itemData:* = getItemData(i);
-				itemRenderer = _dictCurrentStateItemRenderersByData[itemData] as IEasyItemRenderer;
-				if (itemRenderer == null)
-				{
-					if (_listFreeItemRenderers.length == 0)
-					{
-						itemRenderer = getItemRenderer();
-						_itemsContainer.addChild(itemRenderer as Sprite3D);
+						(itemRenderer as Sprite3D).moveTo(
+							(i % numItemsPerLine) * (columnWidth + columnsGap),
+							Math.floor(i / numItemsPerLine) * (rowHeight + rowsGap)
+						);
 					}
 					else
 					{
-						itemRenderer = _listFreeItemRenderers.shift();
+						(itemRenderer as Sprite3D).moveTo(
+							Math.floor(i / numItemsPerLine) * (columnWidth + columnsGap),
+							(i % numItemsPerLine) * (rowHeight + rowsGap)
+						);
 					}
 				}
 				
-				(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
+				var itemData:* = getItemData(i);
 				itemRenderer.itemData = itemData;
 				itemRenderer.selected = isItemSelected(itemData);
 				itemRenderer.highlighted = false;
-				if (!(itemRenderer is ILockableEasyItemRenderer) || !(itemRenderer as ILockableEasyItemRenderer).locked)
-					itemRenderer.update();
-				
-				_listItemRenderers.push(itemRenderer);
-				
-				rowHeight = Math.max(rowHeight, itemRenderer.height);
-				
-				_dictCurrentStateItemRenderersByData[itemData] = itemRenderer;
-			}
-			/*
-			height = Math.max(
-				cy + rowHeight,
-				0
-			);
-			*/
-			//---
-			
-			
-			while (_listFreeItemRenderers.length > 0)
-			{
-				itemRenderer = _listFreeItemRenderers.shift();
-				if (itemRenderer == null)
-					continue;
-				
-				freeItemRenderer(itemRenderer);
-			}
-			
-			freeAllEmptyItemRenderers();
-			
-			if (_showEmptyCells)
-			{
-				viewColumn++;
-				for (; viewRow < rowCount; viewRow++, viewColumn = 0)
+				itemRenderer.update();
+				if (_listItemRenderers.length <= i)
 				{
-					for (; viewColumn < columnCount; viewColumn++)
-					{
-						itemRenderer = getEmptyItemRenderer();
-						(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
-					}
+					_listItemRenderers.push(itemRenderer);
 				}
 			}
+			
+			if (numItemsLength < _listItemRenderers.length)
+			{
+				var listRenderersToRemove:Array = _listItemRenderers.splice(numItemsLength, _listItemRenderers.length - numItemsLength);
+				for (i = 0; i < listRenderersToRemove.length; i++) 
+				{
+					freeItemRenderer(listRenderersToRemove[i]);
+				}
+			}
+			
+			_updatePositions = false;
+			
 			
 			if (_updateCallback != null)
 			{
 				_updateCallback();
 			}
+			
+			updateOnRender = false;
 		}
 		
 		private var _gradientBorderEnabled:Boolean = false;
@@ -1001,63 +840,45 @@ package molehill.easy.ui3d.list
 		/*
 		public function set gradientBorderEnabled(value:Boolean):void
 		{
-			_gradientBorderEnabled = value;
-			
-			blendMode = _gradientBorderEnabled ? BlendMode.LAYER : BlendMode.NORMAL;
-			
-			if (_gradientBorderEnabled)
-			{
-				
-			}
-			else
-			{
-				_itemsContainer.graphics.clear();
-			}
-			
-			updateMaskRect();
+		_gradientBorderEnabled = value;
+		
+		blendMode = _gradientBorderEnabled ? BlendMode.LAYER : BlendMode.NORMAL;
+		
+		if (_gradientBorderEnabled)
+		{
+		
+		}
+		else
+		{
+		_itemsContainer.graphics.clear();
+		}
+		
+		updateMaskRect();
 		}
 		
 		
 		private var _gradientBorderSize:Number = 0;
-
+		
 		/** size of gradient borders, if set to zero - columnsGap/rowsGap would be used (default 0) *
 		public function set gradientBorderSize(value:Number):void
 		{
-			_gradientBorderSize = Math.max(0, value);
-			
-			updateMaskRect();
+		_gradientBorderSize = Math.max(0, value);
+		
+		updateMaskRect();
 		}
 		*/
 		
 		/* scroll rect update */
 		
-		private var _scrollRectWidth:Number = 0;
-		
-		public function set scrollRectWidth(value:Number):void
-		{
-			_scrollRectWidth = value;
-			
-			updateMaskRect();
-		}
-		
-		private var _scrollRectHeight:Number = 0;
-		
-		public function set scrollRectHeight(value:Number):void
-		{
-			_scrollRectHeight = value;
-			
-			updateMaskRect();
-		}
-		
 		private var _maskRectCustom:Rectangle;
-
+		
 		public function set maskRectCustom(value:Rectangle):void
 		{
 			_maskRectCustom = value;
 			
 			updateMaskRect();
 		}
-
+		
 		
 		private function updateMaskRect():void
 		{
@@ -1076,55 +897,57 @@ package molehill.easy.ui3d.list
 			{
 				rect.x = 0;
 				rect.y = 0;
-				rect.width = _scrollRectWidth == 0 ? _columnWidth * _columnCount + _columnsGap * (_columnCount - 1) : _scrollRectWidth;
-				rect.height = _scrollRectHeight == 0 ? _rowHeight * _rowCount + _rowsGap * (_rowCount - 1) : _scrollRectHeight;
+				rect.width = _columnWidth * _columnCount + _columnsGap * (_columnCount - 1);
+				rect.height = _rowHeight * _rowCount + _rowsGap * (_rowCount - 1);
 			}
 			
 			updateMask = rect;
 		}
 		
-		override public function set columnCount(value:int):void
+		public function set columnCount(value:int):void
 		{
-			super.columnCount = value;
+			_columnCount = value;
 			
 			updateMaskRect();
 			
+			_updatePositions = true;
 			update();
 		}
 		
-		override public function set columnWidth(value:int):void
+		public function set columnWidth(value:int):void
 		{
-			super.columnWidth = value;
+			_columnWidth = value;
 			
 			updateMaskRect();
 		}
 		
-		override public function set columnsGap(value:int):void
+		public function set columnsGap(value:int):void
 		{
-			super.columnsGap = value;
+			_columnsGap = value;
 			
 			updateMaskRect();
 		}
 		
-		override public function set rowCount(value:int):void
+		public function set rowCount(value:int):void
 		{
-			super.rowCount = value;
+			_rowCount = value;
 			
 			updateMaskRect();
 			
+			_updatePositions = true;
 			update();
 		}
 		
-		override public function set rowHeight(value:int):void
+		public function set rowHeight(value:int):void
 		{
-			super.rowHeight = value;
+			_rowHeight = value;
 			
 			updateMaskRect();
 		}
 		
-		override public function set rowsGap(value:int):void
+		public function set rowsGap(value:int):void
 		{
-			super.rowsGap = value;
+			_rowsGap = value;
 			
 			updateMaskRect();
 		}
