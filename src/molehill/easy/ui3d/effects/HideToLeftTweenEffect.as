@@ -50,6 +50,8 @@ package molehill.easy.ui3d.effects
 				onTweenUpdate
 			);
 			
+			target.updateOnRender = true;
+			
 			onTweenUpdate();
 		}
 		
@@ -79,8 +81,15 @@ package molehill.easy.ui3d.effects
 			
 			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
 			
-			_target.x = targetPos.x + Math.round(((windowContentRect.width - _target.width) / 2 * startPos.x - targetPos.x) * (1 - _tweenTarget.x));
-			_target.y = targetPos.y + Math.round(((windowContentRect.height - _target.height) / 2 * startPos.y - targetPos.y) * (1 - _tweenTarget.y));
+			if (_tweenTarget.x == targetPos.x && _tweenTarget.y == targetPos.y)
+			{
+				_target.updateOnRender = false;
+			}
+			
+			_target.moveTo(
+				targetPos.x + Math.round(((windowContentRect.width - _target.width) / 2 * startPos.x - targetPos.x) * (1 - _tweenTarget.x)),
+				targetPos.y + Math.round(((windowContentRect.height - _target.height) / 2 * startPos.y - targetPos.y) * (1 - _tweenTarget.y))
+			);
 		}
 		
 		override protected function completeEffect():void

@@ -47,6 +47,8 @@ package molehill.easy.ui3d.effects
 				onTweenUpdate
 			);
 			
+			target.updateOnRender = true;
+			
 			onTweenUpdate();
 		}
 		
@@ -75,6 +77,11 @@ package molehill.easy.ui3d.effects
 			var targetPos:Point = targetPosition;
 			
 			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
+			
+			if (_tweenTarget.x == targetPos.x && _tweenTarget.y == targetPos.y)
+			{
+				_target.updateOnRender = false;
+			}
 			
 			_target.moveTo(
 				startPos.x + Math.round(((windowContentRect.width - _target.width) / 2 * targetPos.x - startPos.x) * _tweenTarget.x),

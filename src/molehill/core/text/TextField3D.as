@@ -1,6 +1,7 @@
 package molehill.core.text
 {
 	import flash.geom.Point;
+	import flash.text.TextField;
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3DFactory;
@@ -12,12 +13,18 @@ package molehill.core.text
 	import molehill.core.texture.TextureManager;
 	
 	use namespace molehill_internal;
-
+	
 	public class TextField3D extends Sprite3DContainer
 	{
+		private static const LF_CHARCODE:int = 10;
+		private static const CR_CHARCODE:int = 13;
+		private static const SPACE_CHARCODE:int = 32;
 		public function TextField3D()
 		{
 			super();
+			
+			_width = int.MAX_VALUE;
+			_height = int.MAX_VALUE;
 			
 			_cacheSprites = new Vector.<TextField3DCharacter>();
 
@@ -35,6 +42,7 @@ package molehill.core.text
 			return format;
 		}
 		
+		private var _spaceWidth:int = 5;
 		public function set defaultTextFormat(value:TextField3DFormat):void
 		{
 			_fontName = value.font;
@@ -78,12 +86,20 @@ package molehill.core.text
 		protected var _hashSymbolsByLine:Object;
 		protected var _numLines:uint = 0;
 		private var _lastChild:Sprite3D;
+		
+		private var _lineY:int = 0;
+		private var _lineHeight:int = 0;
+		private var _numSpaces:int = 0;
+
 		private function updateLayout():void
 		{
+			var tm:TextureManager = TextureManager.getInstance();
+			
+			var spaceCharTextureData:TextureData = tm.getTextureDataByID(getTextureForChar(_fontName, _fontTextureSize, SPACE_CHARCODE));
+			_spaceWidth = spaceCharTextureData != null ? spaceCharTextureData.width : 5;
+			
 			var textLength:int = _text.length;
-			var lineHeight:int = 0;
 			var lineWidth:int = 0;
-			var lineY:int = 0;
 			var scale:Number = _fontSize / _fontTextureSize;
 			
 			_hashSymbolsByLine = new Object();
@@ -94,64 +110,94 @@ package molehill.core.text
 			
 			_notifyParentOnChange = false;
 			
-			if (_scene != null)
-			{
-				var updateBatchersFlag:Boolean = _scene._needUpdateBatchers;
-			}
-			
 			var charAtlasData:TextureAtlasData;
 			var childIndex:int = 0;
 			var numGlyphs:int = 0;
 			var lineStart:int = 0;
 			var placedChildIndex:int = 0;
+			
+			var lastSpaceWidth:int = 0;
+			var lastSpaceIndex:int = 0;
+			var lastSpaceChildIndex:int = 0;
+			var lastLineWidth:int = 0;
+			
+			var currentLineWidth:int = 0;
+			var numLineBreaks:int = 0;
+			
+			_lineY = 0;
+			_lineHeight = 0;
+			_numSpaces = 0;
+			
 			for (var i:int = 0; i < textLength; i++)
 			{
 				var charCode:int = _text.charCodeAt(i);
 				if (charCode == 10 || charCode == 13)
 				{
-					if (_textWidth < lineWidth)
-					{
-						_textWidth = lineWidth;
-					}
-					
-					switch (_align)
-					{
-						case TextField3DAlign.LEFT:
-							lineStart = 0;
-							break;
-						case TextField3DAlign.RIGHT:
-							lineStart = -lineWidth;
-							break;
-						case TextField3DAlign.CENTER:
-							lineStart = -lineWidth / 2;
-							break;
-						default:
-							lineStart = 0;
-							break;
-					}
-					
-					for (var j:int = placedChildIndex; j < childIndex; j++)
-					{
-						child = super.getChildAt(j) as TextField3DCharacter;
-						child.moveTo(lineStart, lineY);
-						lineStart += Math.ceil(child.width);
-					}
-					
-					lineY += lineHeight;
-					lineHeight = 0;
-					lineWidth = 0;
-					
+					placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
 					placedChildIndex = childIndex;
 					
+					_lineY += _lineHeight;
+					numLineBreaks++;
+
+					lineWidth = 0;
+					currentLineWidth = 0;
+					lastSpaceIndex = 0;
+					lastSpaceWidth = 0;
+					lastSpaceChildIndex = 0;
+					
+					continue;
+				}
+				
+				if (lineWidth > width)
+				{
+					trace(lastSpaceWidth);
+					currentLineWidth = placeCharacters(
+						lastSpaceIndex == 0 ? i : lastSpaceIndex,
+						numLineBreaks,
+						placedChildIndex,
+						lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex,
+						lastSpaceWidth == 0 ? lastLineWidth : lastSpaceWidth,
+						currentLineWidth
+					);
+					
+					if (lastSpaceWidth == 0)
+					{
+						lineWidth -= lastLineWidth;
+						currentLineWidth = 0;
+					}
+					else
+					{
+						lineWidth -= lastSpaceWidth + _spaceWidth;
+						currentLineWidth = 0;
+					}
+					
+					_lineY += _lineHeight;
 					_numLines++;
 					
+					placedChildIndex = lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex;
+					
+					lastSpaceIndex = 0;
+					lastSpaceWidth = 0;
+					lastSpaceChildIndex = 0;
+				}
+				
+				if (charCode == 32)
+				{
+					lastSpaceIndex = i;
+					lastSpaceWidth = lineWidth;
+					lastSpaceChildIndex = childIndex;
+					
+					if (lineWidth > 0)
+					{
+						lineWidth += _spaceWidth;
+					}
 					continue;
 				}
 				
 				var textureName:String = getTextureForChar(_fontName, _fontTextureSize, charCode);
 				if (charAtlasData == null)
 				{
-					charAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(textureName);
+					charAtlasData = tm.getAtlasDataByTextureID(textureName);
 				}
 				
 				if (charAtlasData == null)
@@ -159,7 +205,7 @@ package molehill.core.text
 					charCode = 32;
 					textureName = getTextureForChar(_fontName, _fontTextureSize, charCode);
 					
-					charAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(textureName);
+					charAtlasData = tm.getAtlasDataByTextureID(textureName);
 				}
 				
 				var charTextureData:TextureData = charAtlasData.getTextureData(textureName);
@@ -181,70 +227,113 @@ package molehill.core.text
 				{
 					child = getCharacterSprite();
 					super.addChild(child);
-					
-					updateBatchersFlag = true;
 				}
 				
 				child.setTexture(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
 				
+				lastLineWidth = lineWidth;
 				lineWidth += Math.ceil(child.width);
-				lineHeight = Math.max(lineHeight, Math.ceil(child.height));
+				_lineHeight = Math.max(_lineHeight, Math.ceil(child.height));
 				
 				childIndex++;
 				
 				_hashSymbolsByLine[_numLines - 1] = uint(_hashSymbolsByLine[_numLines - 1]) + 1;
 			}
 			
-			switch (_align)
-			{
-				case TextField3DAlign.LEFT:
-					lineStart = 0;
-					break;
-				case TextField3DAlign.RIGHT:
-					lineStart = -lineWidth;
-					break;
-				case TextField3DAlign.CENTER:
-					lineStart = -lineWidth / 2;
-					break;
-				default:
-					lineStart = 0;
-					break;
-			}
+			placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
 			
-			for (i = placedChildIndex; i < childIndex; i++)
-			{
-				child = super.getChildAt(i) as TextField3DCharacter;
-				child.moveTo(lineStart, lineY);
-				lineStart += Math.ceil(child.width);
-			}
-			
-			if (_textWidth < lineWidth)
+			if (!wordWrap && _textWidth < lineWidth)
 			{
 				_textWidth = lineWidth;
 			}
-			_textHeight = lineY + lineHeight;
+			_textHeight = _lineY + _lineHeight;
 			
 			while (numChildren > childIndex)
 			{
-				_cacheSprites.push(super.removeChildAt(numChildren - 1));
+				_cacheSprites.push(
+					super.removeChildAt(numChildren - 1)
+				);
 				
 				treeStructureChanged = true;
-				updateBatchersFlag = true;
 			}
 			
 			_lastChild = numChildren > 0 ? super.getChildAt(numChildren - 1) : null;
-				
 			
-			if (_scene != null)
-			{
-				// do not need to update batcher cause we assume that all fonts for one textfield are on the same atlas
-				_scene._needUpdateBatchers = updateBatchersFlag;
-			}
-			
-			treeStructureChanged ||= textureAtlasChanged;
 			_notifyParentOnChange = true;
 			updateDimensions(this);
+		}
+		
+		private function placeCharacters(lastCharacterIndex:int, numLineBreaks:int, lastPlacedChildIndex:int, lastChildIndex:int, lineWidth:int, lastLineWidth:int):int
+		{
+			var lineStart:int = 0;
+			var lastSpaceIndex:int = 0;
+			
+			while (lastPlacedChildIndex < lastChildIndex)
+			{
+				if (_textWidth < lineWidth)
+				{
+					_textWidth = wordWrap ? 0 : lineWidth;
+				}
+				
+				switch (_align)
+				{
+					case TextField3DAlign.LEFT:
+						lineStart = 0;
+						break;
+					case TextField3DAlign.RIGHT:
+						lineStart = -lineWidth;
+						break;
+					case TextField3DAlign.CENTER:
+						lineStart = -lineWidth / 2;
+						break;
+					default:
+						lineStart = 0;
+						break;
+				}
+				
+				for (var j:int = lastPlacedChildIndex; j < lastChildIndex; j++)
+				{
+					trace(_text.charAt(j + numLineBreaks + _numSpaces));
+					if (_text.charCodeAt(j + numLineBreaks + _numSpaces) == SPACE_CHARCODE)
+					{
+						if (lastLineWidth > 0)
+						{
+							lastLineWidth += _spaceWidth;
+						}
+						_numSpaces++;
+						lastSpaceIndex = j - 1;
+						trace(_text.charAt(j + numLineBreaks + _numSpaces));
+					}
+					
+					var child:TextField3DCharacter = super.getChildAt(j) as TextField3DCharacter;
+					if (wordWrap && lastLineWidth > 0 && lastLineWidth + Math.ceil(child.width) > width)
+					{
+						if (lastSpaceIndex != 0)
+						{
+							j = lastSpaceIndex + 1;
+						}
+						break;
+					}
+					
+					child.moveTo(lineStart + lastLineWidth, _lineY);
+					lastLineWidth += Math.ceil(child.width);
+				}
+				
+				lastSpaceIndex = 0;
+				lineWidth -= lastLineWidth;
+				
+				lastPlacedChildIndex = j;
+				
+				if (j < lastChildIndex)
+				{
+					_lineY += _lineHeight;
+					lastLineWidth = 0;
+					_numLines++;
+				}
+			}
+			
+			return lastLineWidth;
 		}
 		
 		private var _notifyParentOnChange:Boolean = true;
@@ -312,16 +401,55 @@ package molehill.core.text
 			return charTexture;
 		}
 		
+		private var _wordWrap:Boolean = false;
+		public function get wordWrap():Boolean
+		{
+			return _wordWrap;
+		}
+		
+		public function set wordWrap(value:Boolean):void
+		{
+			if (value == _wordWrap)
+			{
+				return;
+			}
+			
+			_wordWrap = value;
+			updateLayout();
+		}
+		
 		private var _textWidth:Number = 0;
-		override public function get width():Number
+		public function get textWidth():Number
 		{
 			return _textWidth;
 		}
+
+		override public function get width():Number
+		{
+			return _width;
+		}
+		
+		override public function set width(value:Number):void
+		{
+			_width = value;
+			updateLayout();
+		}
 		
 		private var _textHeight:Number = 0;
-		override public function get height():Number
+		public function get textHeight():Number
 		{
 			return _textHeight;
+		}
+		
+		override public function get height():Number
+		{
+			return _height;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			_height = value;
+			updateLayout();
 		}
 		
 		// TODO: add new characters instead of performing full update
