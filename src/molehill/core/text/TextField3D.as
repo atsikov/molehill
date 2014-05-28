@@ -115,8 +115,12 @@ package molehill.core.text
 			var numGlyphs:int = 0;
 			var lineStart:int = 0;
 			var placedChildIndex:int = 0;
+			
 			var lastSpaceWidth:int = 0;
 			var lastSpaceIndex:int = 0;
+			var lastSpaceChildIndex:int = 0;
+			var lastLineWidth:int = 0;
+			
 			var currentLineWidth:int = 0;
 			var numLineBreaks:int = 0;
 			
@@ -133,14 +137,60 @@ package molehill.core.text
 					placedChildIndex = childIndex;
 					
 					_lineY += _lineHeight;
-					currentLineWidth = 0;
 					numLineBreaks++;
+
+					lineWidth = 0;
+					currentLineWidth = 0;
+					lastSpaceIndex = 0;
+					lastSpaceWidth = 0;
+					lastSpaceChildIndex = 0;
+					
 					continue;
+				}
+				
+				if (lineWidth > width)
+				{
+					trace(lastSpaceWidth);
+					currentLineWidth = placeCharacters(
+						lastSpaceIndex == 0 ? i : lastSpaceIndex,
+						numLineBreaks,
+						placedChildIndex,
+						lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex,
+						lastSpaceWidth == 0 ? lastLineWidth : lastSpaceWidth,
+						currentLineWidth
+					);
+					
+					if (lastSpaceWidth == 0)
+					{
+						lineWidth -= lastLineWidth;
+						currentLineWidth = 0;
+					}
+					else
+					{
+						lineWidth -= lastSpaceWidth + _spaceWidth;
+						currentLineWidth = 0;
+					}
+					
+					_lineY += _lineHeight;
+					_numLines++;
+					
+					placedChildIndex = lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex;
+					
+					lastSpaceIndex = 0;
+					lastSpaceWidth = 0;
+					lastSpaceChildIndex = 0;
 				}
 				
 				if (charCode == 32)
 				{
-					lineWidth += _spaceWidth;
+					lastSpaceIndex = i;
+					lastSpaceWidth = lineWidth;
+					lastSpaceChildIndex = childIndex;
+					
+					if (lineWidth > 0)
+					{
+						lineWidth += _spaceWidth;
+					}
 					continue;
 				}
 				
@@ -182,6 +232,7 @@ package molehill.core.text
 				child.setTexture(textureName);
 				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
 				
+				lastLineWidth = lineWidth;
 				lineWidth += Math.ceil(child.width);
 				_lineHeight = Math.max(_lineHeight, Math.ceil(child.height));
 				
@@ -213,7 +264,7 @@ package molehill.core.text
 			updateDimensions(this);
 		}
 		
-		private function placeCharacters(lastCharacterIndex:int, numLineBreaks:int, lastPlacedChildIndex:int, lastChildIndex:int, lineWidth:int, lastLineWidth:int):void
+		private function placeCharacters(lastCharacterIndex:int, numLineBreaks:int, lastPlacedChildIndex:int, lastChildIndex:int, lineWidth:int, lastLineWidth:int):int
 		{
 			var lineStart:int = 0;
 			var lastSpaceIndex:int = 0;
@@ -231,10 +282,10 @@ package molehill.core.text
 						lineStart = 0;
 						break;
 					case TextField3DAlign.RIGHT:
-						lineStart = wordWrap ? -_width : -lineWidth;
+						lineStart = -lineWidth;
 						break;
 					case TextField3DAlign.CENTER:
-						lineStart = wordWrap ? -_width / 2 : -lineWidth / 2;
+						lineStart = -lineWidth / 2;
 						break;
 					default:
 						lineStart = 0;
@@ -243,6 +294,7 @@ package molehill.core.text
 				
 				for (var j:int = lastPlacedChildIndex; j < lastChildIndex; j++)
 				{
+					trace(_text.charAt(j + numLineBreaks + _numSpaces));
 					if (_text.charCodeAt(j + numLineBreaks + _numSpaces) == SPACE_CHARCODE)
 					{
 						if (lastLineWidth > 0)
@@ -251,6 +303,7 @@ package molehill.core.text
 						}
 						_numSpaces++;
 						lastSpaceIndex = j - 1;
+						trace(_text.charAt(j + numLineBreaks + _numSpaces));
 					}
 					
 					var child:TextField3DCharacter = super.getChildAt(j) as TextField3DCharacter;
@@ -276,10 +329,11 @@ package molehill.core.text
 				{
 					_lineY += _lineHeight;
 					lastLineWidth = 0;
+					_numLines++;
 				}
-				
-				_numLines++;
 			}
+			
+			return lastLineWidth;
 		}
 		
 		private var _notifyParentOnChange:Boolean = true;
