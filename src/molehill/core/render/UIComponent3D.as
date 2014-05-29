@@ -74,12 +74,12 @@ package molehill.core.render
 				flattenedRenderTree.addNode(_localTreeBack);
 				flattenedRenderTree.addNode(_localTreeMisc);
 				flattenedRenderTree.addNode(_localTreeText);
-				
+				/*
 				if (parent is EasyTileList3DAnimated)
 				{
 					traceTrees();
 				}
-				
+				*/
 			}
 			
 			//traceTrees();
@@ -381,11 +381,6 @@ package molehill.core.render
 					{
 						_insideUIComponent = false;
 					}
-					
-					if (treeChanged)
-					{
-						dst = origDst;
-					}
 				}
 				else
 				{
@@ -395,6 +390,11 @@ package molehill.core.render
 							dst.firstChild
 						);
 					}
+				}
+				
+				if (treeChanged)
+				{
+					dst = origDst;
 				}
 				
 				var nextValue:Sprite3DContainer = src.nextSibling == null ? null : src.nextSibling.value as Sprite3DContainer;
@@ -434,6 +434,7 @@ package molehill.core.render
 		{
 			if (value == null || _insideUIComponent)
 			{
+				_localTreeMiscCursor = dst;
 				return dst;
 			}
 			
@@ -451,6 +452,7 @@ package molehill.core.render
 			}
 			else
 			{
+				_localTreeMiscCursor = dst;
 				return dst;
 			}
 			
