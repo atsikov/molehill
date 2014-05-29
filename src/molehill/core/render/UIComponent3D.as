@@ -6,6 +6,7 @@ package molehill.core.render
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.text.TextField3D;
+	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
 	
 	import utils.ObjectUtils;
 	
@@ -35,6 +36,10 @@ package molehill.core.render
 		private var _localTreeMisc:TreeNode;
 		private var _localTreeText:TreeNode;
 		
+		private var _localTreeBackCursor:TreeNode;
+		private var _localTreeMiscCursor:TreeNode;
+		private var _localTreeTextCursor:TreeNode;
+		
 		private var _containerBacks:Sprite3DContainer;
 		private var _containerTexts:Sprite3DContainer;
 		private var _containerMiscs:Sprite3DContainer;
@@ -50,24 +55,31 @@ package molehill.core.render
 					
 					_localTreeBack = _cacheTreeNodes.newInstance();
 					_localTreeBack.value = _containerBacks;
-					flattenedRenderTree.addNode(_localTreeBack);
 					
 					_localTreeMisc = _cacheTreeNodes.newInstance()
 					_localTreeMisc.value = _containerMiscs;
-					flattenedRenderTree.addNode(_localTreeMisc);
 					
 					_localTreeText = _cacheTreeNodes.newInstance();
 					_localTreeText.value = _containerTexts;
-					flattenedRenderTree.addNode(_localTreeText);
 				}
 				else
 				{
-					cacheAllNodes(_localTreeBack.firstChild);
-					cacheAllNodes(_localTreeMisc.firstChild);
-					cacheAllNodes(_localTreeText.firstChild);
+					flattenedRenderTree.removeNode(_localTreeText);
+					flattenedRenderTree.removeNode(_localTreeMisc);
+					flattenedRenderTree.removeNode(_localTreeBack);
 				}
 				
-				createFlattenedTree(localRenderTree);
+				syncTrees(localRenderTree, _localTreeMisc);
+				
+				flattenedRenderTree.addNode(_localTreeBack);
+				flattenedRenderTree.addNode(_localTreeMisc);
+				flattenedRenderTree.addNode(_localTreeText);
+				
+				if (parent is EasyTileList3DAnimated)
+				{
+					traceTrees();
+				}
+				
 			}
 			
 			//traceTrees();
@@ -135,20 +147,21 @@ package molehill.core.render
 			cacheAllNodes(nextNode);
 		}
 		
+		/*
 		private function createFlattenedTree(src:TreeNode):void
 		{
 			var node:TreeNode;
 			var sprite:Sprite3D = src.value as Sprite3D;
 			if (sprite !== this && (sprite is UIComponent3D))
 			{
-				/*
-				(sprite as UIComponent3D).updateFlattnedTree();
-				flattenedRenderTree.addNode(
-					copyTree(
-						(sprite as UIComponent3D).flattenedRenderTree
-					)
-				);
-				*/
+				
+				//(sprite as UIComponent3D).updateFlattnedTree();
+				//flattenedRenderTree.addNode(
+				//	copyTree(
+				//		(sprite as UIComponent3D).flattenedRenderTree
+				//	)
+				//);
+				
 				
 				(sprite as UIComponent3D).updateFlattnedTree();
 				if (sprite.isBackground)
@@ -168,19 +181,19 @@ package molehill.core.render
 					);
 				}
 				
-				/*
-				node = _cacheTreeNodes.newInstance();
-				node.value = sprite;
 				
-				if (sprite.isBackground)
-				{
-					_localTreeBack.addNode(node);
-				}
-				else
-				{
-					_localTreeMisc.addNode(node);
-				}
-				*/
+				//node = _cacheTreeNodes.newInstance();
+				//node.value = sprite;
+				//
+				//if (sprite.isBackground)
+				//{
+				//	_localTreeBack.addNode(node);
+				//}
+				//else
+				//{
+				//	_localTreeMisc.addNode(node);
+				//}
+				
 				return;
 			}
 			
@@ -253,6 +266,222 @@ package molehill.core.render
 			}
 			
 			return dest;
+		}
+		*/
+		
+		private function syncTrees(src:TreeNode, dst:TreeNode):void
+		{
+			_localTreeBackCursor = null;
+			_localTreeMiscCursor = null;
+			_localTreeTextCursor = null;
+			
+			dst.value = this;
+			
+			doSyncTrees(src, dst);
+			
+			dst.value = _containerMiscs;
+			
+			cleanupTail(_localTreeBackCursor);
+			cleanupTail(_localTreeTextCursor);
+		}
+		
+		private function cleanupTail(tree:TreeNode):void
+		{
+			if (tree != null)
+			{
+				tree = tree.nextSibling;
+			}
+			while (tree != null)
+			{
+				var next:TreeNode = tree.nextSibling;
+				if (next != null)
+				{
+					tree.parent.removeNode(tree);
+				}
+				tree = next;
+			}
+		}
+		
+		private var _insideUIComponent:Boolean = false;
+		private function doSyncTrees(src:TreeNode, dst:TreeNode, inSpecTree:Boolean = false):void
+		{
+			while (src != null)
+			{
+				var treeChanged:Boolean = false;
+				var origDst:TreeNode = dst;
+				if (!inSpecTree)
+				{
+					var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst);
+					if (targetTree !== dst)
+					{
+						treeChanged = true;
+						dst = targetTree;
+					}
+				}
+				
+				if (src.value !== dst.value)
+				{
+					if (!(src.value as Sprite3D).addedToScene)
+					{
+						var dstParent:TreeNode = dst.parent;
+						var dstPrev:TreeNode = dst.prevSibling;
+						
+						dst = new TreeNode(src.value);
+						
+						if (dstPrev == null)
+						{
+							dstParent.addAsFirstNode(dst);
+						}
+						else
+						{
+							dstParent.insertNodeAfter(
+								dstPrev,
+								dst
+							);
+						}
+					}
+					else
+					{
+						dstParent = dst.parent;
+						var dstNext:TreeNode = dst.nextSibling;
+						
+						dstParent.removeNode(dst);
+						if (dstNext != null)
+						{
+							dst = dstNext;
+							dstNext = null;
+							continue;
+						}
+						else
+						{
+							dst.addNode(
+								new TreeNode(src.value)
+							);
+						}
+					}
+				}
+				
+				if (src.hasChildren)
+				{
+					if (!dst.hasChildren)
+					{
+						dst.addAsFirstNode(
+							new TreeNode(src.firstChild.value)
+						);
+					}
+					
+					if (src !== localRenderTree && src.value is UIComponent3D)
+					{
+						_insideUIComponent = true;
+					}
+					
+					doSyncTrees(src.firstChild, dst.firstChild, inSpecTree || origDst !== dst);
+					
+					if (src !== localRenderTree && src.value is UIComponent3D)
+					{
+						_insideUIComponent = false;
+					}
+					
+					if (treeChanged)
+					{
+						dst = origDst;
+					}
+				}
+				else
+				{
+					while (dst.hasChildren)
+					{
+						dst.removeNode(
+							dst.firstChild
+						);
+					}
+				}
+				
+				var nextValue:Sprite3DContainer = src.nextSibling == null ? null : src.nextSibling.value as Sprite3DContainer;
+				var needMoveDstCursor:Boolean = _insideUIComponent || inSpecTree || nextValue == null || !inSpecTree && !nextValue.isBackground && !(nextValue is TextField3D);
+				if (src !== localRenderTree && needMoveDstCursor && src.nextSibling != null && dst.nextSibling == null)
+				{
+					dst.parent.insertNodeAfter(
+						dst,
+						new TreeNode(src.nextSibling.value)
+					);
+				}
+				
+				if (needMoveDstCursor)
+				{
+					dst = dst.nextSibling;
+				}
+				
+				if (src !== localRenderTree)
+				{
+					src = src.nextSibling;
+				}
+				else
+				{
+					break;
+				}
+			}
+			
+			while (dst != null)
+			{
+				dstNext = dst.nextSibling;
+				dst.parent.removeNode(dst);
+				dst = dstNext;
+			}
+		}
+		
+		private function getTreeNodeByValue(value:Sprite3DContainer, dst:TreeNode):TreeNode
+		{
+			if (value == null || _insideUIComponent)
+			{
+				return dst;
+			}
+			
+			var targetNode:TreeNode;
+			var targetRoot:TreeNode;
+			if (value.isBackground)
+			{
+				targetNode = _localTreeBackCursor;
+				targetRoot = _localTreeBack;
+			}
+			else if (value is TextField3D)
+			{
+				targetNode = _localTreeTextCursor;
+				targetRoot = _localTreeText;
+			}
+			else
+			{
+				return dst;
+			}
+			
+			if (targetNode != null)
+			{
+				targetNode = targetNode.nextSibling;
+			}
+			else
+			{
+				targetNode = targetRoot.firstChild;
+			}
+			
+			if (targetNode == null)
+			{
+				targetRoot.addNode(
+					new TreeNode(value)
+				);
+				
+				targetNode = targetRoot.lastChild;
+			}
+			
+			if (value.isBackground)
+			{
+				_localTreeBackCursor = targetNode;
+			}
+			else if (value is TextField3D)
+			{
+				_localTreeTextCursor = targetNode;
+			}
+			
+			return targetNode;
 		}
 		
 		private function traceTrees():void

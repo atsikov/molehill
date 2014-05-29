@@ -1374,23 +1374,6 @@ package molehill.core.sprite
 			}
 		}
 		
-		/**
-		 * 
-		 * While located in UIComponent3D container sprites with isBackground set to true will be moved to the bottom while rendering.<br>
-		 * This can help to batch UI textures and present UI component with less draw calls. 
-		 * 
-		 **/
-		private var _isBackground:Boolean = false;
-		public function get isBackground():Boolean
-		{
-			return _isBackground;
-		}
-		
-		public function set isBackground(value:Boolean):void
-		{
-			_isBackground = value;
-		}
-		
 		override public function toString():String
 		{
 			var className:String = getQualifiedClassName(this);
