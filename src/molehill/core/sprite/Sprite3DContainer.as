@@ -1129,7 +1129,10 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].updateOnRender = value;
+				if (!_listChildren[i].updateOnRenderChanged)
+				{
+					_listChildren[i].updateOnRender = value;
+				}
 			}
 			
 		}
