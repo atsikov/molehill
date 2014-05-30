@@ -74,6 +74,9 @@ package molehill.core.render
 				flattenedRenderTree.addNode(_localTreeBack);
 				flattenedRenderTree.addNode(_localTreeMisc);
 				flattenedRenderTree.addNode(_localTreeText);
+
+				//traceTrees();
+				
 				/*
 				if (parent is EasyTileList3DAnimated)
 				{
@@ -140,7 +143,10 @@ package molehill.core.render
 			var currentNode:TreeNode = node;
 			var nextNode:TreeNode = currentNode.nextSibling;
 			
-			currentNode.parent.removeNode(currentNode);
+			if (currentNode.parent != null)
+			{
+				currentNode.parent.removeNode(currentNode);
+			}
 			currentNode.reset();
 			_cacheTreeNodes.storeInstance(currentNode);
 			
@@ -277,6 +283,8 @@ package molehill.core.render
 			
 			dst.value = this;
 			
+			//trace("==============================================================================================================================");
+			
 			doSyncTrees(src, dst);
 			
 			dst.value = _containerMiscs;
@@ -297,6 +305,7 @@ package molehill.core.render
 				if (next != null)
 				{
 					tree.parent.removeNode(tree);
+					cacheAllNodes(tree);
 				}
 				tree = next;
 			}
@@ -305,6 +314,7 @@ package molehill.core.render
 		private var _insideUIComponent:Boolean = false;
 		private function doSyncTrees(src:TreeNode, dst:TreeNode, inSpecTree:Boolean = false):void
 		{
+			//trace('syncing subtree');
 			while (src != null)
 			{
 				var treeChanged:Boolean = false;
@@ -316,17 +326,22 @@ package molehill.core.render
 					{
 						treeChanged = true;
 						dst = targetTree;
+						//trace('tree changed');
 					}
 				}
 				
+				//trace(src.value + "  <==>  " + dst.value + '; inSpecTree == ' + inSpecTree + '; _insideUIComponent == ' + _insideUIComponent);
+				
 				if (src.value !== dst.value)
 				{
-					if (!(src.value as Sprite3D).addedToScene)
+					if (!(src.value as Sprite3D).syncedInUIComponent)
 					{
+						//trace("adding child to flattened list"); 
 						var dstParent:TreeNode = dst.parent;
 						var dstPrev:TreeNode = dst.prevSibling;
 						
-						dst = new TreeNode(src.value);
+						dst = _cacheTreeNodes.newInstance();
+						dst.value = src.value;
 						
 						if (dstPrev == null)
 						{
@@ -342,10 +357,12 @@ package molehill.core.render
 					}
 					else
 					{
+						//trace("removing child from flattened list"); 
 						dstParent = dst.parent;
 						var dstNext:TreeNode = dst.nextSibling;
 						
 						dstParent.removeNode(dst);
+						cacheAllNodes(dst);
 						if (dstNext != null)
 						{
 							dst = dstNext;
@@ -354,9 +371,9 @@ package molehill.core.render
 						}
 						else
 						{
-							dst.addNode(
-								new TreeNode(src.value)
-							);
+							dst = _cacheTreeNodes.newInstance();
+							dst.value = src.value;
+							dstParent.addNode(dst);
 						}
 					}
 				}
@@ -365,9 +382,9 @@ package molehill.core.render
 				{
 					if (!dst.hasChildren)
 					{
-						dst.addAsFirstNode(
-							new TreeNode(src.firstChild.value)
-						);
+						var node:TreeNode = _cacheTreeNodes.newInstance();
+						node.value = src.firstChild.value;
+						dst.addAsFirstNode(node);
 					}
 					
 					if (src !== localRenderTree && src.value is UIComponent3D)
@@ -386,9 +403,9 @@ package molehill.core.render
 				{
 					while (dst.hasChildren)
 					{
-						dst.removeNode(
-							dst.firstChild
-						);
+						var firstChild:TreeNode = dst.firstChild;
+						dst.removeNode(firstChild);
+						cacheAllNodes(firstChild);
 					}
 				}
 				
@@ -399,13 +416,18 @@ package molehill.core.render
 				
 				var nextValue:Sprite3DContainer = src.nextSibling == null ? null : src.nextSibling.value as Sprite3DContainer;
 				var needMoveDstCursor:Boolean = _insideUIComponent || inSpecTree || nextValue == null || !inSpecTree && !nextValue.isBackground && !(nextValue is TextField3D);
+				//trace('need to move cursor: ' + needMoveDstCursor.toString());
 				if (src !== localRenderTree && needMoveDstCursor && src.nextSibling != null && dst.nextSibling == null)
 				{
+					node = _cacheTreeNodes.newInstance();
+					node.value = src.nextSibling.value;
 					dst.parent.insertNodeAfter(
 						dst,
-						new TreeNode(src.nextSibling.value)
+						node
 					);
 				}
+				
+				src.value.syncedInUIComponent = true;
 				
 				if (needMoveDstCursor)
 				{
@@ -426,6 +448,7 @@ package molehill.core.render
 			{
 				dstNext = dst.nextSibling;
 				dst.parent.removeNode(dst);
+				cacheAllNodes(dst);
 				dst = dstNext;
 			}
 		}
@@ -467,9 +490,9 @@ package molehill.core.render
 			
 			if (targetNode == null)
 			{
-				targetRoot.addNode(
-					new TreeNode(value)
-				);
+				var node:TreeNode = _cacheTreeNodes.newInstance();
+				node.value = value;
+				targetRoot.addNode(node);
 				
 				targetNode = targetRoot.lastChild;
 			}

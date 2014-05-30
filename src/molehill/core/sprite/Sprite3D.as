@@ -1221,6 +1221,7 @@ package molehill.core.sprite
 		}
 		
 		molehill_internal var addedToScene:Boolean = false;
+		molehill_internal var syncedInUIComponent:Boolean = false;
 		molehill_internal var _parentShaderChanged:Boolean = false;
 		molehill_internal function set parentShaderChanged(value:Boolean):void
 		{

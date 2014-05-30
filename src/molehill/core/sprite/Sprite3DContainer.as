@@ -83,6 +83,8 @@ package molehill.core.sprite
 				child.parent.removeChild(child);
 			}
 			
+			child.syncedInUIComponent = false;
+			
 			updateChildParentValues(child);
 			child.updateValues();
 			
@@ -170,6 +172,8 @@ package molehill.core.sprite
 			{
 				child.parent.removeChild(child);
 			}
+			
+			child.syncedInUIComponent = false;
 			
 			updateChildParentValues(child);
 			child.updateValues();
@@ -489,6 +493,8 @@ package molehill.core.sprite
 			child.setScene(null);
 			child._parent = null;
 			
+			child.syncedInUIComponent = false;
+			
 			var childIndex:int = _listChildren.indexOf(child);
 			if (childIndex == 0)
 			{
@@ -558,6 +564,9 @@ package molehill.core.sprite
 			
 			child.setScene(null);
 			child._parent = null;
+			
+			child.syncedInUIComponent = false;
+			
 			if (index == 0)
 			{
 				_listChildren.shift();
@@ -1177,7 +1186,8 @@ package molehill.core.sprite
 		private var _isBackground:Boolean = false;
 		public function get isBackground():Boolean
 		{
-			return _isBackground;
+			return false;
+			//return _isBackground;
 		}
 		
 		public function set isBackground(value:Boolean):void
