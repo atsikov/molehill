@@ -74,7 +74,16 @@ package molehill.core.render
 				flattenedRenderTree.addNode(_localTreeBack);
 				flattenedRenderTree.addNode(_localTreeMisc);
 				flattenedRenderTree.addNode(_localTreeText);
-
+				
+				_containerBacks.textureAtlasChanged = textureAtlasChanged;
+				_containerBacks.treeStructureChanged = treeStructureChanged;
+				
+				_containerMiscs.textureAtlasChanged = textureAtlasChanged;
+				_containerMiscs.treeStructureChanged = treeStructureChanged;
+				
+				_containerTexts.textureAtlasChanged = textureAtlasChanged;
+				_containerTexts.treeStructureChanged = treeStructureChanged;
+				
 				//traceTrees();
 				
 				/*

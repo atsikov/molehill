@@ -168,6 +168,7 @@ package molehill.core.render
 			while (renderTree != null)
 			{
 				var sprite:Sprite3D = renderTree.value as Sprite3D;
+				
 				if (sprite is UIComponent3D)
 				{
 					(sprite as UIComponent3D).updateFlattnedTree();
@@ -345,11 +346,14 @@ package molehill.core.render
 						batchingTree.addAsFirstNode(batchNode);
 					}
 					
-					checkBatchingTree(
-						container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
-						batchingTree.firstChild,
-						sprite.camera != null ? sprite : cameraOwner
-					);
+					if (container.textureAtlasChanged || container.treeStructureChanged || container.cameraChanged)
+					{
+						checkBatchingTree(
+							container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
+							batchingTree.firstChild,
+							sprite.camera != null ? sprite : cameraOwner
+						);
+					}
 					
 					// scroll rect changed
 					if (container.cameraChanged)
