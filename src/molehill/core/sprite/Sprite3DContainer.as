@@ -1215,8 +1215,7 @@ package molehill.core.sprite
 		private var _isBackground:Boolean = false;
 		public function get isBackground():Boolean
 		{
-			return false;
-			//return _isBackground;
+			return _isBackground;
 		}
 		
 		public function set isBackground(value:Boolean):void
