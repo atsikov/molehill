@@ -67,6 +67,10 @@ package molehill.core.text
 		
 		public function set text(value:String):void
 		{
+			if (_text == value)
+			{
+				return;
+			}
 			_text = value;
 			
 			updateLayout();

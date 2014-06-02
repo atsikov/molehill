@@ -26,7 +26,6 @@ package molehill.easy.ui3d.list
 	public class EasyTileList3DAnimated extends EasyTileList3D
 	{
 		private var _itemsContainer:UIComponent3D;
-		private var _itemsContainerBack:Sprite3D;
 		private var _itemsContainerCamera:CustomCamera;
 		private var _scrollingMask:InteractiveSprite3D;
 		public function EasyTileList3DAnimated()
@@ -46,12 +45,6 @@ package molehill.easy.ui3d.list
 			_itemsContainer.camera = _itemsContainerCamera;
 			addChild(_itemsContainer);
 			
-			_itemsContainerBack = new Sprite3D();
-			_itemsContainerBack.setTexture(FormsTextures.bg_blue_plate);
-			_itemsContainerBack.mouseEnabled = true;
-			_itemsContainerBack.alpha = 0;
-			_itemsContainer.addChild(_itemsContainerBack);
-			
 			_maskRect = new Rectangle();
 			
 			_itemsContainer.mask = _scrollingMask;
@@ -63,15 +56,13 @@ package molehill.easy.ui3d.list
 			_maskRect = value;
 			_scrollingMask.moveTo(value.x, value.y);
 			_scrollingMask.setSize(value.width, value.height);
-			
-			_itemsContainerBack.moveTo(value.x, value.y);
-			_itemsContainerBack.setSize(value.width, value.height);
 		}
 			
 		
 		override protected function onAddedToScene():void
 		{
 			_itemsContainer.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_scrollingMask.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			super.onAddedToScene();
 			
 			_stage = ApplicationBase.getInstance().stage;
@@ -92,7 +83,8 @@ package molehill.easy.ui3d.list
 				_stage = null;
 			}
 			
-			removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_itemsContainer.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_scrollingMask.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			
 			_itemsContainerCamera.scrollX = 0;
 			_itemsContainerCamera.scrollY = 0;
@@ -308,9 +300,12 @@ package molehill.easy.ui3d.list
 			_mouseCheckPoint.x = event.stageX;
 			_mouseCheckPoint.y = event.stageY;
 			
-			if (!_scrollingMask.hitTestPoint(_mouseCheckPoint))
+			if (event.currentTarget != _scrollingMask)
 			{
-				return;
+				if (!_scrollingMask.hitTestPoint(_mouseCheckPoint))
+				{
+					return;
+				}
 			}
 			
 			_isAnimated = true;
