@@ -59,6 +59,7 @@ package molehill.easy.ui3d
 			_contentRegion = value;
 			
 			centerAllChildren();
+			resize();
 		}
 		
 		private var _blurLayer:Sprite3D;
@@ -237,8 +238,10 @@ package molehill.easy.ui3d
 		
 		public function centerPopUp(popUp:Sprite3D):void
 		{
-			popUp.x = int(contentRegion.x + (contentRegion.width - popUp.width) / 2);
-			popUp.y = int(contentRegion.y + (contentRegion.height - popUp.height) / 2);
+			popUp.moveTo(
+				int(contentRegion.x + (contentRegion.width - popUp.width) / 2),
+				int(contentRegion.y + (contentRegion.height - popUp.height) / 2)
+			);
 		}
 		
 		public function alignToBottom(popUp:Sprite3D):void
