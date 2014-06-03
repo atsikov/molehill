@@ -1449,7 +1449,7 @@ package molehill.core.sprite
 				{
 					_listParents = new LinkedList();
 				}
-					
+				
 				_listParents.enqueue(spriteParent);
 				
 				spriteParent = spriteParent.parent;

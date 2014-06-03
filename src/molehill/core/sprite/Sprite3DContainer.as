@@ -732,7 +732,7 @@ package molehill.core.sprite
 			_textureAtlasChanged = value;
 		}
 
-		molehill_internal var _treeStructureChanged:Boolean = false;
+		molehill_internal var _treeStructureChanged:Boolean = true;
 		molehill_internal function get treeStructureChanged():Boolean
 		{
 			return _treeStructureChanged;

@@ -86,7 +86,7 @@ package molehill.core.render
 				_containerTexts.textureAtlasChanged = textureAtlasChanged;
 				_containerTexts.treeStructureChanged = treeStructureChanged;
 				
-				traceTrees();
+				//traceTrees();
 				
 				/*
 				if (parent is EasyTileList3DAnimated)

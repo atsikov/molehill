@@ -8,7 +8,6 @@ package molehill.core.render
 	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
-	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
@@ -18,6 +17,7 @@ package molehill.core.render
 	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 	
 	use namespace molehill_internal;
@@ -73,6 +73,8 @@ package molehill.core.render
 		
 		internal function addChild(sprite:Sprite3D):void
 		{
+			var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(sprite.textureID);
+			//trace(StringUtils.getObjectAddress(this) + ' | ' + _textureAtlasID + ' + -> ' + StringUtils.getObjectAddress(sprite) + ' | '+ sprite.textureID + ' | ' + (atlas == null ? 'null' : atlas.atlasID));
 			_listSprites.enqueue(sprite);
 			_needUpdateBuffers = true;
 			_numSprites++;
@@ -80,6 +82,9 @@ package molehill.core.render
 		
 		internal function addChildBefore(child1:Sprite3D, child2:Sprite3D):void
 		{
+			var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(child2.textureID);
+			//trace(StringUtils.getObjectAddress(this) + ' | ' + _textureAtlasID + ' + -> ' + StringUtils.getObjectAddress(child2) + ' | '+ child2.textureID + ' | ' + (atlas == null ? 'null' : atlas.atlasID));
+			
 			var cursor:LinkedListElement = _listSprites.head;
 			while (cursor != null && cursor.data !== child1)
 			{
@@ -111,6 +116,9 @@ package molehill.core.render
 		
 		internal function addChildAfter(child1:Sprite3D, child2:Sprite3D):void
 		{
+			var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(child2.textureID);
+			//trace(StringUtils.getObjectAddress(this) + ' | ' + _textureAtlasID + ' + -> ' + StringUtils.getObjectAddress(child2) + ' | '+ child2.textureID + ' | ' + (atlas == null ? 'null' : atlas.atlasID));
+			
 			var cursor:LinkedListElement = _listSprites.head;
 			while (cursor != null && cursor.data !== child1)
 			{
@@ -187,6 +195,9 @@ package molehill.core.render
 		
 		internal function removeChild(sprite:Sprite3D):void
 		{
+			var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(sprite.textureID);
+			//trace(StringUtils.getObjectAddress(this) + ' | ' + _textureAtlasID + ' - -> ' + StringUtils.getObjectAddress(sprite) + ' | ' + sprite.textureID + ' | ' + (atlas == null ? 'null' : atlas.atlasID));
+			
 			var cursor:LinkedListElement = _listSprites.head;
 			while (cursor != null && cursor.data != sprite)
 			{
@@ -245,6 +256,8 @@ package molehill.core.render
 			_needUpdateBuffers = true;
 			_numSprites = childIndex;
 			_numVisibleSprites = 0;
+			
+			//trace('splitting batcher: ' + StringUtils.getObjectAddress(this) + ' + ' + StringUtils.getObjectAddress(result));
 			
 			return result;
 		}
