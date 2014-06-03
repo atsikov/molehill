@@ -2,7 +2,6 @@ package molehill.core.render
 {
 	import easy.collections.TreeNode;
 	
-	import flash.desktop.Clipboard;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display3D.textures.Texture;
@@ -168,12 +167,13 @@ package molehill.core.render
 			while (renderTree != null)
 			{
 				var sprite:Sprite3D = renderTree.value as Sprite3D;
+				
 				if (sprite is UIComponent3D)
 				{
 					(sprite as UIComponent3D).updateFlattnedTree();
 				}
 				
-				//trace(treeNode.value, batchingTree.value);
+				//trace(renderTree.value, batchingTree.value);
 				
 				// sprites in render and batching tree aren't the same in this node
 				// need to sync trees
@@ -192,6 +192,7 @@ package molehill.core.render
 						prepareBatchers(renderTree, batchNode, cameraOwner);
 						
 						// addind new node to batching tree
+						//trace('addind new node to batching tree');
 						if (prevSibling != null)
 						{
 							treeParent.insertNodeAfter(prevSibling, renderTree);
@@ -215,6 +216,7 @@ package molehill.core.render
 					{
 						// child exists in batching tree but not in render tree
 						// removing node from batching tree
+						//trace('removing node from batching tree');
 						var prevNode:TreeNode = renderTree.prevSibling;
 						var batchingParent:TreeNode = batchingTree.parent
 						var nextNode:TreeNode = batchingTree.nextSibling;
@@ -255,19 +257,57 @@ package molehill.core.render
 				{
 					// child's texture atlas changed
 					// need to remove child from current batcher and push to suitable one
+					//trace('child\'s texture atlas changed');
 					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
+					var insertHead:Boolean = false;
+					while (_hashBatchersOldToNew[currentBatcher] != null)
+					{
+						currentBatcher = _hashBatchersOldToNew[currentBatcher];
+						insertHead = true;
+					}
 					if (currentBatcher != null)
 					{
-						var newBatcher:SpriteBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, sprite.currentAtlasData.atlasID, cameraOwner);
+						var newBatcher:SpriteBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, sprite.currentAtlasData.atlasID, cameraOwner, false);
+						if (newBatcher == null)
+						{
+							newBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, sprite.currentAtlasData.atlasID, cameraOwner);
+						}
 						
-						if (currentBatcher !== newBatcher)
+						if (newBatcher === _currentBatcher)
+						{
+							currentBatcher.removeChild(sprite);
+							if (currentBatcher.numSprites == 0)
+							{
+								_listSpriteBatchers.splice(
+									_listSpriteBatchers.indexOf(currentBatcher),
+									1
+								);
+							}
+						}
+						else if (newBatcher !== currentBatcher)
 						{
 							if (sprite !== currentBatcher.getFirstChild() && currentBatcher.numSprites > 1)
 							{
 								var tailBatcher:SpriteBatcher = currentBatcher.splitAfterChild(sprite);
 								if (tailBatcher != null)
 								{
-									_listSpriteBatchers.splice(_batcherInsertPosition, 0, tailBatcher);
+									if (!insertHead)
+									{
+										_listSpriteBatchers.splice(
+											_batcherInsertPosition,
+											0,
+											tailBatcher
+										);
+									}
+									else
+									{
+										_listSpriteBatchers.splice(
+											_batcherInsertPosition,
+											0,
+											currentBatcher
+										);
+										_batcherInsertPosition++;
+									}
 									
 									_hashBatchersNewToOld[tailBatcher] = currentBatcher;
 									while (_hashBatchersNewToOld[currentBatcher] != null)
@@ -277,9 +317,10 @@ package molehill.core.render
 									_hashBatchersOldToNew[currentBatcher] = tailBatcher;
 								}
 							}
+							
 							currentBatcher.removeChild(sprite);
 							
-							if (_currentBatcher !== newBatcher)
+							if (currentBatcher !== newBatcher)
 							{
 								if (currentBatcher.numSprites > 0)
 								{
@@ -304,8 +345,8 @@ package molehill.core.render
 									);
 								}
 							}
-							(batchingTree.value as BatchingInfo).batcher = newBatcher;
 						}
+						(batchingTree.value as BatchingInfo).batcher = newBatcher;
 					}
 				}
 				
@@ -345,11 +386,19 @@ package molehill.core.render
 						batchingTree.addAsFirstNode(batchNode);
 					}
 					
-					checkBatchingTree(
-						container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
-						batchingTree.firstChild,
-						sprite.camera != null ? sprite : cameraOwner
-					);
+					if (container.textureAtlasChanged || container.treeStructureChanged || container.cameraChanged)
+					{
+						checkBatchingTree(
+							container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
+							batchingTree.firstChild,
+							sprite.camera != null ? sprite : cameraOwner
+						);
+					}
+					else
+					{
+						updateLastBatcherValue(batchingTree.firstChild);
+						_batcherInsertPosition = _listSpriteBatchers.indexOf(_currentBatcher) + 1;
+					}
 					
 					// scroll rect changed
 					if (container.cameraChanged)
@@ -402,6 +451,35 @@ package molehill.core.render
 				batchingTree.parent.removeNode(batchingTree);
 				removeNodeReferences(batchingTree);
 				batchingTree = nextNode;
+			}
+		}
+		
+		private function updateLastBatcherValue(batchingTreeNode:TreeNode):void
+		{
+			while (batchingTreeNode != null)
+			{
+				if (batchingTreeNode.hasChildren)
+				{
+					updateLastBatcherValue(batchingTreeNode.firstChild);
+				}
+				else
+				{
+					var batchingInfo:BatchingInfo = batchingTreeNode.value as BatchingInfo;
+					var batcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
+					
+					if (_hashBatchersOldToNew[batcher] != null)
+					{
+						batchingInfo.batcher = _hashBatchersOldToNew[batcher];
+					}
+					
+					if (batcher != null)
+					{
+						_currentBatcher = batcher;
+						_lastBatchedChild = batchingInfo.child;
+					}
+				}
+				
+				batchingTreeNode = batchingTreeNode.nextSibling;
 			}
 		}
 		
@@ -595,7 +673,7 @@ package molehill.core.render
 		/**
 		 * Adding sprite to proper batcher either passed or new one
 		 **/
-		private function pushToSuitableSpriteBacther(candidateBatcher:SpriteBatcher, child:Sprite3D, textureAtlasID:String, cameraOwner:Sprite3D):SpriteBatcher
+		private function pushToSuitableSpriteBacther(candidateBatcher:SpriteBatcher, child:Sprite3D, textureAtlasID:String, cameraOwner:Sprite3D, createNewBatcher:Boolean = true):SpriteBatcher
 		{
 			var batcherCreated:Boolean = false;
 			if (candidateBatcher != null &&
@@ -606,6 +684,11 @@ package molehill.core.render
 					candidateBatcher.cameraOwner !== cameraOwner
 				))
 			{
+				if (!createNewBatcher)
+				{
+					return null;
+				}
+				
 				candidateBatcher = null;
 			}
 			
@@ -707,6 +790,7 @@ package molehill.core.render
 					
 					//traceTrees();
 					
+					//trace('==============================');
 					checkBatchingTree(localRenderTree, _bacthingTree);
 					
 					//traceTrees();

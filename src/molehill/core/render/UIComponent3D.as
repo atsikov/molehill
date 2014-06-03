@@ -2,6 +2,8 @@ package molehill.core.render
 {
 	import easy.collections.TreeNode;
 	
+	import flash.text.TextField;
+	
 	import molehill.core.molehill_internal;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
@@ -74,7 +76,16 @@ package molehill.core.render
 				flattenedRenderTree.addNode(_localTreeBack);
 				flattenedRenderTree.addNode(_localTreeMisc);
 				flattenedRenderTree.addNode(_localTreeText);
-
+				
+				_containerBacks.textureAtlasChanged = textureAtlasChanged;
+				_containerBacks.treeStructureChanged = treeStructureChanged;
+				
+				_containerMiscs.textureAtlasChanged = textureAtlasChanged;
+				_containerMiscs.treeStructureChanged = treeStructureChanged;
+				
+				_containerTexts.textureAtlasChanged = textureAtlasChanged;
+				_containerTexts.treeStructureChanged = treeStructureChanged;
+				
 				//traceTrees();
 				
 				/*
@@ -334,7 +345,7 @@ package molehill.core.render
 			{
 				var treeChanged:Boolean = false;
 				var origDst:TreeNode = dst;
-				if (!inSpecTree)
+				if (!inSpecTree || (src.value is TextField3D || src.value.parent is TextField3D))
 				{
 					var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst, keepTreeCursor);
 					keepTreeCursor = false;
