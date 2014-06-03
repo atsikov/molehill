@@ -25,6 +25,7 @@ package molehill.easy.debug
 		
 		private var _tfTriangles:TextField3D;
 		private var _tfDrawCalls:TextField3D;
+		private var _tfRenderMode:TextField3D;
 		
 		private var _containerMemoryGraph:Sprite3DContainer;
 		private var _enterFrameDispatcher:Sprite;
@@ -57,17 +58,24 @@ package molehill.easy.debug
 			
 			_tfDrawCalls = new TextField3D();
 			_tfDrawCalls.x = 3;
-			_tfDrawCalls.y = 125;
+			_tfDrawCalls.y = 114;
 			_tfDrawCalls.defaultTextFormat = new TextField3DFormat("Officina", 10 ,0xFFFFFF);
 			_tfDrawCalls.text = "Draw calls: 0";
 			addChild(_tfDrawCalls);
 			
 			_tfTriangles = new TextField3D();
 			_tfTriangles.x = 3;
-			_tfTriangles.y = 136;
+			_tfTriangles.y = 125;
 			_tfTriangles.defaultTextFormat = new TextField3DFormat("Officina", 10 ,0xFFFFFF);
 			_tfTriangles.text = "Triangles: 0";
 			addChild(_tfTriangles);
+			
+			_tfRenderMode = new TextField3D();
+			_tfRenderMode.x = 3;
+			_tfRenderMode.y = 136;
+			_tfRenderMode.defaultTextFormat = new TextField3DFormat("Officina", 10 ,0xFFFFFF);
+			_tfRenderMode.text = "";
+			addChild(_tfRenderMode);
 			
 			_enterFrameDispatcher = new Sprite();
 			_enterFrameDispatcher.addEventListener(Event.ENTER_FRAME, onEnterFrame);
@@ -201,6 +209,7 @@ package molehill.easy.debug
 				var renderInfo:Object = scene.renderInfo;
 				_tfDrawCalls.text = "Draw calls: " + renderInfo.drawCalls;
 				_tfTriangles.text = "Triangles: " + renderInfo.totalTris;
+				_tfRenderMode.text = "Render mode: " + renderInfo.mode;
 			}
 		}
 	}

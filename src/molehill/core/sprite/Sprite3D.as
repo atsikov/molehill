@@ -373,6 +373,7 @@ package molehill.core.sprite
 			
 			if (currentAtlasData == null)
 			{
+				this.textureRegion = null;
 				return;
 			}
 			
@@ -898,11 +899,21 @@ package molehill.core.sprite
 				_textureRegion = new Rectangle();
 			}
 			
-			_textureRegion.x = value.x;
-			_textureRegion.y = value.y;
-			_textureRegion.width = value.width;
-			_textureRegion.height = value.height;
-			
+			if (value == null)
+			{
+				_textureRegion.x = 0;
+				_textureRegion.y = 0;
+				_textureRegion.width = 0;
+				_textureRegion.height = 0;
+			}
+			else
+			{
+				_textureRegion.x = value.x;
+				_textureRegion.y = value.y;
+				_textureRegion.width = value.width;
+				_textureRegion.height = value.height;
+			}
+				
 			_textureU0 = _textureRegion.x;
 			_textureU1 = _textureRegion.x;
 			_textureU2 = _textureRegion.x + _textureRegion.width;

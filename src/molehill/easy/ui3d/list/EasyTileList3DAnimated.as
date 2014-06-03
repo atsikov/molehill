@@ -520,9 +520,6 @@ package molehill.easy.ui3d.list
 			if (value < 0)
 				value = 0;
 			
-			if ((value * numItemsPerPage) == _scrollPosition)
-				return;
-			
 			if (_stage != null)
 			{
 				animatePage(value);
@@ -547,16 +544,39 @@ package molehill.easy.ui3d.list
 		
 		private function animatePage(value:int):void
 		{
-			var nextPage:Boolean = value > currentPage;
-			var immediate:Boolean = Math.abs(value - currentPage) > 1;
 			
 			if (_velocity != 0)
 			{
-				removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
+				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 				_itemsContainerCamera.scrollX = 0;
 				_itemsContainerCamera.scrollY = 0;
 				onAnimationCompleted();
 			}
+			
+			if (value == currentPage)
+			{
+				if (_itemsContainerCamera.scrollX != 0 || _itemsContainerCamera.scrollY != 0)
+				{
+					_isAnimated = true;
+					lockItems();
+					OpenTween.go(
+						_itemsContainerCamera,
+						{
+							scrollX : 0,
+							scrollY : 0
+						},
+						PAGE_ANIMATION_DURATION / 2,
+						0,
+						Linear.easeNone,
+						onAnimationCompleted
+					);
+				}
+				
+				return;
+			}
+			
+			var nextPage:Boolean = value > currentPage;
+			var immediate:Boolean = Math.abs(value - currentPage) > 1;
 			
 			_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
 			
@@ -686,7 +706,7 @@ package molehill.easy.ui3d.list
 			
 			if (_velocity != 0)
 			{
-				removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
+				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 				_itemsContainerCamera.scrollX = 0;
 				_itemsContainerCamera.scrollY = 0;
 				onAnimationCompleted();

@@ -48,7 +48,12 @@ package molehill.easy.ui3d
 		public function set resURL(value:String):void
 		{
 			if (_resURL == value)
+			{
+				dispatchEvent(
+					new Event(ResourceEvent.READY)
+				);
 				return;
+			}
 			
 			reset();
 			
@@ -100,9 +105,12 @@ package molehill.easy.ui3d
 		
 		private function onResourceReady(event:Event):void
 		{
-			TextureManager.createTexture(
-				_res.getContentInstance(), _urlToTextureID
-			);
+			if (!TextureManager.getInstance().isTextureCreated(_urlToTextureID))
+			{
+				TextureManager.createTexture(
+					_res.getContentInstance(), _urlToTextureID
+				);
+			}
 			
 			setTexture(_urlToTextureID);
 			
