@@ -54,8 +54,7 @@ package molehill.easy.ui3d
 					{
 						continue;
 					}
-					child.x = int(currentX);
-					child.y = isCenter ? int(center - child.height / 2) : 0;
+					child.moveTo(int(currentX), isCenter ? int(center - child.height / 2) : 0);
 					currentX += child.width + space;
 				}
 			}

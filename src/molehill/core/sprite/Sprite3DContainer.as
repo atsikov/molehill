@@ -787,6 +787,15 @@ package molehill.core.sprite
 					continue;
 				}
 				
+				var childMask:Sprite3D = child.mask;
+				if (childMask != null)
+				{
+					if (!childMask.hitTestPoint(point))
+					{
+						continue;
+					}
+				}
+				
 				var childCamera:CustomCamera = child.camera;
 				if (childCamera != null)
 				{

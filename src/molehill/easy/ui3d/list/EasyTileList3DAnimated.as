@@ -280,8 +280,7 @@ package molehill.easy.ui3d.list
 		}
 		
 		
-		//Start Scrolling
-		private var _mouseCheckPoint:Point = new Point(); 
+		//Start Scrolling 
 		private function onItemsContainerMouseDown(event:Input3DMouseEvent):void
 		{
 			if (!_mouseScrollingEnabled)
@@ -292,17 +291,6 @@ package molehill.easy.ui3d.list
 			if (_mouseScrollShortListLock)
 			{
 				if (numItems <= numItemsPerPage)
-				{
-					return;
-				}
-			}
-			
-			_mouseCheckPoint.x = event.stageX;
-			_mouseCheckPoint.y = event.stageY;
-			
-			if (event.currentTarget != _scrollingMask)
-			{
-				if (!_scrollingMask.hitTestPoint(_mouseCheckPoint))
 				{
 					return;
 				}
