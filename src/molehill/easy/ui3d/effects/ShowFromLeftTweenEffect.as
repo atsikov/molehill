@@ -5,6 +5,7 @@ package molehill.easy.ui3d.effects
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
+	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.easy.ui3d.WindowManager3D;
 	
@@ -32,61 +33,44 @@ package molehill.easy.ui3d.effects
 			target.alpha = 1;
 			target.scaleX = 1;
 			target.scaleY = 1;
+			if (target.camera == null)
+			{
+				target.camera = new CustomCamera();
+			}
+			
+			WindowManager3D.getInstance().centerPopUp(target);
+			
+			target.camera.scrollX = startPosition.x;
+			target.camera.scrollY = startPosition.y;
 			
 			var effectTime:Number = 0.4;
 			_tween = OpenTween.go(
-				_tweenTarget,
+				target.camera,
 				{
-					x: targetPosition.x,
-					y: targetPosition.y
+					scrollX: targetPosition.x,
+					scrollY: targetPosition.y
 				},
 				effectTime,
 				0,
 				tweening,
-				completeEffect,
-				onTweenUpdate
+				completeEffect
 			);
-			
-			target.updateOnRender = true;
-			
-			onTweenUpdate();
 		}
 		
 		protected function get startPosition():Point
 		{
 			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
-			return new Point(Math.round(-_target.width) - 200, Math.round((windowContentRect.height - _target.height) / 2 * targetPosition.y));
+			return new Point(Math.round(windowContentRect.width / 2 + _target.width) + 200, 0);
 		}
 		
 		protected function get targetPosition():Point
 		{
-			return new Point(1, 1);
+			return new Point(0, 0);
 		}
 		
 		protected function get tweening():Function
 		{
 			return Back.easeOut;
-		}
-		
-		private function onTweenUpdate():void
-		{
-			if (_target == null)
-				return;
-			
-			var startPos:Point = startPosition;
-			var targetPos:Point = targetPosition;
-			
-			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
-			
-			if (_tweenTarget.x == targetPos.x && _tweenTarget.y == targetPos.y)
-			{
-				_target.updateOnRender = false;
-			}
-			
-			_target.moveTo(
-				startPos.x + Math.round(((windowContentRect.width - _target.width) / 2 * targetPos.x - startPos.x) * _tweenTarget.x),
-				startPos.y + Math.round(((windowContentRect.height - _target.height) / 2 * targetPos.y - startPos.y) * _tweenTarget.y)
-			);
 		}
 		
 		override protected function completeEffect():void
@@ -104,8 +88,8 @@ package molehill.easy.ui3d.effects
 			
 			if (_target != null)
 			{
-				_target.x = Math.round(_target.x);
-				_target.y = Math.round(_target.y);
+				_target.camera.scrollX = Math.round(_target.camera.scrollX);
+				_target.camera.scrollY = Math.round(_target.camera.scrollY);
 			}
 			
 			_target = null;
@@ -114,9 +98,8 @@ package molehill.easy.ui3d.effects
 		
 		override public function restoreNormal():void
 		{
-			_tweenTarget.x = targetPosition.x;
-			_tweenTarget.y = targetPosition.y;
-			onTweenUpdate();
+			_target.camera.scrollX = targetPosition.x;
+			_target.camera.scrollY = targetPosition.y;
 		}
 	}
 }

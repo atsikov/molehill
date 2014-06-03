@@ -15,7 +15,7 @@ package molehill.easy.ui3d.effects
 		override protected function get startPosition():Point
 		{
 			var windowContentRect:Rectangle = WindowManager3D.getInstance().contentRegion;
-			return new Point(Math.round(windowContentRect.width) + 200, Math.round((windowContentRect.height - _target.height) / 2 * targetPosition.y));
+			return new Point(-Math.round(windowContentRect.width / 2 + _target.width) - 200, 0);
 		}
 	}
 }
