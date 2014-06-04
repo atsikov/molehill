@@ -1,5 +1,7 @@
 package molehill.core.render.engine
 {
+	import easy.collections.LinkedList;
+	
 	import flash.display.BitmapData;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DBlendFactor;
@@ -25,6 +27,8 @@ package molehill.core.render.engine
 	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
 	import molehill.core.texture.TextureManager;
 	
+	import utils.CachingFactory;
+	
 	use namespace molehill_internal;
 	
 	public class RenderEngine
@@ -32,7 +36,7 @@ package molehill.core.render.engine
 		private var _context3D:Context3D;
 		public function RenderEngine(context:Context3D)
 		{
-			_poolRenderChunkData = new Vector.<RenderChunkData>();
+			_poolRenderChunkData = new CachingFactory(RenderChunkData, 1000);
 			_textureManager = TextureManager.getInstance();
 			
 			setContext3D(context);
@@ -57,7 +61,7 @@ package molehill.core.render.engine
 				_indexBuffer = null;
 			}
 			
-			_listRenderChunks = new Vector.<RenderChunkData>();
+			_listRenderChunks = new LinkedList();
 			
 			_baVertexData = new ByteArray();
 			_baVertexData.endian = Endian.LITTLE_ENDIAN;
@@ -219,7 +223,7 @@ package molehill.core.render.engine
 		private var _vertexBuffer:VertexBuffer3D;
 		private var _indexBuffer:IndexBuffer3D;
 		
-		private var _listRenderChunks:Vector.<RenderChunkData>;
+		private var _listRenderChunks:LinkedList;
 		private var _baVertexData:ByteArray;
 		private var _baIndexData:ByteArray;
 		
@@ -282,7 +286,7 @@ package molehill.core.render.engine
 				chunkData.additionalVertexBuffers = batcher.getAdditionalVertexBuffers(_context3D);
 				chunkData.customIndexBuffer = batcher.getCustomIndexBuffer(_context3D);
 				
-				_listRenderChunks.push(chunkData);
+				_listRenderChunks.enqueue(chunkData);
 				
 				_lastChunkData = chunkData;
 			}
@@ -300,15 +304,10 @@ package molehill.core.render.engine
 			return _numVertexFloats;
 		}
 		
-		private var _poolRenderChunkData:Vector.<RenderChunkData>;
+		private var _poolRenderChunkData:CachingFactory;
 		private function getRenderChunkData():RenderChunkData
 		{
-			if (_poolRenderChunkData.length > 0)
-			{
-				return _poolRenderChunkData.pop();
-			}
-			
-			return new RenderChunkData();
+			return _poolRenderChunkData.newInstance();
 		}
 		
 		private var _currentScrollX:Number;
@@ -380,9 +379,9 @@ package molehill.core.render.engine
 			
 			var currentCamera:CustomCamera;
 			
-			while (_listRenderChunks.length > 0)
+			while (!_listRenderChunks.empty)
 			{
-				var chunkData:RenderChunkData = _listRenderChunks.shift();
+				var chunkData:RenderChunkData = _listRenderChunks.dequeue() as RenderChunkData;
 				
 				if (blendMode != chunkData.blendMode)
 				{
@@ -517,7 +516,7 @@ package molehill.core.render.engine
 				chunkData.additionalVertexBuffers = null;
 				chunkData.customIndexBuffer = null;
 				
-				_poolRenderChunkData.push(chunkData);
+				_poolRenderChunkData.storeInstance(chunkData);
 				
 				
 				drawCalls++;
