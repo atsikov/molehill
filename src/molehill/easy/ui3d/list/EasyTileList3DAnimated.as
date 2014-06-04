@@ -938,6 +938,9 @@ package molehill.easy.ui3d.list
 			}
 			}
 			*/
+			
+			_scrollingMask.visible = numItems > 0;
+			
 			if (_updateCallback != null)
 			{
 				_updateCallback();
