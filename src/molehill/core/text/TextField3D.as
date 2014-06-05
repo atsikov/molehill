@@ -112,7 +112,7 @@ package molehill.core.text
 			_textWidth = 0;
 			_textHeight = 0;
 			
-			_notifyParentOnChange = false;
+			_lastChild = null;
 			
 			var charAtlasData:TextureAtlasData;
 			var childIndex:int = 0;
@@ -262,9 +262,7 @@ package molehill.core.text
 			}
 			
 			_lastChild = numChildren > 0 ? super.getChildAt(numChildren - 1) : null;
-			
-			_notifyParentOnChange = true;
-			updateDimensions(this);
+			updateDimensions(_lastChild);
 		}
 		
 		private function placeCharacters(lastCharacterIndex:int, numLineBreaks:int, lastPlacedChildIndex:int, lastChildIndex:int, lineWidth:int, lastLineWidth:int):int
@@ -337,14 +335,8 @@ package molehill.core.text
 			return lastLineWidth;
 		}
 		
-		private var _notifyParentOnChange:Boolean = true;
 		override molehill_internal function updateDimensions(child:Sprite3D, needUpdateParent:Boolean=true):void
 		{
-			if (!_notifyParentOnChange)
-			{
-				return;
-			}
-			
 			if (child !== _lastChild)
 			{
 				return;

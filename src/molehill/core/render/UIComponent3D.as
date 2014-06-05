@@ -48,7 +48,7 @@ package molehill.core.render
 		
 		molehill_internal function updateFlattnedTree():void
 		{
-			if (flattenedRenderTree == null || !precheckLocalRenderTree(localRenderTree))
+			//if (flattenedRenderTree == null || !precheckLocalRenderTree(localRenderTree))
 			{
 				if (flattenedRenderTree == null)
 				{
@@ -66,6 +66,8 @@ package molehill.core.render
 				}
 				else
 				{
+					//traceTrees();
+					
 					flattenedRenderTree.removeNode(_localTreeText);
 					flattenedRenderTree.removeNode(_localTreeMisc);
 					flattenedRenderTree.removeNode(_localTreeBack);
@@ -296,7 +298,16 @@ package molehill.core.render
 			
 			//trace("==============================================================================================================================");
 			
-			_lastDst = new Array();
+			if (_lastDst == null)
+			{
+				_lastDst = new Array();
+			}
+			
+			while (_lastDst.length > 0)
+			{
+				_lastDst.pop();
+			}
+			
 			doSyncTrees(src, dst);
 			
 			dst.value = _containerMiscs;
@@ -347,17 +358,18 @@ package molehill.core.render
 				var origDst:TreeNode = dst;
 				if (!inSpecTree || (src.value is TextField3D || src.value.parent is TextField3D))
 				{
-					var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst, keepTreeCursor);
-					keepTreeCursor = false;
+					var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst);
 					
 					if (targetTree !== dst)
 					{
 						treeChanged = true;
 						_lastDst.push(dst);
 						dst = targetTree;
-						//trace('tree changed');
+						//trace('tree changed; _localTreeTextCursor.value == ' + (_localTreeTextCursor != null ? _localTreeTextCursor.value : null) +
+						//	'; _localTreeBackCursor.value == ' + (_localTreeBackCursor != null ? _localTreeBackCursor.value : null));
 					}
 				}
+				keepTreeCursor = false;
 				
 				//trace(src.value + "  <==>  " + dst.value + '; inSpecTree == ' + inSpecTree + '; _insideUIComponent == ' + _insideUIComponent);
 				
@@ -390,17 +402,22 @@ package molehill.core.render
 						dstParent = dst.parent;
 						var dstNext:TreeNode = dst.nextSibling;
 						
-						if (_dstTreeRoot === _localTreeBack)
+						// assigning pointer here cause dst removing may affect cursors
+						if (dstNext != null)
 						{
-							_localTreeBackCursor = _localTreeBackCursor.prevSibling;
-						}
-						else if (_dstTreeRoot === _localTreeText)
-						{
-							_localTreeTextCursor = _localTreeTextCursor.prevSibling;
+							if (_dstTreeRoot === _localTreeBack)
+							{
+								_localTreeBackCursor = _localTreeBackCursor.prevSibling;
+							}
+							else if (_dstTreeRoot === _localTreeText)
+							{
+								_localTreeTextCursor = _localTreeTextCursor.prevSibling;
+							}
 						}
 						
 						dstParent.removeNode(dst);
 						cacheAllNodes(dst);
+						
 						if (dstNext != null)
 						{
 							if (treeChanged)
@@ -499,13 +516,8 @@ package molehill.core.render
 		}
 		
 		private var _dstTreeRoot:TreeNode;
-		private function getTreeNodeByValue(value:Sprite3DContainer, dst:TreeNode, keepCursor:Boolean):TreeNode
+		private function getTreeNodeByValue(value:Sprite3DContainer, dst:TreeNode):TreeNode
 		{
-			if (keepCursor)
-			{
-				trace('break');
-			}
-			
 			if (value == null || _insideUIComponent)
 			{
 				_localTreeMiscCursor = dst;
@@ -535,10 +547,7 @@ package molehill.core.render
 			
 			if (targetNode != null)
 			{
-				if (!keepCursor)
-				{
-					targetNode = targetNode.nextSibling;
-				}
+				targetNode = targetNode.nextSibling;
 			}
 			else
 			{

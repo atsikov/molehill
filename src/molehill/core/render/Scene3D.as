@@ -156,6 +156,7 @@ package molehill.core.render
 		/**
 		 * Main method to build batchers on current render tree
 		 **/
+		private var _spritesUpdated:uint = 0;
 		private function checkBatchingTree(renderTree:TreeNode, batchingTree:TreeNode, cameraOwner:Sprite3D = null):void
 		{
 			var batchNode:TreeNode
@@ -167,11 +168,6 @@ package molehill.core.render
 			while (renderTree != null)
 			{
 				var sprite:Sprite3D = renderTree.value as Sprite3D;
-				
-				if (sprite is UIComponent3D)
-				{
-					(sprite as UIComponent3D).updateFlattnedTree();
-				}
 				
 				//trace(renderTree.value, batchingTree.value);
 				
@@ -388,6 +384,11 @@ package molehill.core.render
 					
 					if (container.textureAtlasChanged || container.treeStructureChanged || container.cameraChanged)
 					{
+						if (sprite is UIComponent3D)
+						{
+							(sprite as UIComponent3D).updateFlattnedTree();
+						}
+						
 						checkBatchingTree(
 							container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
 							batchingTree.firstChild,
@@ -872,11 +873,7 @@ package molehill.core.render
 		{
 			if (_renderEngine == null || !_renderEngine.isReady)
 			{
-				if (_renderEngine != null)
-				{
-					renderInfo.mode =
-						_renderEngine.renderMode;
-				}
+				_renderInfo.mode = null;
 				return;
 			}
 			
@@ -887,7 +884,10 @@ package molehill.core.render
 			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
 			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
 			
-			_renderInfo.mode = _renderEngine.renderMode;
+			if (_renderInfo.mode == null)
+			{
+				_renderInfo.mode = _renderEngine.renderMode;
+			}
 			_renderInfo.drawCalls = _renderEngine.drawCalls;
 			_renderInfo.totalTris = _renderEngine.totalTris;
 			_renderInfo.numBitmapAtlases = numBitmapAtlases;
