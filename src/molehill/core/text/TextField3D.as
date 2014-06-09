@@ -244,7 +244,39 @@ package molehill.core.text
 				_hashSymbolsByLine[_numLines - 1] = uint(_hashSymbolsByLine[_numLines - 1]) + 1;
 			}
 			
-			placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
+			if (lineWidth <= _width)
+			{
+				placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
+			}
+			else
+			{
+				// if the last character overflows the string placing characters twice (before last space and the rest)
+				placeCharacters(
+					lastSpaceIndex == 0 ? i : lastSpaceIndex,
+					numLineBreaks,
+					placedChildIndex,
+					lastSpaceChildIndex == 0 ? childIndex : lastSpaceChildIndex,
+					lastSpaceWidth == 0 ? lastLineWidth : lastSpaceWidth,
+					currentLineWidth
+				);
+				
+				if (lastSpaceWidth == 0)
+				{
+					lineWidth -= lastLineWidth;
+					currentLineWidth = 0;
+				}
+				else
+				{
+					lineWidth -= lastSpaceWidth + _spaceWidth;
+					currentLineWidth = 0;
+				}
+				
+				_lineY += _lineHeight;
+				_numLines++;
+				
+				placedChildIndex = lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex;
+				placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
+			}
 			
 			if (!wordWrap && _textWidth < lineWidth)
 			{
