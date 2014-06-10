@@ -30,6 +30,23 @@ package molehill.core.sprite
 		
 		public function Sprite3DContainer()
 		{
+			super();
+			
+			_x0 = int.MIN_VALUE;
+			_x1 = int.MIN_VALUE;
+			_x2 = int.MAX_VALUE;
+			_x3 = int.MAX_VALUE;
+			
+			_y0 = int.MAX_VALUE;
+			_y1 = int.MIN_VALUE;
+			_y2 = int.MIN_VALUE;
+			_y3 = int.MAX_VALUE;
+			
+			_containerX = _x0;
+			_containerY = _y0;
+			_containerRight = _x2;
+			_containerBottom = _y2;
+			
 			if (_cacheTreeNodes == null)
 			{
 				_cacheTreeNodes = new CachingFactory(TreeNode, 1000);
@@ -127,9 +144,10 @@ package molehill.core.sprite
 			{
 				_scene._needUpdateBatchers = true;
 			}
-			
+			/*
 			if (!(child is Sprite3DContainer) || (child as Sprite3DContainer).numChildren > 0)
 			{
+			*/
 				var minX:Number;
 				var maxX:Number;
 				var minY:Number;
@@ -154,14 +172,16 @@ package molehill.core.sprite
 				
 				child.parentMaxXNode = _childCoordsMaxX.insertElement(child, maxX);
 				child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
+				
+				var dimensionsChanged:Boolean = updateContainerSize();
+				
+				if (dimensionsChanged && _parent != null)
+				{
+					_parent.updateDimensions(this);
+				}
+			/*
 			}
-			
-			updateContainerSize();
-			
-			if (_parent != null)
-			{
-				_parent.updateDimensions(this);
-			}
+			*/
 			
 			return child;
 		}
@@ -226,9 +246,10 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			
+			/*
 			if (!(child is Sprite3DContainer) || (child as Sprite3DContainer).numChildren > 0)
 			{
+			*/
 				var minX:Number;
 				var maxX:Number;
 				var minY:Number;
@@ -253,14 +274,16 @@ package molehill.core.sprite
 				
 				child.parentMaxXNode = _childCoordsMaxX.insertElement(child, maxX);
 				child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
+				
+				var dimensionsChanged:Boolean = updateContainerSize();
+				
+				if (dimensionsChanged && _parent != null)
+				{
+					_parent.updateDimensions(this);
+				}
+			/*
 			}
-			
-			var dimensionsChanged:Boolean = updateContainerSize();
-			
-			if (dimensionsChanged && _parent != null/* && notifyParentOnChange*/)
-			{
-				_parent.updateDimensions(this);
-			}
+			*/
 			
 			return child;
 		}
@@ -328,7 +351,7 @@ package molehill.core.sprite
 			if (child is Sprite3DContainer)
 			{
 				var container:Sprite3DContainer = child as Sprite3DContainer;
-				if (container.numChildren == 0)
+				if (container._containerX == int.MIN_VALUE)
 				{
 					if (container.parentMinXNode != null)
 					{
@@ -387,7 +410,6 @@ package molehill.core.sprite
 					_childCoordsMaxY.updateNodeWeight(child.parentMaxYNode, maxY);
 				}
 				
-				needUpdateDimensions = true;
 			}
 			
 			var dimensionsChanged:Boolean = updateContainerSize();
@@ -918,11 +940,21 @@ package molehill.core.sprite
 		
 		override public function get width():Number
 		{
+			if (_containerX == int.MAX_VALUE)
+			{
+				return 0;
+			}
+			
 			return _containerRight - _containerX;
 		}
 		
 		override public function get height():Number
 		{
+			if (_containerX == int.MAX_VALUE)
+			{
+				return 0;
+			}
+			
 			return _containerBottom - _containerY;
 		}
 		
@@ -1220,19 +1252,19 @@ package molehill.core.sprite
 		
 		/**
 		 * 
-		 * While located in UIComponent3D container sprites with isBackground set to true will be moved to the bottom while rendering.<br>
+		 * While located in UIComponent3D container sprites with hasDynamicTexture set to true will be moved to the middle while rendering, between other sprites and text.<br>
 		 * This can help to batch UI textures and present UI component with less draw calls. 
 		 * 
 		 **/
-		private var _isBackground:Boolean = false;
-		public function get isBackground():Boolean
+		private var _hasDynamicTexture:Boolean = false;
+		public function get hasDynamicTexture():Boolean
 		{
-			return _isBackground;
+			return _hasDynamicTexture;
 		}
 		
-		public function set isBackground(value:Boolean):void
+		public function set hasDynamicTexture(value:Boolean):void
 		{
-			_isBackground = value;
+			_hasDynamicTexture = value;
 		}
 		
 	}

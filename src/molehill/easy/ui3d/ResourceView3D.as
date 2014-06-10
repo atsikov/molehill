@@ -3,6 +3,7 @@ package molehill.easy.ui3d
 	import flash.events.Event;
 	
 	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
 	
 	import resources.Resource;
@@ -13,15 +14,18 @@ package molehill.easy.ui3d
 	[Event(name="resize", type="flash.events.Event")]
 	[Event(name="ready", type="resources.events.ResourceEvent")]
 	
-	public class ResourceView3D extends Sprite3D
+	public class ResourceView3D extends Sprite3DContainer
 	{
 		private var _res:Resource;
+		private var _content:Sprite3D;
 		private var _type:int;
 		
 		public function ResourceView3D(type:int = ResourceTypes.UNKNOWN)
 		{
 			_type = type;
 			super();
+			
+			hasDynamicTexture = true;
 		}
 		
 		public function set type(value:int):void
@@ -73,7 +77,10 @@ package molehill.easy.ui3d
 			}
 			else
 			{
-				setTexture(null);
+				if (contains(_content))
+				{
+					removeChild(_content);
+				}
 			}
 			
 		}
@@ -82,7 +89,15 @@ package molehill.easy.ui3d
 		{
 			if (TextureManager.getInstance().isTextureCreated(_urlToTextureID))
 			{
-				setTexture(_urlToTextureID);
+				if (_content == null)
+				{
+					_content = new Sprite3D();
+				}
+				if (!contains(_content))
+				{
+					addChildAt(_content, 0);
+				}
+				_content.setTexture(_urlToTextureID);
 				
 				dispatchEvent(
 					new Event(ResourceEvent.READY)
@@ -112,7 +127,7 @@ package molehill.easy.ui3d
 				);
 			}
 			
-			setTexture(_urlToTextureID);
+			update();
 			
 			dispatchEvent(
 				new ResourceEvent(ResourceEvent.READY)

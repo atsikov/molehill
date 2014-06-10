@@ -27,24 +27,24 @@ package molehill.core.render
 			
 			mouseEnabled = true;
 			
-			_containerBacks = new Sprite3DContainer();
+			_containerGeneric = new Sprite3DContainer();
 			_containerTexts = new Sprite3DContainer();
-			_containerMiscs = new Sprite3DContainer();
+			_containerDynamic = new Sprite3DContainer();
 		}
 		
 		molehill_internal var flattenedRenderTree:TreeNode;
 		
-		private var _localTreeBack:TreeNode;
-		private var _localTreeMisc:TreeNode;
+		private var _localTreeGeneric:TreeNode;
+		private var _localTreeDynamic:TreeNode;
 		private var _localTreeText:TreeNode;
 		
-		private var _localTreeBackCursor:TreeNode;
-		private var _localTreeMiscCursor:TreeNode;
+		private var _localTreeGenericCursor:TreeNode;
+		private var _localTreeDynamicCursor:TreeNode;
 		private var _localTreeTextCursor:TreeNode;
 		
-		private var _containerBacks:Sprite3DContainer;
+		private var _containerGeneric:Sprite3DContainer;
+		private var _containerDynamic:Sprite3DContainer;
 		private var _containerTexts:Sprite3DContainer;
-		private var _containerMiscs:Sprite3DContainer;
 		
 		molehill_internal function updateFlattnedTree():void
 		{
@@ -55,11 +55,11 @@ package molehill.core.render
 					flattenedRenderTree = _cacheTreeNodes.newInstance();
 					flattenedRenderTree.value = this;
 					
-					_localTreeBack = _cacheTreeNodes.newInstance();
-					_localTreeBack.value = _containerBacks;
+					_localTreeGeneric = _cacheTreeNodes.newInstance()
+					_localTreeGeneric.value = _containerGeneric;
 					
-					_localTreeMisc = _cacheTreeNodes.newInstance()
-					_localTreeMisc.value = _containerMiscs;
+					_localTreeDynamic = _cacheTreeNodes.newInstance();
+					_localTreeDynamic.value = _containerDynamic;
 					
 					_localTreeText = _cacheTreeNodes.newInstance();
 					_localTreeText.value = _containerTexts;
@@ -69,21 +69,21 @@ package molehill.core.render
 					//traceTrees();
 					
 					flattenedRenderTree.removeNode(_localTreeText);
-					flattenedRenderTree.removeNode(_localTreeMisc);
-					flattenedRenderTree.removeNode(_localTreeBack);
+					flattenedRenderTree.removeNode(_localTreeDynamic);
+					flattenedRenderTree.removeNode(_localTreeGeneric);
 				}
 				
-				syncTrees(localRenderTree, _localTreeMisc);
+				syncTrees(localRenderTree, _localTreeGeneric);
 				
-				flattenedRenderTree.addNode(_localTreeBack);
-				flattenedRenderTree.addNode(_localTreeMisc);
+				flattenedRenderTree.addNode(_localTreeGeneric);
+				flattenedRenderTree.addNode(_localTreeDynamic);
 				flattenedRenderTree.addNode(_localTreeText);
 				
-				_containerBacks.textureAtlasChanged = textureAtlasChanged;
-				_containerBacks.treeStructureChanged = treeStructureChanged;
+				_containerDynamic.textureAtlasChanged = textureAtlasChanged;
+				_containerDynamic.treeStructureChanged = treeStructureChanged;
 				
-				_containerMiscs.textureAtlasChanged = textureAtlasChanged;
-				_containerMiscs.treeStructureChanged = treeStructureChanged;
+				_containerGeneric.textureAtlasChanged = textureAtlasChanged;
+				_containerGeneric.treeStructureChanged = treeStructureChanged;
 				
 				_containerTexts.textureAtlasChanged = textureAtlasChanged;
 				_containerTexts.treeStructureChanged = treeStructureChanged;
@@ -282,8 +282,8 @@ package molehill.core.render
 		
 		private function syncTrees(src:TreeNode, dst:TreeNode):void
 		{
-			_localTreeBackCursor = null;
-			_localTreeMiscCursor = null;
+			_localTreeDynamicCursor = null;
+			_localTreeGenericCursor = null;
 			_localTreeTextCursor = null;
 			
 			dst.value = this;
@@ -302,17 +302,17 @@ package molehill.core.render
 			
 			doSyncTrees(src, dst);
 			
-			dst.value = _containerMiscs;
+			dst.value = _containerGeneric;
 			
-			if (_localTreeBackCursor == null)
+			if (_localTreeDynamicCursor == null)
 			{
-				_localTreeBackCursor = _localTreeBack.firstChild;
+				_localTreeDynamicCursor = _localTreeDynamic.firstChild;
 			}
 			else
 			{
-				_localTreeBackCursor = _localTreeBackCursor.nextSibling;
+				_localTreeDynamicCursor = _localTreeDynamicCursor.nextSibling;
 			}
-			cleanupTail(_localTreeBackCursor);
+			cleanupTail(_localTreeDynamicCursor);
 			
 			if (_localTreeTextCursor == null)
 			{
@@ -397,9 +397,9 @@ package molehill.core.render
 						// assigning pointer here cause dst removing may affect cursors
 						if (dstNext != null)
 						{
-							if (_dstTreeRoot === _localTreeBack)
+							if (_dstTreeRoot === _localTreeDynamic)
 							{
-								_localTreeBackCursor = _localTreeBackCursor.prevSibling;
+								_localTreeDynamicCursor = _localTreeDynamicCursor.prevSibling;
 							}
 							else if (_dstTreeRoot === _localTreeText)
 							{
@@ -469,7 +469,7 @@ package molehill.core.render
 				}
 				
 				var nextValue:Sprite3DContainer = src.nextSibling == null ? null : src.nextSibling.value as Sprite3DContainer;
-				var needMoveDstCursor:Boolean = _insideUIComponent || inSpecTree || nextValue == null || !inSpecTree && !nextValue.isBackground && !(nextValue is TextField3D);
+				var needMoveDstCursor:Boolean = _insideUIComponent || inSpecTree || nextValue == null || !inSpecTree && !nextValue.hasDynamicTexture && !(nextValue is TextField3D);
 				//trace('need to move cursor: ' + needMoveDstCursor.toString());
 				if (src !== localRenderTree && needMoveDstCursor && src.nextSibling != null && dst.nextSibling == null)
 				{
@@ -512,17 +512,17 @@ package molehill.core.render
 		{
 			if (value == null || _insideUIComponent)
 			{
-				_localTreeMiscCursor = dst;
+				_localTreeGenericCursor = dst;
 				return dst;
 			}
 			
 			var targetNode:TreeNode;
 			var targetRoot:TreeNode;
-			if (value.isBackground)
+			if (value.hasDynamicTexture)
 			{
-				targetNode = _localTreeBackCursor;
-				targetRoot = _localTreeBack;
-				_dstTreeRoot = _localTreeBack;
+				targetNode = _localTreeDynamicCursor;
+				targetRoot = _localTreeDynamic;
+				_dstTreeRoot = _localTreeDynamic;
 			}
 			else if (value is TextField3D)
 			{
@@ -532,8 +532,8 @@ package molehill.core.render
 			}
 			else
 			{
-				_localTreeMiscCursor = dst;
-				_dstTreeRoot = _localTreeMisc;
+				_localTreeGenericCursor = dst;
+				_dstTreeRoot = _localTreeGeneric;
 				return dst;
 			}
 			
@@ -555,9 +555,9 @@ package molehill.core.render
 				targetNode = targetRoot.lastChild;
 			}
 			
-			if (value.isBackground)
+			if (value.hasDynamicTexture)
 			{
-				_localTreeBackCursor = targetNode;
+				_localTreeDynamicCursor = targetNode;
 			}
 			else if (value is TextField3D)
 			{
