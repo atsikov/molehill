@@ -14,6 +14,7 @@ package molehill.easy.ui3d
 	import molehill.easy.ui3d.effects.WindowEffectsSet;
 	
 	[Event(name="change", type="flash.events.Event")]
+	[Event(name="close", type="flash.events.Event")]
 
 	public class WindowManager3D extends EventDispatcher
 	{	
@@ -191,6 +192,10 @@ package molehill.easy.ui3d
 				
 				setNumModals(_numModals - 1);
 			}
+			
+			dispatchEvent(
+				new Event(Event.CLOSE)
+			);
 			
 			popUp.dispatchEvent(
 				new Event(Event.CLOSE)
