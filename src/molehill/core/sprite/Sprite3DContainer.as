@@ -144,10 +144,9 @@ package molehill.core.sprite
 			{
 				_scene._needUpdateBatchers = true;
 			}
-			/*
-			if (!(child is Sprite3DContainer) || (child as Sprite3DContainer).numChildren > 0)
+			
+			if (child._x0 > int.MIN_VALUE)
 			{
-			*/
 				var minX:Number;
 				var maxX:Number;
 				var minY:Number;
@@ -179,9 +178,7 @@ package molehill.core.sprite
 				{
 					_parent.updateDimensions(this);
 				}
-			/*
 			}
-			*/
 			
 			return child;
 		}
@@ -246,10 +243,8 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			/*
-			if (!(child is Sprite3DContainer) || (child as Sprite3DContainer).numChildren > 0)
+			if (child._x0 > int.MIN_VALUE)
 			{
-			*/
 				var minX:Number;
 				var maxX:Number;
 				var minY:Number;
@@ -281,9 +276,7 @@ package molehill.core.sprite
 				{
 					_parent.updateDimensions(this);
 				}
-			/*
 			}
-			*/
 			
 			return child;
 		}
@@ -940,7 +933,7 @@ package molehill.core.sprite
 		
 		override public function get width():Number
 		{
-			if (_containerX == int.MAX_VALUE)
+			if (_containerX == int.MIN_VALUE)
 			{
 				return 0;
 			}
@@ -950,7 +943,7 @@ package molehill.core.sprite
 		
 		override public function get height():Number
 		{
-			if (_containerX == int.MAX_VALUE)
+			if (_containerX == int.MIN_VALUE)
 			{
 				return 0;
 			}

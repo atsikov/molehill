@@ -1439,29 +1439,29 @@ package molehill.core.sprite
 		private var _localPointX:Number;
 		private var _localPointY:Number;
 		
-		//private var _listParents:Vector.<Sprite3D>;
-		private var _listParents:Object;
+		private var _listParents:Vector.<Sprite3D>;
+		//private var _listParents:Object;
 		private function globalToLocalCoords(globalX:Number, globalY:Number):void
 		{
 			var numParents:int = 0;
-			//var listLength:int = _listParents != null ? _listParents.length : 10;
+			var listLength:int = _listParents != null ? _listParents.length : 10;
 			var spriteParent:Sprite3D = this;
 			while (spriteParent.parent != null)
 			{
 				if (_listParents == null)
 				{
-					//_listParents = new Vector.<Sprite3D>(10);
-					//_listParents.fixed = true;
-					_listParents = new Object();
+					_listParents = new Vector.<Sprite3D>(10);
+					_listParents.fixed = true;
+					//_listParents = new Object();
 				}
-				/*
+				
 				if (numParents == listLength)
 				{
 					_listParents.fixed = false;
 					_listParents.length += 10;
 					_listParents.fixed = true;
 				}
-				*/
+				
 				_listParents[numParents] = spriteParent;
 				
 				spriteParent = spriteParent.parent;
