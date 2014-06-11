@@ -6,6 +6,7 @@ package molehill.core.render
 	{
 		private static const _blendFactors:Object = 
 			{
+				"none"     : [ Context3DBlendFactor.ONE, Context3DBlendFactor.ZERO ],
 				"normal"   : [ Context3DBlendFactor.SOURCE_ALPHA, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA ],
 				"add"      : [ Context3DBlendFactor.ONE, Context3DBlendFactor.ONE ],
 				"multiply" : [ Context3DBlendFactor.DESTINATION_COLOR, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA ],
@@ -13,6 +14,8 @@ package molehill.core.render
 				"erase"    : [ Context3DBlendFactor.ZERO, Context3DBlendFactor.ONE_MINUS_SOURCE_ALPHA ]
 			};
 			
+		public static const NONE:String = "none";
+		
 		public static const NORMAL:String = "normal";
 		
 		public static const ADD:String = "add";
