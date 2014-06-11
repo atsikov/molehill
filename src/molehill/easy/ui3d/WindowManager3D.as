@@ -120,9 +120,12 @@ package molehill.easy.ui3d
 			_contentLayer.addChild(popUp);
 			_openedWindows.push(popUp);
 			
-			popUp.dispatchEvent(
-				new Event(Event.OPEN)
-			);
+			if (popUp.hasEventListener(Event.OPEN))
+			{
+				popUp.dispatchEvent(
+					new Event(Event.OPEN)
+				);
+			}
 			
 			var executor:PopUpExecutor = new PopUpExecutor(
 				popUp,
@@ -197,13 +200,19 @@ package molehill.easy.ui3d
 				new Event(Event.CLOSE)
 			);
 			
-			popUp.dispatchEvent(
-				new Event(Event.CLOSE)
-			);
+			if (popUp.hasEventListener(Event.CLOSE))
+			{
+				popUp.dispatchEvent(
+					new Event(Event.CLOSE)
+				);
+			}
 			
-			popUp.dispatchEvent(
-				new Event(Event.COMPLETE)
-			);
+			if (popUp.hasEventListener(Event.COMPLETE))
+			{
+				popUp.dispatchEvent(
+					new Event(Event.COMPLETE)
+				);
+			}
 		}
 		
 		public function resize():void
