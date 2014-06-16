@@ -941,6 +941,11 @@ package molehill.core.sprite
 			return _containerRight - _containerX;
 		}
 		
+		override public function set width(value:Number):void
+		{
+			scaleX = value / width;
+		}
+		
 		override public function get height():Number
 		{
 			if (_containerX == int.MIN_VALUE)
@@ -949,6 +954,11 @@ package molehill.core.sprite
 			}
 			
 			return _containerBottom - _containerY;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			scaleY = value / height;
 		}
 		
 		// cached parent properties
@@ -1109,6 +1119,11 @@ package molehill.core.sprite
 			}
 			
 			super.moveTo(x, y, z);
+		}
+		
+		override public function setSize(w:Number, h:Number):void
+		{
+			setScale(w / width, h / height);
 		}
 		
 		override public function setScale(scaleX:Number, scaleY:Number):void
