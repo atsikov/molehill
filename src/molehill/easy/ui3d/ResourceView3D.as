@@ -77,7 +77,7 @@ package molehill.easy.ui3d
 			}
 			else
 			{
-				if (contains(_content))
+				if (_content != null && contains(_content))
 				{
 					removeChild(_content);
 				}
@@ -136,17 +136,62 @@ package molehill.easy.ui3d
 		
 		override public function set width(value:Number):void
 		{
+			if (_content == null)
+			{
+				return;
+			}
+			
 			_content.width = value;
 		}
 		
 		override public function set height(value:Number):void
 		{
+			if (_content == null)
+			{
+				return;
+			}
+			
 			_content.height = value;
 		}
 		
 		override public function setSize(w:Number, h:Number):void
 		{
+			if (_content == null)
+			{
+				return;
+			}
+			
 			_content.setSize(w, h);
+		}
+		
+		override public function setScale(scaleX:Number, scaleY:Number):void
+		{
+			if (_content == null)
+			{
+				return;
+			}
+			
+			_content.setScale(scaleX, scaleY);
+		}
+		
+		override public function set scaleX(value:Number):void
+		{
+			if (_content == null)
+			{
+				return;
+			}
+			
+			_content.scaleX = value;
+		}
+		
+		override public function set scaleY(value:Number):void
+		{
+			if (_content == null)
+			{
+				return;
+			}
+			
+			_content.scaleY = value;
 		}
 	}
 }
