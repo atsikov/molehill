@@ -5,7 +5,7 @@ package molehill.easy.ui3d.effects
 	
 	import molehill.easy.ui3d.WindowManager3D;
 	
-	public class ShowFromRightTweenEffect extends ShowFromLeftTweenEffect
+	public class ShowFromRightTweenEffect extends TweenCameraEffect
 	{
 		public function ShowFromRightTweenEffect()
 		{
