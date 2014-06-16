@@ -239,6 +239,7 @@ package molehill.core.render
 			result._textureAtlasID = _textureAtlasID;
 			result._blendMode = _blendMode;
 			result._batcherCamera = _batcherCamera;
+			result._cameraOwner = _cameraOwner;
 			result._shader = shader;
 			result._listSprites = _listSprites.splitAtElement(element);
 			result._numSprites = _numSprites - childIndex;
