@@ -133,5 +133,20 @@ package molehill.easy.ui3d
 				new ResourceEvent(ResourceEvent.READY)
 			);
 		}
+		
+		override public function set width(value:Number):void
+		{
+			_content.width = value;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			_content.height = value;
+		}
+		
+		override public function setSize(w:Number, h:Number):void
+		{
+			_content.setSize(w, h);
+		}
 	}
 }
