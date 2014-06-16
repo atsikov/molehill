@@ -14,6 +14,7 @@ package molehill.easy.ui3d
 	import molehill.easy.ui3d.effects.WindowEffectsSet;
 	
 	[Event(name="change", type="flash.events.Event")]
+	[Event(name="close", type="flash.events.Event")]
 
 	public class WindowManager3D extends EventDispatcher
 	{	
@@ -119,9 +120,12 @@ package molehill.easy.ui3d
 			_contentLayer.addChild(popUp);
 			_openedWindows.push(popUp);
 			
-			popUp.dispatchEvent(
-				new Event(Event.OPEN)
-			);
+			if (popUp.hasEventListener(Event.OPEN))
+			{
+				popUp.dispatchEvent(
+					new Event(Event.OPEN)
+				);
+			}
 			
 			var executor:PopUpExecutor = new PopUpExecutor(
 				popUp,
@@ -192,13 +196,23 @@ package molehill.easy.ui3d
 				setNumModals(_numModals - 1);
 			}
 			
-			popUp.dispatchEvent(
+			dispatchEvent(
 				new Event(Event.CLOSE)
 			);
 			
-			popUp.dispatchEvent(
-				new Event(Event.COMPLETE)
-			);
+			if (popUp.hasEventListener(Event.CLOSE))
+			{
+				popUp.dispatchEvent(
+					new Event(Event.CLOSE)
+				);
+			}
+			
+			if (popUp.hasEventListener(Event.COMPLETE))
+			{
+				popUp.dispatchEvent(
+					new Event(Event.COMPLETE)
+				);
+			}
 		}
 		
 		public function resize():void

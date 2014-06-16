@@ -97,16 +97,13 @@ package molehill.core.render
 			}
 			else
 			{
-				var element:LinkedListElement = new LinkedListElement();
-				element.data = child2;
-				
 				if (cursor.prev == null)
 				{
-					_listSprites.addElementToHead(element);
+					_listSprites.pushToHead(child2);
 				}
 				else
 				{
-					_listSprites.insertElementAfter(cursor.prev, element);
+					_listSprites.insertValueAfterElement(cursor.prev, child2);
 				}
 			}
 			_needUpdateBuffers = true;
@@ -131,9 +128,7 @@ package molehill.core.render
 			}
 			else
 			{
-				var element:LinkedListElement = new LinkedListElement();
-				element.data = child2;
-				_listSprites.insertElementAfter(cursor, element);
+				_listSprites.insertValueAfterElement(cursor, child2);
 			}
 			_needUpdateBuffers = true;
 			_numSprites++;
@@ -699,6 +694,8 @@ package molehill.core.render
 					trace("coords: " + _vertexBufferVerticesData.readFloat() + ", " + _vertexBufferVerticesData.readFloat());
 				}
 				*/
+				//trace(_listSprites.head.data);
+				
 				_vertexBufferVertices.uploadFromByteArray(_vertexBufferVerticesData, 0, 0, _numVisibleSprites * 4);
 				_needUploadVertexData = false;
 			}

@@ -1439,20 +1439,33 @@ package molehill.core.sprite
 		private var _localPointX:Number;
 		private var _localPointY:Number;
 		
-		private var _listParents:LinkedList;
+		private var _listParents:Vector.<Sprite3D>;
+		//private var _listParents:Object;
 		private function globalToLocalCoords(globalX:Number, globalY:Number):void
 		{
+			var numParents:int = 0;
+			var listLength:int = _listParents != null ? _listParents.length : 10;
 			var spriteParent:Sprite3D = this;
 			while (spriteParent.parent != null)
 			{
 				if (_listParents == null)
 				{
-					_listParents = new LinkedList();
+					_listParents = new Vector.<Sprite3D>(10);
+					_listParents.fixed = true;
+					//_listParents = new Object();
 				}
 				
-				_listParents.enqueue(spriteParent);
+				if (numParents == listLength)
+				{
+					_listParents.fixed = false;
+					_listParents.length += 10;
+					_listParents.fixed = true;
+				}
+				
+				_listParents[numParents] = spriteParent;
 				
 				spriteParent = spriteParent.parent;
+				numParents++;
 			}
 			
 			var rad:Number;
@@ -1466,9 +1479,9 @@ package molehill.core.sprite
 			
 			if (_listParents != null)
 			{
-				while (!_listParents.empty)
+				for (var i:int = numParents - 1; i >= 0; i--)
 				{
-					spriteParent = _listParents.pop() as Sprite3D;
+					spriteParent = _listParents[i];
 					
 					var currentCamera:CustomCamera = spriteParent.camera;
 					if (currentCamera != null)
