@@ -85,9 +85,16 @@ package molehill.core.render.engine
 			_blendMode = blendMode;
 		}
 		
+		private var _driverInfo:String;
+		private var _driverInfoUpdated:Boolean = false;
 		public function get isReady():Boolean
 		{
-			return _context3D != null && _context3D.driverInfo != "Disposed";
+			if (!_driverInfoUpdated && _context3D != null)
+			{
+				_driverInfo = _context3D.driverInfo;
+				_driverInfoUpdated = true;
+			}
+			return _context3D != null && _driverInfo != null && _driverInfo != "Disposed";
 		}
 		
 		private var _verticesOffset:int = 0;
@@ -211,13 +218,15 @@ package molehill.core.render.engine
 		{
 			doRender();
 			_context3D.present();
+			
+			_driverInfoUpdated = false;
 		}
 		
 		public var drawCalls:uint = 0;
 		public var totalTris:uint = 0;
 		public function get renderMode():String
 		{
-			return _context3D.driverInfo;
+			return _driverInfo;
 		}
 		
 		private var _vertexBuffer:VertexBuffer3D;
@@ -377,6 +386,8 @@ package molehill.core.render.engine
 			
 			_context3D.setProgramConstantsFromMatrix(Context3DProgramType.VERTEX, 0, m, true);
 			
+			var errorCheckEnabled:Boolean = _context3D.enableErrorChecking;
+			
 			var currentCamera:CustomCamera;
 			
 			while (!_listRenderChunks.empty)
@@ -471,18 +482,30 @@ package molehill.core.render.engine
 				}
 				
 				_context3D.setTextureAt(0, chunkData.texture);
-				try
+				
+				// avoiding try..check in release versions 
+				if (errorCheckEnabled)
 				{
-					//trace('drawing ' + chunkData.numTriangles + ' triangles from ' + chunkData.firstIndex + ' offset');
-					
-					var currentIndexBuffer:IndexBuffer3D = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
+					try
+					{
+						//trace('drawing ' + chunkData.numTriangles + ' triangles from ' + chunkData.firstIndex + ' offset');
+						
+						var currentIndexBuffer:IndexBuffer3D = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
+						_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
+						
+						totalTris += chunkData.numTriangles;
+					}
+					catch (e:Error)
+					{
+						trace(e.message);
+					}
+				}
+				else
+				{
+					currentIndexBuffer = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
 					_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
 					
 					totalTris += chunkData.numTriangles;
-				}
-				catch (e:Error)
-				{
-					trace(e.message);
 				}
 				
 				if (chunkData.additionalVertexBuffers != null)
