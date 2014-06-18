@@ -382,10 +382,22 @@ package molehill.core.sprite
 				}
 				else
 				{
-					minX = Math.min(child._x0, child._x1, child._x2, child._x3);
-					maxX = Math.max(child._x0, child._x1, child._x2, child._x3);
-					minY = Math.min(child._y0, child._y1, child._y2, child._y3);
-					maxY = Math.max(child._y0, child._y1, child._y2, child._y3);
+					minX = Math.min(
+						Math.min(child._x0, child._x1),
+						Math.min(child._x2, child._x3)
+					);
+					maxX = Math.max(
+						Math.max(child._x0, child._x1),
+						Math.max(child._x2, child._x3)
+					);
+					minY = Math.min(
+						Math.min(child._y0, child._y1),
+						Math.min(child._y2, child._y3)
+					);
+					maxY = Math.max(
+						Math.max(child._y0, child._y1),
+						Math.max(child._y2, child._y3)
+					);
 				}
 				
 				if (child.parentMinXNode == null)

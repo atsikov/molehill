@@ -873,7 +873,6 @@ package molehill.core.render
 		{
 			if (_renderEngine == null || !_renderEngine.isReady)
 			{
-				_renderInfo.mode = null;
 				return;
 			}
 			
@@ -884,10 +883,7 @@ package molehill.core.render
 			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
 			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
 			
-			if (_renderInfo.mode == null)
-			{
-				_renderInfo.mode = _renderEngine.renderMode;
-			}
+			_renderInfo.mode = _renderEngine.renderMode;
 			_renderInfo.drawCalls = _renderEngine.drawCalls;
 			_renderInfo.totalTris = _renderEngine.totalTris;
 			_renderInfo.numBitmapAtlases = numBitmapAtlases;
