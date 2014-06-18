@@ -486,26 +486,11 @@ package molehill.core.render.engine
 				// avoiding try..check in release versions 
 				if (errorCheckEnabled)
 				{
-					try
-					{
-						//trace('drawing ' + chunkData.numTriangles + ' triangles from ' + chunkData.firstIndex + ' offset');
-						
-						var currentIndexBuffer:IndexBuffer3D = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
-						_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
-						
-						totalTris += chunkData.numTriangles;
-					}
-					catch (e:Error)
-					{
-						trace(e.message);
-					}
+					totalTris += renderChunkTryCatch(chunkData);
 				}
 				else
 				{
-					currentIndexBuffer = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
-					_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
-					
-					totalTris += chunkData.numTriangles;
+					totalTris += renderChunk(chunkData);
 				}
 				
 				if (chunkData.additionalVertexBuffers != null)
@@ -559,6 +544,31 @@ package molehill.core.render.engine
 			_context3D.setVertexBufferAt(0, null, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
 			_context3D.setVertexBufferAt(1, null, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
 			_context3D.setVertexBufferAt(2, null, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
+		}
+		
+		private function renderChunk(chunkData:RenderChunkData):int
+		{
+			var currentIndexBuffer:IndexBuffer3D = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
+			_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
+			
+			return chunkData.numTriangles;
+		}
+		
+		private function renderChunkTryCatch(chunkData:RenderChunkData):int
+		{
+			try
+			{
+				var currentIndexBuffer:IndexBuffer3D = chunkData.customIndexBuffer == null ? _indexBuffer : chunkData.customIndexBuffer;
+				_context3D.drawTriangles(currentIndexBuffer, chunkData.firstIndex, chunkData.numTriangles);
+				
+				return chunkData.numTriangles;
+			}
+			catch (e:Error)
+			{
+				trace(e);
+			}
+			
+			return 0;
 		}
 	}
 }
