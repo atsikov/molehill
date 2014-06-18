@@ -897,8 +897,6 @@ package molehill.easy.ui3d.list
 				
 				
 				rowHeight = Math.max(rowHeight, itemRenderer.height);
-				
-				_dictCurrentStateItemRenderersByData[itemData] = itemRenderer;
 			}
 			
 			var numShownItems:int = dataEndIdx - dataBeginIdx;

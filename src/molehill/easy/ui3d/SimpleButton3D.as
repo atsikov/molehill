@@ -2,6 +2,7 @@ package molehill.easy.ui3d
 {
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.ui.MouseCursor;
@@ -55,9 +56,18 @@ package molehill.easy.ui3d
 			addEventListener(Input3DMouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			addEventListener(Input3DMouseEvent.MOUSE_DOWN, onSpriteMouseDown);
 			addEventListener(Input3DMouseEvent.MOUSE_UP, onSpriteMouseUp);
+			addEventListener(Input3DMouseEvent.CLICK, onSpriteClick);
 		}
 		
-		protected function onSpriteMouseOver(event:Input3DMouseEvent):void
+		private function onSpriteClick(event:Input3DMouseEvent):void
+		{
+			if (!_enabled)
+			{
+				event.stopImmediatePropagation();
+			}
+		}
+		
+		private function onSpriteMouseOver(event:Input3DMouseEvent):void
 		{
 			MouseCursorManager.getInstance().setCursor(MouseCursor.BUTTON);
 			

@@ -1,5 +1,6 @@
 package molehill.easy.ui3d
 {
+	import flash.events.Event;
 	import flash.geom.Rectangle;
 	import flash.ui.MouseCursor;
 	import flash.utils.clearInterval;
@@ -70,6 +71,15 @@ package molehill.easy.ui3d
 			addEventListener(Input3DMouseEvent.MOUSE_MOVE, onSpriteMouseMove);
 			addEventListener(Input3DMouseEvent.MOUSE_DOWN, onSpriteMouseDown);
 			addEventListener(Input3DMouseEvent.MOUSE_UP, onSpriteMouseUp);
+			addEventListener(Input3DMouseEvent.CLICK, onSpriteClick);
+		}
+		
+		private function onSpriteClick(event:Input3DMouseEvent):void
+		{
+			if (!_enabled)
+			{
+				event.stopImmediatePropagation();
+			}
 		}
 		
 		override public function get width():Number

@@ -263,6 +263,21 @@ package molehill.easy.ui3d
 			popUp.y = contentRegion.y + contentRegion.height - popUp.height;
 		}
 		
+		public function alignToTop(popUp:Sprite3D):void
+		{
+			popUp.y = contentRegion.y;
+		}
+		
+		public function alignToLeft(popUp:Sprite3D):void
+		{
+			popUp.x = contentRegion.x;
+		}
+		
+		public function alignToRight(popUp:Sprite3D):void
+		{
+			popUp.x = contentRegion.x + contentRegion.width + popUp.width;
+		}
+		
 		public function centerAllChildren():void
 		{
 			var n:uint = contentLayer.numChildren;
