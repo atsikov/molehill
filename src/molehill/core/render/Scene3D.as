@@ -471,6 +471,7 @@ package molehill.core.render
 					if (_hashBatchersOldToNew[batcher] != null)
 					{
 						batchingInfo.batcher = _hashBatchersOldToNew[batcher];
+						batcher = _hashBatchersOldToNew[batcher];
 					}
 					
 					if (batcher != null)
@@ -611,10 +612,8 @@ package molehill.core.render
 							textureAtlasID = atlasData.atlasID;
 						}
 						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
-						if (!(_currentBatcher is SpriteBatcher) || 
-							(_currentBatcher != null &&
-							(_currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER)
-						)
+						var maxSpritesPerBacther:Boolean = _currentBatcher is SpriteBatcher && _currentBatcher != null && (_currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER;
+						if (!(_currentBatcher is SpriteBatcher) || maxSpritesPerBacther)
 						{
 							_currentBatcher = null;
 						}

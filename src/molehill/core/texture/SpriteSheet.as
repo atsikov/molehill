@@ -4,10 +4,8 @@ package molehill.core.texture
 	
 	import flash.display.BitmapData;
 	import flash.display.MovieClip;
-	import flash.geom.ColorTransform;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.geom.Transform;
 
 	public class SpriteSheet extends BitmapData
 	{
@@ -80,7 +78,7 @@ package molehill.core.texture
 			}
 			
 			var totalSquare:int = maxRectangle.width * maxRectangle.height * listRasterizedSprites.length;
-			var side:Number = Math.min(maxMidth, Math.sqrt(totalSquare));
+			var side:Number = Math.min(maxMidth, totalSquare * totalSquare);
 			
 			maxMidth = side;
 			

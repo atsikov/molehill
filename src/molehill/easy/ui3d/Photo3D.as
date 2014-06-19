@@ -2,27 +2,20 @@ package molehill.easy.ui3d
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.DisplayObject;
-	import flash.display.Graphics;
 	import flash.display.Loader;
-	import flash.display.MovieClip;
-	import flash.display.PixelSnapping;
 	import flash.display.Shape;
-	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.net.URLRequest;
 	import flash.system.LoaderContext;
 	
-	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.ColorFillShader;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureAtlasData;
-	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
 	public class Photo3D extends Sprite3DContainer

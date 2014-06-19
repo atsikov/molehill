@@ -1,7 +1,6 @@
 package molehill.core.text
 {
 	import flash.geom.Point;
-	import flash.text.TextField;
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.render.shader.Shader3DFactory;

@@ -145,40 +145,7 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			if (child._x0 > int.MIN_VALUE)
-			{
-				var minX:Number;
-				var maxX:Number;
-				var minY:Number;
-				var maxY:Number;
-				if (child._rotation == 0 && child._parentRotation == 0)
-				{
-					minX = Math.min(child._x0, child._x2);
-					maxX = Math.max(child._x0, child._x2);
-					minY = Math.min(child._y0, child._y2);
-					maxY = Math.max(child._y0, child._y2);
-				}
-				else
-				{
-					minX = Math.min(child._x0, child._x1, child._x2, child._x3);
-					maxX = Math.max(child._x0, child._x1, child._x2, child._x3);
-					minY = Math.min(child._y0, child._y1, child._y2, child._y3);
-					maxY = Math.max(child._y0, child._y1, child._y2, child._y3);
-				}
-				
-				child.parentMinXNode = _childCoordsMinX.insertElement(child, minX);
-				child.parentMinYNode = _childCoordsMinY.insertElement(child, minY);
-				
-				child.parentMaxXNode = _childCoordsMaxX.insertElement(child, maxX);
-				child.parentMaxYNode = _childCoordsMaxY.insertElement(child, maxY);
-				
-				var dimensionsChanged:Boolean = updateContainerSize();
-				
-				if (dimensionsChanged && _parent != null)
-				{
-					_parent.updateDimensions(this);
-				}
-			}
+			updateDimensionsTree(child);
 			
 			return child;
 		}
@@ -243,25 +210,55 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			if (child._x0 > int.MIN_VALUE)
+			updateDimensionsTree(child);
+			
+			return child;
+		}
+		
+		private function updateDimensionsTree(child:Sprite3D):void
+		{
+			var cx0:Number = child._x0;
+			var cx1:Number = child._x1;
+			var cx2:Number = child._x2;
+			var cx3:Number = child._x3;
+			
+			var cy0:Number = child._y0;
+			var cy1:Number = child._y1;
+			var cy2:Number = child._y2;
+			var cy3:Number = child._y3;
+			
+			if (cx0 > int.MIN_VALUE)
 			{
 				var minX:Number;
 				var maxX:Number;
 				var minY:Number;
 				var maxY:Number;
+				
 				if (child._rotation == 0 && child._parentRotation == 0)
 				{
-					minX = Math.min(child._x0, child._x2);
-					maxX = Math.max(child._x0, child._x2);
-					minY = Math.min(child._y0, child._y2);
-					maxY = Math.max(child._y0, child._y2);
+					minX = Math.min(cx0, cx2);
+					maxX = Math.max(cx0, cx2);
+					minY = Math.min(cy0, cy2);
+					maxY = Math.max(cy0, cy2);
 				}
 				else
 				{
-					minX = Math.min(child._x0, child._x1, child._x2, child._x3);
-					maxX = Math.max(child._x0, child._x1, child._x2, child._x3);
-					minY = Math.min(child._y0, child._y1, child._y2, child._y3);
-					maxY = Math.max(child._y0, child._y1, child._y2, child._y3);
+					minX = Math.min(
+						cx0 < cx1 ? cx0 : cx1,
+						cx2 < cx3 ? cx2 : cx3
+					);
+					maxX = Math.max(
+						cx0 > cx1 ? cx0 : cx1,
+						cx2 > cx3 ? cx2 : cx3
+					);
+					minY = Math.min(
+						cy0 < cy1 ? cy0 : cy1,
+						cy2 < cy3 ? cy2 : cy3
+					);
+					maxY = Math.max(
+						cy0 > cy1 ? cy0 : cy1,
+						cy2 > cy3 ? cy2 : cy3
+					);
 				}
 				
 				child.parentMinXNode = _childCoordsMinX.insertElement(child, minX);
@@ -277,8 +274,6 @@ package molehill.core.sprite
 					_parent.updateDimensions(this);
 				}
 			}
-			
-			return child;
 		}
 		
 		protected function updateChildParentValues(child:Sprite3D):void
@@ -373,30 +368,41 @@ package molehill.core.sprite
 				var maxX:Number;
 				var minY:Number;
 				var maxY:Number;
+				
+				var cx0:Number = child._x0;
+				var cx1:Number = child._x1;
+				var cx2:Number = child._x2;
+				var cx3:Number = child._x3;
+				
+				var cy0:Number = child._y0;
+				var cy1:Number = child._y1;
+				var cy2:Number = child._y2;
+				var cy3:Number = child._y3;
+				
 				if (child._rotation == 0 && child._parentRotation == 0)
 				{
-					minX = Math.min(child._x0, child._x2);
-					maxX = Math.max(child._x0, child._x2);
-					minY = Math.min(child._y0, child._y2);
-					maxY = Math.max(child._y0, child._y2);
+					minX = Math.min(cx0, cx2);
+					maxX = Math.max(cx0, cx2);
+					minY = Math.min(cy0, cy2);
+					maxY = Math.max(cy0, cy2);
 				}
 				else
 				{
 					minX = Math.min(
-						Math.min(child._x0, child._x1),
-						Math.min(child._x2, child._x3)
+						cx0 < cx1 ? cx0 : cx1,
+						cx2 < cx3 ? cx2 : cx3
 					);
 					maxX = Math.max(
-						Math.max(child._x0, child._x1),
-						Math.max(child._x2, child._x3)
+						cx0 > cx1 ? cx0 : cx1,
+						cx2 > cx3 ? cx2 : cx3
 					);
 					minY = Math.min(
-						Math.min(child._y0, child._y1),
-						Math.min(child._y2, child._y3)
+						cy0 < cy1 ? cy0 : cy1,
+						cy2 < cy3 ? cy2 : cy3
 					);
 					maxY = Math.max(
-						Math.max(child._y0, child._y1),
-						Math.max(child._y2, child._y3)
+						cy0 > cy1 ? cy0 : cy1,
+						cy2 > cy3 ? cy2 : cy3
 					);
 				}
 				

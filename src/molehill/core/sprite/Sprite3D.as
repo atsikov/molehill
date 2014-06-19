@@ -3,11 +3,9 @@ package molehill.core.sprite
 	import avmplus.getQualifiedClassName;
 	
 	import easy.collections.BinarySearchTreeNode;
-	import easy.collections.LinkedList;
 	
 	import flash.display.BitmapData;
 	import flash.events.EventDispatcher;
-	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	
@@ -998,10 +996,22 @@ package molehill.core.sprite
 			var localX:Number = point.x - _parentShiftX;
 			var localY:Number = point.y - _parentShiftY;
 			
-			var minX:Number = Math.min(_x0, _x1, _x2, _x3);
-			var minY:Number = Math.min(_y0, _y1, _y2, _y3);
-			var maxX:Number = Math.max(_x0, _x1, _x2, _x3);
-			var maxY:Number = Math.max(_y0, _y1, _y2, _y3);
+			var minX:Number = Math.min(
+				_x0 < _x1 ? _x0 : _x1,
+				_x2 < _x3 ? _x2 : _x3
+			);
+			var minY:Number = Math.min(
+				_y0 < _y1 ? _y0 : _y1,
+				_y2 < _y3 ? _y2 : _y3
+			);
+			var maxX:Number = Math.max(
+				_x0 > _x1 ? _x0 : _x1,
+				_x2 > _x3 ? _x2 : _x3
+			);
+			var maxY:Number = Math.max(
+				_y0 > _y1 ? _y0 : _y1,
+				_y2 > _y3 ? _y2 : _y3
+			);
 			
 			minX -= _parentShiftX;
 			maxX -= _parentShiftX;
@@ -1032,10 +1042,22 @@ package molehill.core.sprite
 			var localX:Number = globalX - _parentShiftX;
 			var localY:Number = globalY - _parentShiftY;
 			
-			var minX:Number = Math.min(_x0, _x1, _x2, _x3);
-			var minY:Number = Math.min(_y0, _y1, _y2, _y3);
-			var maxX:Number = Math.max(_x0, _x1, _x2, _x3);
-			var maxY:Number = Math.max(_y0, _y1, _y2, _y3);
+			var minX:Number = Math.min(
+				_x0 < _x1 ? _x0 : _x1,
+				_x2 < _x3 ? _x2 : _x3
+			);
+			var minY:Number = Math.min(
+				_y0 < _y1 ? _y0 : _y1,
+				_y2 < _y3 ? _y2 : _y3
+			);
+			var maxX:Number = Math.max(
+				_x0 > _x1 ? _x0 : _x1,
+				_x2 > _x3 ? _x2 : _x3
+			);
+			var maxY:Number = Math.max(
+				_y0 > _y1 ? _y0 : _y1,
+				_y2 > _y3 ? _y2 : _y3
+			);
 			
 			minX -= _parentShiftX;
 			maxX -= _parentShiftX;

@@ -18,7 +18,6 @@ package molehill.easy.ui3d.list
 	import molehill.core.render.UIComponent3D;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
 	
 	import org.opentween.OpenTween;
 	

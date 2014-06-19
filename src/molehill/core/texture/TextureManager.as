@@ -180,8 +180,8 @@ package molehill.core.texture
 				if (atlas is FontBRFTextureData)
 				{
 					Math.min(
-						MathUtils.log2(atlas.width),
-						MathUtils.log2(atlas.height),
+						Math.log2(atlas.width),
+						Math.log2(atlas.height),
 						7
 					);
 				}
@@ -424,8 +424,8 @@ package molehill.core.texture
 				//	Context3DTextureFormat.BGRA,
 				//	false,
 				//	Math.min(
-				//		MathUtils.log2(fontBitmap.width),
-				//		MathUtils.log2(fontBitmap.height),
+				//		Math.log2(fontBitmap.width),
+				//		Math.log2(fontBitmap.height),
 				//		7
 				//	)
 				//);
