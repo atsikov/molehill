@@ -92,9 +92,9 @@ package molehill.core.render.engine
 			if (!_driverInfoUpdated && _context3D != null)
 			{
 				_driverInfo = _context3D.driverInfo;
-				_driverInfoUpdated = true;
+				_driverInfoUpdated = _driverInfo != "Disposed";
 			}
-			return _context3D != null && _driverInfo != null && _driverInfo != "Disposed";
+			return _context3D != null && _driverInfo != null && _driverInfoUpdated;
 		}
 		
 		private var _verticesOffset:int = 0;
