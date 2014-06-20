@@ -1,5 +1,7 @@
 package molehill.core.render
 {
+	import appbase.utils.debug.DebugLogger;
+	
 	import easy.collections.TreeNode;
 	
 	import flash.display.BitmapData;
@@ -41,6 +43,8 @@ package molehill.core.render
 			_scene = this;
 			
 			addEventListener(Input3DMouseEvent.CLICK, onSceneMouseClick);
+			
+			DebugLogger.startExternalLogging();
 		}
 		
 		public function set focus(value:Sprite3D):void
@@ -133,13 +137,16 @@ package molehill.core.render
 		}
 		
 		public var globalTraceString:String = "";
-		private function traceTrees():void
+		public function traceTrees():void
 		{
+			globalTraceString = "";
 			globalTraceString += getTimer()/ 1000 + "\n\n";
 			globalTraceString += ObjectUtils.traceTree(localRenderTree);
 			globalTraceString += '\n-----------------\n';
 			globalTraceString += ObjectUtils.traceTree(_bacthingTree);
 			globalTraceString += '\n================================\n\n';
+			
+			DebugLogger.writeExternalLog(globalTraceString);
 		}
 		
 		molehill_internal var _needUpdateBatchers:Boolean = false;
