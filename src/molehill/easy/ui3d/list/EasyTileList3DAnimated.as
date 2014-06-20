@@ -308,20 +308,19 @@ package molehill.easy.ui3d.list
 			_lastTime = 0;
 			_velocity = 0;
 			
-			_stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			_stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp, false, int.MAX_VALUE);
 			_stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
 		}
 		
 		
 		//Scrolling on mouse move
 		
+		private var _scrollStarted:Boolean = false;
 		private function onStageMouseMove(event:MouseEvent):void
 		{
 			var diff:Number;
 			
 			diff = _direction == Direction.HORIZONTAL ? (event.stageY - _startPoint.y) : (event.stageX - _startPoint.x);
-			
-			
 			
 			if (Math.abs(diff) < MIN_DIFF_TO_SCROLL)
 			{
@@ -330,6 +329,7 @@ package molehill.easy.ui3d.list
 			
 			if (_lastTime == 0)
 			{
+				_scrollStarted = true;
 				lockItems();
 				_lastTime = getTimer();
 				_lastPosition =  _direction == Direction.HORIZONTAL ? _stage.mouseY : _stage.mouseX;
@@ -381,6 +381,12 @@ package molehill.easy.ui3d.list
 		
 		private function onStageMouseUp(event:MouseEvent):void
 		{
+			if (_scrollStarted)
+			{
+				event.stopImmediatePropagation();
+				_scrollStarted = false;
+			}
+			
 			if (_stage != null)
 			{
 				_stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
