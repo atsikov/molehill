@@ -20,6 +20,8 @@ package molehill.core.render
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 	
+	import utils.StringUtils;
+	
 	use namespace molehill_internal;
 	
 	/**
@@ -817,6 +819,14 @@ package molehill.core.render
 			}
 			
 			_needUploadIndexData = true;
+		}
+		
+		public function toString():String
+		{
+			return "SpriteBatcher [" + StringUtils.getObjectAddress(this) + "]\n" +
+				"\ttextureAtlas: " + _textureAtlasID + "\n" +
+				"firstChild: " + (_listSprites.head != null ? _listSprites.head.data : "null") + "\n" +
+				"lastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n";
 		}
 	}
 }

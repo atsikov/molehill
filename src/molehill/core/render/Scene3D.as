@@ -144,6 +144,8 @@ package molehill.core.render
 			globalTraceString += ObjectUtils.traceTree(localRenderTree);
 			globalTraceString += '\n-----------------\n';
 			globalTraceString += ObjectUtils.traceTree(_bacthingTree);
+			globalTraceString += '\n-----------------\n';
+			globalTraceString += ObjectUtils.traceObject(_listSpriteBatchers);
 			globalTraceString += '\n================================\n\n';
 			
 			DebugLogger.writeExternalLog(globalTraceString);
