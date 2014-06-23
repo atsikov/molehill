@@ -622,13 +622,14 @@ package molehill.core.render
 						}
 						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
 						var maxSpritesPerBacther:Boolean = _currentBatcher is SpriteBatcher && _currentBatcher != null && (_currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER;
-						if (!(_currentBatcher is SpriteBatcher) || maxSpritesPerBacther)
+						var candidateBatcher:SpriteBatcher = _currentBatcher as SpriteBatcher;
+						if (maxSpritesPerBacther)
 						{
-							_currentBatcher = null;
+							candidateBatcher = null;
 						}
 						
-						var newBatcher:IVertexBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, textureAtlasID, cameraOwner);
-						if (newBatcher !== _currentBatcher)
+						var newBatcher:IVertexBatcher = pushToSuitableSpriteBacther(candidateBatcher, sprite, textureAtlasID, cameraOwner);
+						if (newBatcher !== candidateBatcher)
 						{
 							if (_lastBatchedChild != null &&
 								_currentBatcher != null &&
