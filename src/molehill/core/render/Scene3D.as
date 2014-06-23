@@ -1,6 +1,6 @@
 package molehill.core.render
 {
-	import appbase.utils.debug.DebugLogger;
+	import utils.DebugLogger;
 	
 	import easy.collections.TreeNode;
 	
@@ -43,8 +43,6 @@ package molehill.core.render
 			_scene = this;
 			
 			addEventListener(Input3DMouseEvent.CLICK, onSceneMouseClick);
-			
-			DebugLogger.startExternalLogging();
 		}
 		
 		public function set focus(value:Sprite3D):void
