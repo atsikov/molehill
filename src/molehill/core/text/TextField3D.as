@@ -374,18 +374,15 @@ package molehill.core.text
 			}
 			
 			_containerX = _shiftX * _parentScaleX + _parentShiftX;
-			_containerRight = _containerX + _textWidth;
+			_containerRight = _containerX + _textWidth * _scaleX * _parentScaleX;
 			
 			_x0 = _containerX;
 			_x1 = _containerX;
 			_x2 = _containerRight
 			_x3 = _containerRight
 			
-			_containerRight = _containerX + _textWidth;
-			_containerBottom = _containerY + _textHeight;
-			
-			_containerY = _shiftY + _parentShiftY * _parentScaleY;
-			_containerBottom = _containerY + _textHeight;
+			_containerY = _shiftY * _parentScaleY + _parentShiftY;
+			_containerBottom = _containerY + _textHeight * _scaleY * _parentScaleY;
 			
 			_y0 = _containerY;
 			_y1 = _containerBottom;

@@ -249,8 +249,8 @@ package molehill.easy.ui3d
 		
 		override public function setSize(w:Number, h:Number):void
 		{
-			_totalWidth = w;
-			_totalHeight = h;
+			_totalWidth = w * scaleX;
+			_totalHeight = h * scaleY;
 			
 			resize();
 		}
