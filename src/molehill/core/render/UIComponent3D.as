@@ -446,7 +446,7 @@ package molehill.core.render
 						_insideUIComponent = true;
 					}
 					
-					doSyncTrees(src.firstChild, dst.firstChild, inSpecTree || origDst !== dst);
+					doSyncTrees(src.firstChild, dst.firstChild, inSpecTree || /*origDst !== dst*/treeChanged);
 					
 					if (src !== localRenderTree && src.value is UIComponent3D)
 					{

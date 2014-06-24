@@ -824,9 +824,10 @@ package molehill.core.render
 		public function toString():String
 		{
 			return "SpriteBatcher [" + StringUtils.getObjectAddress(this) + "]\n" +
+				"\tnumSprites: " + _numSprites + "\n" +
 				"\ttextureAtlas: " + _textureAtlasID + "\n" +
-				"firstChild: " + (_listSprites.head != null ? _listSprites.head.data : "null") + "\n" +
-				"lastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n";
+				"\tfirstChild: " + (_listSprites.head != null ? _listSprites.head.data : "null") + "\n" +
+				"\tlastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n";
 		}
 	}
 }

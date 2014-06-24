@@ -1,7 +1,5 @@
 package molehill.core.render
 {
-	import utils.DebugLogger;
-	
 	import easy.collections.TreeNode;
 	
 	import flash.display.BitmapData;
@@ -22,6 +20,7 @@ package molehill.core.render
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 	
+	import utils.DebugLogger;
 	import utils.ObjectUtils;
 	
 	use namespace molehill_internal;
@@ -374,30 +373,34 @@ package molehill.core.render
 				{
 					var container:Sprite3DContainer = sprite as Sprite3DContainer;
 					
-					// found new non-empty container in render tree
-					// adding children tom bacthing
-					if (!batchingTree.hasChildren)
-					{
-						// adding new empty container to batching
-						batchNode = new TreeNode(
-							new BatchingInfo(renderTree.firstChild.value)
-						);
-						var firstChild:TreeNode = renderTree.firstChild;
-						renderTree.removeNode(firstChild);
-						prepareBatchers(firstChild, batchNode, cameraOwner);
-						renderTree.addAsFirstNode(firstChild);
-						batchingTree.addAsFirstNode(batchNode);
-					}
-					
 					if (container.textureAtlasChanged || container.treeStructureChanged || container.cameraChanged)
 					{
+						// found new non-empty container in render tree
+						// adding children tom bacthing
+						
+						var containerRenderTree:TreeNode = renderTree;
+						
 						if (sprite is UIComponent3D)
 						{
 							(sprite as UIComponent3D).updateFlattnedTree();
+							containerRenderTree = (sprite as UIComponent3D).flattenedRenderTree;
+						}
+						
+						if (!batchingTree.hasChildren)
+						{
+							// adding new empty container to batching
+							batchNode = new TreeNode(
+								new BatchingInfo(containerRenderTree.firstChild.value)
+							);
+							var firstChild:TreeNode = containerRenderTree.firstChild;
+							containerRenderTree.removeNode(firstChild);
+							prepareBatchers(firstChild, batchNode, cameraOwner);
+							containerRenderTree.addAsFirstNode(firstChild);
+							batchingTree.addAsFirstNode(batchNode);
 						}
 						
 						checkBatchingTree(
-							container is UIComponent3D ? (container as UIComponent3D).flattenedRenderTree.firstChild : renderTree.firstChild,
+							containerRenderTree.firstChild,
 							batchingTree.firstChild,
 							sprite.camera != null ? sprite : cameraOwner
 						);
