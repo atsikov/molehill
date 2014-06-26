@@ -118,6 +118,19 @@ package molehill.easy.ui3d
 			}
 		}
 		
+		override public function setTexture(value:String):void
+		{
+			if (!TextureManager.getInstance().isTextureCreated(value))
+			{
+				return;
+			}
+			
+			reset();
+			_resURL = null;
+			_urlToTextureID = value;
+			update();
+		}
+		
 		private function onResourceReady(event:Event):void
 		{
 			if (!TextureManager.getInstance().isTextureCreated(_urlToTextureID))
