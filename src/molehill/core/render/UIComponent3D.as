@@ -11,6 +11,7 @@ package molehill.core.render
 	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
 	
 	import utils.ObjectUtils;
+	import utils.StringUtils;
 	
 	use namespace molehill_internal;
 	/**
@@ -342,28 +343,27 @@ package molehill.core.render
 		private function doSyncTrees(src:TreeNode, dst:TreeNode, inSpecTree:Boolean = false):void
 		{
 			//trace('syncing subtree');
-			var keepTreeCursor:Boolean = false;
-			
 			while (src != null)
 			{
 				var treeChanged:Boolean = false;
 				var origDst:TreeNode = dst;
-				if (!inSpecTree || (src.value is TextField3D || src.value.parent is TextField3D))
+				
+				var isDynamic:Boolean = _isDynamic;
+				var isText:Boolean = _isText;
+				
+				var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst);
+				
+				if (isDynamic != _isDynamic || isText != _isText)
 				{
-					var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst);
-					
-					if (targetTree !== dst)
-					{
-						treeChanged = true;
-						_lastDst.push(dst);
-						dst = targetTree;
-						//trace('tree changed; _localTreeTextCursor.value == ' + (_localTreeTextCursor != null ? _localTreeTextCursor.value : null) +
-						//	'; _localTreeBackCursor.value == ' + (_localTreeBackCursor != null ? _localTreeBackCursor.value : null));
-					}
+					treeChanged = true;
+					_lastDst.push(dst);
+					dst = targetTree;
+					//trace('tree changed: origDst ' + StringUtils.getObjectAddress(origDst) + ', dst ' + StringUtils.getObjectAddress(dst) + '; \n\t_localTreeTextCursor.value == ' + (_localTreeTextCursor != null ? _localTreeTextCursor.value : null) +
+					//	'; \n\t_localTreeDynamicCursor.value == ' + (_localTreeDynamicCursor != null ? _localTreeDynamicCursor.value : null));
 				}
-				keepTreeCursor = false;
 				
 				//trace(src.value + "  <==>  " + dst.value + '; inSpecTree == ' + inSpecTree + '; _insideUIComponent == ' + _insideUIComponent);
+				//trace('Dynamic: ' + _isDynamic + '; text: ' + _isText);
 				
 				if (src.value !== dst.value)
 				{
@@ -394,7 +394,7 @@ package molehill.core.render
 						dstParent = dst.parent;
 						var dstNext:TreeNode = dst.nextSibling;
 						
-						// assigning pointer here cause dst removing may affect cursors
+						// assigning pointer here because dst removing may affect cursors
 						if (dstNext != null)
 						{
 							if (_dstTreeRoot === _localTreeDynamic)
@@ -412,14 +412,7 @@ package molehill.core.render
 						
 						if (dstNext != null)
 						{
-							if (treeChanged)
-							{
-								dst = _lastDst.pop();
-							}
-							else
-							{
-								dst = dstNext;
-							}
+							dst = dstNext;
 							dstNext = null;
 							continue;
 						}
@@ -446,7 +439,7 @@ package molehill.core.render
 						_insideUIComponent = true;
 					}
 					
-					doSyncTrees(src.firstChild, dst.firstChild, inSpecTree || origDst !== dst);
+					doSyncTrees(src.firstChild, dst.firstChild, inSpecTree || /*origDst !== dst*/treeChanged);
 					
 					if (src !== localRenderTree && src.value is UIComponent3D)
 					{
@@ -463,28 +456,56 @@ package molehill.core.render
 					}
 				}
 				
-				if (treeChanged)
+				isDynamic = _isDynamic;
+				isText = _isText;
+				
+				if (src.value == _lastDynamicContainer)
+				{
+					_localTreeDynamicCursor = dst;
+					_isDynamic = false;
+				}
+				
+				if (src.value == _lastTextContainer)
+				{
+					_localTreeTextCursor = dst;
+					_isText = false;
+				}
+				
+				if (isDynamic != _isDynamic || isText != _isText)
 				{
 					dst = _lastDst.pop();
 				}
-				
+				/*
 				var nextValue:Sprite3DContainer = src.nextSibling == null ? null : src.nextSibling.value as Sprite3DContainer;
-				var needMoveDstCursor:Boolean = _insideUIComponent || inSpecTree || nextValue == null || !inSpecTree && !nextValue.hasDynamicTexture && !(nextValue is TextField3D);
-				//trace('need to move cursor: ' + needMoveDstCursor.toString());
-				if (src !== localRenderTree && needMoveDstCursor && src.nextSibling != null && dst.nextSibling == null)
+				var needMoveDstCursor:Boolean =
+					_insideUIComponent ||
+					inSpecTree ||
+					nextValue == null ||
+					!inSpecTree && !nextValue.hasDynamicTexture && !(nextValue is TextField3D);
+				
+				trace('need to move cursor: ' + needMoveDstCursor);
+				*/
+				
+				var nextSiblingNode:TreeNode = dst;
+				if (src !== localRenderTree && src.nextSibling != null)
 				{
-					node = _cacheTreeNodes.newInstance();
-					node.value = src.nextSibling.value;
-					dst.parent.insertNodeAfter(
-						dst,
-						node
-					);
+					nextSiblingNode = getTreeNodeByValue(src.nextSibling.value as Sprite3DContainer, dst, true);
+					if (nextSiblingNode.value !== src.nextSibling.value && nextSiblingNode.nextSibling == null)
+					{
+						node = _cacheTreeNodes.newInstance();
+						node.value = src.nextSibling.value;
+						nextSiblingNode.parent.insertNodeAfter(
+							nextSiblingNode,
+							node
+						);
+					}
 				}
 				
 				src.value.syncedInUIComponent = true;
 				
-				if (needMoveDstCursor)
+				if (nextSiblingNode === dst)
 				{
+					//trace('changing dst pointer: ' + StringUtils.getObjectAddress(dst) + ' -> ' + StringUtils.getObjectAddress(dst.nextSibling));
 					dst = dst.nextSibling;
 				}
 				
@@ -508,7 +529,11 @@ package molehill.core.render
 		}
 		
 		private var _dstTreeRoot:TreeNode;
-		private function getTreeNodeByValue(value:Sprite3DContainer, dst:TreeNode):TreeNode
+		private var _isDynamic:Boolean;
+		private var _lastDynamicContainer:Sprite3DContainer;
+		private var _isText:Boolean;
+		private var _lastTextContainer:Sprite3DContainer;
+		private function getTreeNodeByValue(value:Sprite3DContainer, dst:TreeNode, keepFlags:Boolean = false):TreeNode
 		{
 			if (value == null || _insideUIComponent)
 			{
@@ -523,12 +548,30 @@ package molehill.core.render
 				targetNode = _localTreeDynamicCursor;
 				targetRoot = _localTreeDynamic;
 				_dstTreeRoot = _localTreeDynamic;
+				
+				if (!keepFlags)
+				{
+					if (!_isDynamic)
+					{
+						_lastDynamicContainer = value;
+					}
+					_isDynamic = true;
+				}
 			}
 			else if (value is TextField3D)
 			{
 				targetNode = _localTreeTextCursor;
 				targetRoot = _localTreeText;
 				_dstTreeRoot = _localTreeText;
+				
+				if (!keepFlags)
+				{
+					if (!_isText)
+					{
+						_lastTextContainer = value;
+					}
+					_isText = true;
+				}
 			}
 			else
 			{
@@ -555,13 +598,16 @@ package molehill.core.render
 				targetNode = targetRoot.lastChild;
 			}
 			
-			if (value.hasDynamicTexture)
+			if (!keepFlags)
 			{
-				_localTreeDynamicCursor = targetNode;
-			}
-			else if (value is TextField3D)
-			{
-				_localTreeTextCursor = targetNode;
+				if (value.hasDynamicTexture)
+				{
+					_localTreeDynamicCursor = targetNode;
+				}
+				else if (value is TextField3D)
+				{
+					_localTreeTextCursor = targetNode;
+				}
 			}
 			
 			return targetNode;
