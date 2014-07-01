@@ -13,7 +13,7 @@ package molehill.core.render.shader.species.base
 		{
 			var code:String =
 				"tex ft1, v1, fs0 <2d,clamp,linear,mipnone>\n" +
-				"add ft1.xyzw, ft1.xyzw, v0.xyzw\n" +
+				"add ft1.xyz, ft1.xyz, v0.xyz\n" +
 				"mov oc, ft1\n";
 			
 			return code;
