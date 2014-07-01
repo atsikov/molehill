@@ -16,6 +16,11 @@ package molehill.core.sprite
 		private var _isPlaying:Boolean = false;
 		override public function play(frame:int=-1):void
 		{
+			if (_isPlaying && frame == -1)
+			{
+				return;
+			}
+			
 			_currentFrameIndex = 0;
 			_currentFrameRepeated = 0;
 			_isReversed = false;
@@ -27,6 +32,11 @@ package molehill.core.sprite
 		
 		override public function stop(frame:int = -1):void
 		{
+			if (!_isPlaying && frame == -1)
+			{
+				return;
+			}
+			
 			_isPlaying = false;
 			super.stop(frame);
 		}
@@ -66,57 +76,60 @@ package molehill.core.sprite
 			
 			_lastFrameTime = getTimer();
 			
-			if (_activeFrame != null && _currentFrameRepeated >= _activeFrame.repeatCount)
-			{
-				_currentFrameRepeated = 0;
-				if (_isReversed)
-				{
-					_currentFrameIndex--;
-				}
-				else
-				{
-					_currentFrameIndex++;
-				}
-			}
 			
-			if (_currentFrameIndex >= numAnimationFrames || _currentFrameIndex < 0)
+			if (_isPlaying)
 			{
-				switch (_customAnimationData.playMode)
+				if (_activeFrame != null && _currentFrameRepeated >= _activeFrame.repeatCount)
 				{
-					case AnimationPlayMode.LOOP:
-						_currentFrameIndex = 0;
-						break;
-					
-					case AnimationPlayMode.PING_PONG:
-						_isReversed = !_isReversed;
-						_currentFrameIndex = _isReversed ? numAnimationFrames - 1 : 0;
-						
-						_currentFrameRepeated = 1;
-						if (numAnimationFrames <= 1)
-						{
+					_currentFrameRepeated = 0;
+					if (_isReversed)
+					{
+						_currentFrameIndex--;
+					}
+					else
+					{
+						_currentFrameIndex++;
+					}
+				}
+				
+				if (_currentFrameIndex >= numAnimationFrames || _currentFrameIndex < 0)
+				{
+					switch (_customAnimationData.playMode)
+					{
+						case AnimationPlayMode.LOOP:
 							_currentFrameIndex = 0;
-						}
-						else
-						{
-							if (_activeFrame != null && _currentFrameRepeated >= _activeFrame.repeatCount)
-							{
-								_currentFrameRepeated = 0;
-								if (_isReversed)
-								{
-									_currentFrameIndex--;
-								}
-								else
-								{
-									_currentFrameIndex++;
-								}
-							}
+							break;
+						
+						case AnimationPlayMode.PING_PONG:
+							_isReversed = !_isReversed;
+							_currentFrameIndex = _isReversed ? numAnimationFrames - 1 : 0;
 							
-						}
-						break;
+							_currentFrameRepeated = 1;
+							if (numAnimationFrames <= 1)
+							{
+								_currentFrameIndex = 0;
+							}
+							else
+							{
+								if (_activeFrame != null && _currentFrameRepeated >= _activeFrame.repeatCount)
+								{
+									_currentFrameRepeated = 0;
+									if (_isReversed)
+									{
+										_currentFrameIndex--;
+									}
+									else
+									{
+										_currentFrameIndex++;
+									}
+								}
+								
+							}
+							break;
+					}
 				}
+				_currentFrameRepeated++;
 			}
-			
-			_currentFrameRepeated++;
 			
 			if (_currentFrameIndex < numAnimationFrames)
 			{
