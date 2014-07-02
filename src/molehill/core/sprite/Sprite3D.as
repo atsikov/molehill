@@ -207,6 +207,17 @@ package molehill.core.sprite
 			return 0;
 		}
 		
+		private var _snapToPixels:Boolean = false;
+		public function get snapToPixels():Boolean
+		{
+			return _snapToPixels;
+		}
+		
+		public function set snapToPixels(value:Boolean):void
+		{
+			_snapToPixels = value;
+		}
+		
 		molehill_internal var _parent:Sprite3DContainer;
 		public function get parent():Sprite3DContainer
 		{
@@ -533,17 +544,34 @@ package molehill.core.sprite
 
 			if (_blankOffsetX == 0 && _blankOffsetY == 0)
 			{
-				_vertexX0 = x0;
-				_vertexY0 = y0;
-				
-				_vertexX1 = x1;
-				_vertexY1 = y1;
-				
-				_vertexX2 = x2;
-				_vertexY2 = y2;
-				
-				_vertexX3 = x3;
-				_vertexY3 = y3;
+				if (_snapToPixels)
+				{
+					_vertexX0 = Math.round(x0);
+					_vertexY0 = Math.round(y0);
+					
+					_vertexX1 = Math.round(x1);
+					_vertexY1 = Math.round(y1);
+					
+					_vertexX2 = Math.round(x2);
+					_vertexY2 = Math.round(y2);
+					
+					_vertexX3 = Math.round(x3);
+					_vertexY3 = Math.round(y3);
+				}
+				else
+				{
+					_vertexX0 = x0;
+					_vertexY0 = y0;
+					
+					_vertexX1 = x1;
+					_vertexY1 = y1;
+					
+					_vertexX2 = x2;
+					_vertexY2 = y2;
+					
+					_vertexX3 = x3;
+					_vertexY3 = y3;
+				}
 			}
 			else
 			{
@@ -556,17 +584,34 @@ package molehill.core.sprite
 				var dxCropped:Number = _parentShiftX + dx0Cropped * parentCos - dy0Cropped * parentSin;
 				var dyCropped:Number = _parentShiftY + dx0Cropped * parentSin + dy0Cropped * parentCos;
 				
-				_vertexX0 = -scaledCroppedHeight * sin + dxCropped;
-				_vertexY0 = scaledCroppedHeight * cos + dyCropped;
-				
-				_vertexX1 = dxCropped;
-				_vertexY1 = dyCropped;
-				
-				_vertexX2 = scaledCroppedWidth * cos + dxCropped;
-				_vertexY2 = scaledCroppedWidth * sin + dyCropped;
-				
-				_vertexX3 = scaledCroppedWidth * cos - scaledCroppedHeight * sin + dxCropped;
-				_vertexY3 = scaledCroppedWidth * sin + scaledCroppedHeight * cos + dyCropped;
+				if (_snapToPixels)
+				{
+					_vertexX0 = Math.round(-scaledCroppedHeight * sin + dxCropped);
+					_vertexY0 = Math.round(scaledCroppedHeight * cos + dyCropped);
+					
+					_vertexX1 = Math.round(dxCropped);
+					_vertexY1 = Math.round(dyCropped);
+					
+					_vertexX2 = Math.round(scaledCroppedWidth * cos + dxCropped);
+					_vertexY2 = Math.round(scaledCroppedWidth * sin + dyCropped);
+					
+					_vertexX3 = Math.round(scaledCroppedWidth * cos - scaledCroppedHeight * sin + dxCropped);
+					_vertexY3 = Math.round(scaledCroppedWidth * sin + scaledCroppedHeight * cos + dyCropped);
+				}
+				else
+				{
+					_vertexX0 = -scaledCroppedHeight * sin + dxCropped;
+					_vertexY0 = scaledCroppedHeight * cos + dyCropped;
+					
+					_vertexX1 = dxCropped;
+					_vertexY1 = dyCropped;
+					
+					_vertexX2 = scaledCroppedWidth * cos + dxCropped;
+					_vertexY2 = scaledCroppedWidth * sin + dyCropped;
+					
+					_vertexX3 = scaledCroppedWidth * cos - scaledCroppedHeight * sin + dxCropped;
+					_vertexY3 = scaledCroppedWidth * sin + scaledCroppedHeight * cos + dyCropped;
+				}
 			}
 			
 			_z0 = _shiftZ; 
