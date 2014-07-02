@@ -57,9 +57,9 @@ package molehill.easy.ui3d.effects
 			);
 		}
 		
-		protected function placeTarget():void
+		public function placeTarget(customTarget:Sprite3D = null):void
 		{
-			WindowManager3D.getInstance().centerPopUp(_target);
+			WindowManager3D.getInstance().centerPopUp(customTarget == null ? _target : customTarget);
 		}
 		
 		protected function get startPosition():Point
