@@ -7,10 +7,11 @@ package molehill.easy.ui3d
 	
 	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.render.InteractiveSprite3D;
-	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.ColorFillShader;
+	import molehill.core.sprite.Sprite3D;
+	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.easy.ui3d.effects.TweenCameraEffect;
 	import molehill.easy.ui3d.effects.WindowEffectsSet;
 	
 	[Event(name="change", type="flash.events.Event")]
@@ -59,7 +60,6 @@ package molehill.easy.ui3d
 		{
 			_contentRegion = value;
 			
-			centerAllChildren();
 			resize();
 		}
 		
@@ -220,6 +220,16 @@ package molehill.easy.ui3d
 			for (var i:int = 0; i < _openedWindows.length; i++) 
 			{
 				var executor:PopUpExecutor = PopUpExecutor.getByPopUp(_openedWindows[i]);
+				
+				if (executor.effectsSet != null && executor.effectsSet.show is TweenCameraEffect)
+				{
+					(executor.effectsSet.show as TweenCameraEffect).placeTarget(_openedWindows[i]);
+				}
+				else
+				{
+					centerPopUp(_openedWindows[i]);
+				}
+				
 				var modalBG:Sprite3D = executor != null ? executor.modalBG as Sprite3D : null; 
 				if (modalBG != null)
 				{
@@ -276,16 +286,6 @@ package molehill.easy.ui3d
 		public function alignToRight(popUp:Sprite3D):void
 		{
 			popUp.x = contentRegion.x + contentRegion.width + popUp.width;
-		}
-		
-		public function centerAllChildren():void
-		{
-			var n:uint = contentLayer.numChildren;
-			for (var i:int = 0; i < n; i++)
-			{
-				var child:Sprite3D = contentLayer.getChildAt(i);
-				centerPopUp(child);
-			}
 		}
 		
 		private var _openedWindows:Vector.<Sprite3D> = new Vector.<Sprite3D>();
@@ -373,6 +373,10 @@ class PopUpExecutor
 	}
 	
 	private var _effectsSet:WindowEffectsSet;
+	public function get effectsSet():WindowEffectsSet
+	{
+		return _effectsSet;
+	}
 	
 	private var _contentLayer:Sprite3DContainer;
 	
