@@ -43,7 +43,6 @@ package molehill.easy.ui3d.effects
 			target.camera.scrollX = startPosition.x;
 			target.camera.scrollY = startPosition.y;
 			
-			var effectTime:Number = 0.4;
 			_tween = OpenTween.go(
 				target.camera,
 				{
@@ -55,6 +54,11 @@ package molehill.easy.ui3d.effects
 				tweening,
 				completeEffect
 			);
+		}
+		
+		protected function get effectTime():Number
+		{
+			return 0.4;
 		}
 		
 		public function placeTarget(customTarget:Sprite3D = null):void

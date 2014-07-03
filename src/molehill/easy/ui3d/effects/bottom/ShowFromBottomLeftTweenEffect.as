@@ -1,13 +1,15 @@
-package molehill.easy.ui3d.effects
+package molehill.easy.ui3d.effects.bottom
 {
 	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	
 	import molehill.core.sprite.Sprite3D;
 	import molehill.easy.ui3d.WindowManager3D;
+	import molehill.easy.ui3d.effects.TweenCameraEffect;
 
-	public class HideToBottomLeftTweenEffect extends TweenCameraEffect
+	public class ShowFromBottomLeftTweenEffect extends TweenCameraEffect
 	{
-		public function HideToBottomLeftTweenEffect()
+		public function ShowFromBottomLeftTweenEffect()
 		{
 			super();
 		}
@@ -19,7 +21,7 @@ package molehill.easy.ui3d.effects
 			WindowManager3D.getInstance().alignToLeft(target);
 		}
 		
-		override protected function get targetPosition():Point
+		override protected function get startPosition():Point
 		{
 			return new Point(0, -_target.height - 100);
 		}
