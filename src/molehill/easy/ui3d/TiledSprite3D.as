@@ -84,17 +84,17 @@ package molehill.easy.ui3d
 				return;
 			}
 			
-			for (var i:int = 0; i < w; i += _referenceSprite.width)
+			for (var i:Number = 0; i < w; i += _referenceSprite.width)
 			{
-				for (var j:int = 0; j < h; j += _referenceSprite.height)
+				for (var j:Number = 0; j < h; j += _referenceSprite.height)
 				{
 					sprite = _cacheSprites.newInstance();
 					sprite.moveTo(i, j);
 					sprite.setTexture(_referenceSprite.textureID);
 					sprite.textureRegion = _referenceSprite.textureRegion;
 					
-					var spriteWidth:int = _referenceSprite.width;
-					var spriteHeight:int = _referenceSprite.height;
+					var spriteWidth:Number = _referenceSprite.width;
+					var spriteHeight:Number = _referenceSprite.height;
 					
 					if (i + spriteWidth > w)
 					{
