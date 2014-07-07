@@ -1175,6 +1175,11 @@ package molehill.core.sprite
 			if (_parentScaleX != 1 || _scaleX != 1)
 			{
 				dx0 = localX / _parentScaleX / _scaleX;
+				
+				if (dx0 < 0)
+				{
+					dx0 = _width + dx0;
+				}
 			}
 			else
 			{
@@ -1184,6 +1189,11 @@ package molehill.core.sprite
 			if (_parentScaleY != 1 || _scaleY != 1)
 			{
 				dy0 = localY / _parentScaleY / _scaleY;
+				
+				if (dy0 < 0)
+				{
+					dy0 = _height + dy0;
+				}
 			}
 			else
 			{
