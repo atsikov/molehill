@@ -209,7 +209,7 @@ package molehill.easy.ui3d.list
 							scrollX : 0,
 							scrollY : 0
 						},
-						PAGE_ANIMATION_DURATION / 4,
+						PAGE_ANIMATION_DURATION / 2,
 						0,
 						Linear.easeNone,
 						onAnimationCompleted
@@ -223,7 +223,7 @@ package molehill.easy.ui3d.list
 			
 			if (_direction == Direction.HORIZONTAL)
 			{
-				if (_itemsContainerCamera.scrollY > 0)
+				if (_itemsContainerCamera.scrollY < 0)
 				{
 					if (_itemsContainerCamera.scrollY < -(lineSize / 2))
 					{
@@ -245,7 +245,7 @@ package molehill.easy.ui3d.list
 			}
 			else
 			{
-				if (_itemsContainerCamera.scrollX > 0)
+				if (_itemsContainerCamera.scrollX < 0)
 				{
 					if (_itemsContainerCamera.scrollX < -(lineSize / 2))
 					{
@@ -257,11 +257,11 @@ package molehill.easy.ui3d.list
 				}
 				else
 				{
-					if (_itemsContainerCamera.scrollX > +(lineSize / 2))
+					if (_itemsContainerCamera.scrollX > (lineSize / 2))
 					{
 						_scrollPosition += numItemsPerLine;
 						update();
-						_itemsContainerCamera.scrollX == lineSize;
+						_itemsContainerCamera.scrollX -= lineSize;
 					}
 				}
 			}
@@ -272,7 +272,7 @@ package molehill.easy.ui3d.list
 					scrollX : 0,
 					scrollY : 0
 				},
-				PAGE_ANIMATION_DURATION / 4,
+				PAGE_ANIMATION_DURATION / 2,
 				0,
 				Linear.easeNone,
 				onAnimationCompleted
@@ -846,8 +846,8 @@ package molehill.easy.ui3d.list
 			}
 			
 			var dataBeginIdx:int = _scrollPosition - numItemsPerLine;
-			var numAdditionalItemsCoeff:uint = 2 + _numAdditionalDrawingLines;
-			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + numItemsPerLine * numAdditionalItemsCoeff;
+			var numAdditionalLinesCoeff:uint = 2 + _numAdditionalDrawingLines;
+			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + numItemsPerLine * numAdditionalLinesCoeff;
 			
 			var numItems:int = this.numItems;
 			if (dataEndIdx >= numItems)
