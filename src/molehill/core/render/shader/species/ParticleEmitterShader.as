@@ -42,13 +42,15 @@ package molehill.core.render.shader.species
 				"mul vt2.zw, vt1.zz, va4.zw\n" +
 				"div vt2.zw, vt2.zw, vc4.zz\n" +
 				
+				// traveled distance = speed + accel
+				"add vt2.xy, vt2.xy, vt2.zw\n" +
+				
 				"mov vt0, va0\n" +
 				// position + initial offset
 				"add vt0.xy, vt0.xy, va3.xy\n" +
 				
-				// position + traveled distance (accel + speed)
+				// position + traveled distance
 				"add vt0.xy, vt0.xy, vt2.xy\n" +
-				"add vt0.xy, vt0.xy, vt2.zw\n" +
 				
 				"m44 vt0, vt0, vc0\n" +
 				"mov v0, va1\n" +

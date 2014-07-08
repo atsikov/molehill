@@ -634,6 +634,7 @@ package molehill.core.render
 						{
 							if (_lastBatchedChild != null &&
 								_currentBatcher != null &&
+								_currentBatcher is SpriteBatcher &&
 								_lastBatchedChild !== (_currentBatcher as SpriteBatcher).getLastChild()
 							)
 							{

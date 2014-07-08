@@ -22,7 +22,11 @@ package molehill.core.render.particles
 	import molehill.core.render.shader.species.ParticleEmitterShader;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
+	
+	import utils.CachingFactory;
+	import utils.DebugLogger;
 	
 	use namespace molehill_internal;
 
@@ -40,7 +44,10 @@ package molehill.core.render.particles
 			
 			_listParticles = new Vector.<ParticleData>();
 			
-			_cacheParticleData = new Vector.<ParticleData>();
+			if (_cacheParticleData == null)
+			{
+				_cacheParticleData = new CachingFactory(ParticleData, 1000);
+			}
 			
 			_enterFrameListener = new Sprite();
 			//_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
@@ -48,12 +55,11 @@ package molehill.core.render.particles
 		
 		private var _lastGenerationTime:uint = 0;
 		private var _listGenerationTimes:Vector.<uint>;
-		private var _lastRemoveTime:uint = 0;
 		private function onNeedUpdateParticles(event:Event):void
 		{
 			var timer:uint = getTimer();
 			
-			while (_lastGenerationTime == 0 || timer - _lastGenerationTime > _appearInterval)
+			while (_scene != null && (_lastGenerationTime == 0 || timer - _lastGenerationTime > _appearInterval))
 			{
 				//trace('Generating new particles. timer = ' + timer + '; lastGenerationTime = ' + _lastGenerationTime + '; num generations: ' + _listGenerationTimes.length);
 				generateParticles();
@@ -88,13 +94,15 @@ package molehill.core.render.particles
 			if (value != null)
 			{
 				_lastGenerationTime = 0;
-				_lastRemoveTime = 0;
-				_listGenerationTimes = new Vector.<uint>();
+				if (_listGenerationTimes == null)
+				{
+					_listGenerationTimes = new Vector.<uint>();
+				}
 				_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
 			}
 			else
 			{
-				_enterFrameListener.removeEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+				//_enterFrameListener.removeEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
 			}
 		}
 		
@@ -103,15 +111,10 @@ package molehill.core.render.particles
 		private var _numAddedParticles:int = 0;
 		private var _numRemovedParticles:int = 0;
 		
-		private var _cacheParticleData:Vector.<ParticleData>;
+		private static var _cacheParticleData:CachingFactory;
 		public function getParticleData():ParticleData
 		{
-			if (_cacheParticleData.length == 0)
-			{
-				return new ParticleData();
-			}
-			
-			return _cacheParticleData.pop();
+			return _cacheParticleData.newInstance();
 		}
 		
 		private function generateParticles():void
@@ -120,8 +123,22 @@ package molehill.core.render.particles
 			for (var i:int = 0; i < _appearCount; i++)
 			{
 				var particle:ParticleData = getParticleData();
-				particle.shiftX = Math.random() * _xRadius * (Math.random() >= 0.5 ? 1 : -1);
-				particle.shiftY = Math.random() * _yRadius * (Math.random() >= 0.5 ? 1 : -1);
+				
+				var radiusX:Number = _xRadius * Math.random();
+				var radiusY:Number = _yRadius * Math.random();
+				
+				if (_emitterShape == ParticleEmitterShape.ELLIPTIC)
+				{
+					var angle:Number = Math.random() * 2 * Math.PI;
+					particle.shiftX = radiusX * Math.cos(angle);
+					particle.shiftY = radiusY * Math.sin(angle);
+				}
+				else
+				{
+					particle.shiftX = radiusX * (Math.random() >= 0.5 ? 1 : -1);
+					particle.shiftY = radiusY * (Math.random() >= 0.5 ? 1 : -1);
+				}
+				
 				particle.appearTime = timer;
 				particle.lifeTime = _lifeTime;
 				particle.speedX = speedX;
@@ -141,11 +158,22 @@ package molehill.core.render.particles
 			var removedParticles:Vector.<ParticleData> = _listParticles.splice(0, _appearCount);
 			for (var i:int = 0; i < _appearCount; i++)
 			{
-				_cacheParticleData.push(
+				_cacheParticleData.storeInstance(
 					removedParticles[i]
 				);
 			}
 			_numRemovedParticles += length - _listParticles.length;
+		}
+		
+		private var _emitterShape:String = ParticleEmitterShape.ELLIPTIC;
+		public function get emitterShape():String
+		{
+			return _emitterShape;
+		}
+		
+		public function set emitterShape(value:String):void
+		{
+			_emitterShape = value;
 		}
 		
 		private var _xRadius:Number = 0;
@@ -246,7 +274,15 @@ package molehill.core.render.particles
 		{
 			_appearCount = value;
 		}
-
+		
+		override public function setTexture(value:String):void
+		{
+			super.setTexture(value);
+			
+			var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(value);
+			_textureAtlasID = atlas != null ? atlas.atlasID : null;
+		}
+		
 		// IVertexBatcher implementation
 		private var _vertexData:ByteArray;
 		private var _spriteVertexData:ByteArray;
@@ -274,7 +310,7 @@ package molehill.core.render.particles
 				_spriteVertexData.position = 0;
 				_spriteVertexData.writeFloat(_x0);
 				_spriteVertexData.writeFloat(_y0);
-				_spriteVertexData.writeFloat(_z0);
+				//_spriteVertexData.writeFloat(_z0);
 				_spriteVertexData.writeFloat(_redMultiplier * _parentRed);
 				_spriteVertexData.writeFloat(_greenMultiplier * _parentGreen);
 				_spriteVertexData.writeFloat(_blueMultiplier * _parentBlue);
@@ -284,7 +320,7 @@ package molehill.core.render.particles
 				
 				_spriteVertexData.writeFloat(_x1);
 				_spriteVertexData.writeFloat(_y1);
-				_spriteVertexData.writeFloat(_z1);
+				//_spriteVertexData.writeFloat(_z1);
 				_spriteVertexData.writeFloat(_redMultiplier * _parentRed);
 				_spriteVertexData.writeFloat(_greenMultiplier * _parentGreen);
 				_spriteVertexData.writeFloat(_blueMultiplier * _parentBlue);
@@ -294,7 +330,7 @@ package molehill.core.render.particles
 				
 				_spriteVertexData.writeFloat(_x2);
 				_spriteVertexData.writeFloat(_y2);
-				_spriteVertexData.writeFloat(_z2);
+				//_spriteVertexData.writeFloat(_z2);
 				_spriteVertexData.writeFloat(_redMultiplier * _parentRed);
 				_spriteVertexData.writeFloat(_greenMultiplier * _parentGreen);
 				_spriteVertexData.writeFloat(_blueMultiplier * _parentBlue);
@@ -304,7 +340,7 @@ package molehill.core.render.particles
 				
 				_spriteVertexData.writeFloat(_x3);
 				_spriteVertexData.writeFloat(_y3);
-				_spriteVertexData.writeFloat(_z3);
+				//_spriteVertexData.writeFloat(_z3);
 				_spriteVertexData.writeFloat(_redMultiplier * _parentRed);
 				_spriteVertexData.writeFloat(_greenMultiplier * _parentGreen);
 				_spriteVertexData.writeFloat(_blueMultiplier * _parentBlue);
@@ -319,7 +355,7 @@ package molehill.core.render.particles
 				_emptyByteArray = new ByteArray();
 			}
 			
-			return _emptyByteArray;
+			return getIndicesData(0);
 		}
 		
 		private var _lastPassedVertices:uint = int.MAX_VALUE;
@@ -486,8 +522,8 @@ package molehill.core.render.particles
 			
 			var numParticles:uint = _listParticles.length;
 			
-			// 9 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 128
-			var bytesPerParticle:int = 144;
+			// 8 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 128
+			var bytesPerParticle:int = 128;
 			
 			// 8 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 128
 			var bytesPerAdditionalParticleData:uint = 128;
@@ -609,7 +645,7 @@ package molehill.core.render.particles
 				{
 					_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
 					
-					orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_3);
+					orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
 					_listAdditionalVertexBuffers[0] = orderedVertexBuffer;
 					
 					orderedVertexBuffer = new OrderedVertexBuffer(1, _mainVertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4);
