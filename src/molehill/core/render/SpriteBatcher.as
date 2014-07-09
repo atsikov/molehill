@@ -617,28 +617,26 @@ package molehill.core.render
 				if (_vertexBufferVertices != null)
 				{
 					_vertexBufferVertices.dispose()
+					_vertexBufferVertices = null;
 				}
 				
 				if (_vertexBufferColor != null)
 				{
 					_vertexBufferColor.dispose()
+					_vertexBufferColor = null;
 				}
 				
 				if (_vertexBufferTexture != null)
 				{
 					_vertexBufferTexture.dispose()
+					_vertexBufferTexture = null;
 				}
 				
 				if (_indexBuffer != null)
 				{
 					_indexBuffer.dispose()
+					_indexBuffer = null;
 				}
-				
-				_vertexBufferVertices = null;
-				_vertexBufferColor = null;
-				_vertexBufferTexture = null;
-				
-				_indexBuffer = null;
 				
 				_needUploadVertexData = true;
 				_needUploadColorData = true;
@@ -682,9 +680,16 @@ package molehill.core.render
 			if (_vertexBufferVertices == null)
 			{
 				_vertexBufferVertices = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				vertexBufferChanged = true;
+			}
+			if (_vertexBufferColor == null)
+			{
 				_vertexBufferColor = context.createVertexBuffer(_numVisibleSprites * 4, 4);
+				vertexBufferChanged = true;
+			}
+			if (_vertexBufferTexture == null)
+			{
 				_vertexBufferTexture = context.createVertexBuffer(_numVisibleSprites * 4, 2);
-				
 				vertexBufferChanged = true;
 			}
 			if (_needUploadVertexData)
@@ -827,7 +832,8 @@ package molehill.core.render
 				"\tnumSprites: " + _numSprites + "\n" +
 				"\ttextureAtlas: " + _textureAtlasID + "\n" +
 				"\tfirstChild: " + (_listSprites.head != null ? _listSprites.head.data : "null") + "\n" +
-				"\tlastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n";
+				"\tlastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n" +
+				"\tcameraOwner: " + _cameraOwner + "\n";
 		}
 	}
 }

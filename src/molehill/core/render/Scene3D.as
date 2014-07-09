@@ -284,6 +284,7 @@ package molehill.core.render
 									_listSpriteBatchers.indexOf(currentBatcher),
 									1
 								);
+								currentBatcher.onContextRestored();
 							}
 						}
 						else if (newBatcher !== currentBatcher)
@@ -521,6 +522,7 @@ package molehill.core.render
 							_listSpriteBatchers.splice(
 								_listSpriteBatchers.indexOf(batcher), 1
 							);
+							batcher.onContextRestored();
 						}
 					}
 					else if (batchingInfo.batcher === batchingInfo.child)
@@ -528,6 +530,7 @@ package molehill.core.render
 						_listSpriteBatchers.splice(
 							_listSpriteBatchers.indexOf(batchingInfo.batcher), 1
 						);
+						batchingInfo.batcher.onContextRestored();
 					}
 				}
 				

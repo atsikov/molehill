@@ -613,13 +613,16 @@ package molehill.core.render.particles
 				
 				if (_additionalVertexBuffer == null || _lastAdditionalBufferSize != numParticles)
 				{
-					if (_additionalVertexBuffer != null)
+					if (_additionalVertexBuffer != null && _lastAdditionalBufferSize < numParticles)
 					{
 						_additionalVertexBuffer.dispose();
 						_additionalVertexBuffer = null;
 					}
 					
-					_additionalVertexBuffer = context.createVertexBuffer(numParticles * 4, 8);
+					if (_additionalVertexBuffer == null)
+					{
+						_additionalVertexBuffer = context.createVertexBuffer(numParticles * 4, 8);
+					}
 					//trace('creating additional buffer for ' + numParticles + ' particles');
 					_lastAdditionalBufferSize = numParticles;
 					
@@ -635,7 +638,7 @@ package molehill.core.render.particles
 				
 			if (_mainVertexBuffer == null || _lastMainBufferSize != numParticles)
 			{
-				if (_mainVertexBuffer != null)
+				if (_mainVertexBuffer != null && _lastMainBufferSize < numParticles)
 				{
 					_mainVertexBuffer.dispose();
 					_mainVertexBuffer = null;
@@ -643,7 +646,10 @@ package molehill.core.render.particles
 				
 				if (numParticles > 0)
 				{
-					_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+					if (_mainVertexBuffer == null)
+					{
+						_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+					}
 					
 					orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
 					_listAdditionalVertexBuffers[0] = orderedVertexBuffer;
@@ -703,6 +709,12 @@ package molehill.core.render.particles
 			{
 				_mainVertexBuffer.dispose();
 				_mainVertexBuffer = null;
+			}
+			
+			if (_additionalVertexBuffer != null)
+			{
+				_additionalVertexBuffer.dispose();
+				_additionalVertexBuffer = null;
 			}
 			
 			if (_indexBuffer != null)

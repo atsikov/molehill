@@ -273,13 +273,15 @@ package molehill.core.render.engine
 				}
 			}
 			
+			var batcherAdditionalVertexBufers:Vector.<OrderedVertexBuffer> = batcher.getAdditionalVertexBuffers(_context3D);
+			var batcherIndexBuffer:IndexBuffer3D = batcher.getCustomIndexBuffer(_context3D);
 			if (_lastChunkData != null &&
 				_lastChunkData.texture == _currentTexture &&
 				_lastChunkData.shader == batcher.shader &&
 				_lastChunkData.blendMode == batcher.blendMode &&
 				camerasEqual &&
-				_lastChunkData.additionalVertexBuffers === batcher.getAdditionalVertexBuffers(_context3D) &&
-				_lastChunkData.customIndexBuffer === batcher.getCustomIndexBuffer(_context3D))
+				_lastChunkData.additionalVertexBuffers === batcherAdditionalVertexBufers &&
+				_lastChunkData.customIndexBuffer === batcherIndexBuffer)
 			{
 				_lastChunkData.numTriangles += batcher.numTriangles;
 			}
@@ -292,8 +294,8 @@ package molehill.core.render.engine
 				chunkData.shader = batcher.shader;
 				chunkData.blendMode = batcher.blendMode;
 				chunkData.camera = batcher.batcherCamera;
-				chunkData.additionalVertexBuffers = batcher.getAdditionalVertexBuffers(_context3D);
-				chunkData.customIndexBuffer = batcher.getCustomIndexBuffer(_context3D);
+				chunkData.additionalVertexBuffers = batcherAdditionalVertexBufers;
+				chunkData.customIndexBuffer = batcherIndexBuffer;
 				
 				_listRenderChunks.enqueue(chunkData);
 				
