@@ -384,7 +384,7 @@ package molehill.core.render.particles
 				}
 				else
 				{
-					_indicesData.length = numParticles * 12;
+					//_indicesData.length = numParticles * 12;
 				}
 			}
 			
@@ -473,28 +473,28 @@ package molehill.core.render.particles
 		
 		public function get left():Number
 		{
-			return _left;
+			return _x0;
 		}
 		
 		private var _right:Number = int.MAX_VALUE;
 		
 		public function get right():Number
 		{
-			return _right;
+			return _x2;
 		}
 		
 		private var _top:Number = int.MIN_VALUE;
 		
 		public function get top():Number
 		{
-			return _top;
+			return _y1;
 		}
 		
 		private var _bottom:Number = int.MAX_VALUE;
 		
 		public function get bottom():Number
 		{
-			return _bottom;
+			return _y0;
 		}
 		
 		private var _additionalVertexBufferData:ByteArray;
@@ -613,7 +613,7 @@ package molehill.core.render.particles
 				
 				if (_additionalVertexBuffer == null || _lastAdditionalBufferSize != numParticles)
 				{
-					if (_additionalVertexBuffer != null && _lastAdditionalBufferSize < numParticles)
+					if (_additionalVertexBuffer != null && _lastAdditionalBufferSize != numParticles)
 					{
 						_additionalVertexBuffer.dispose();
 						_additionalVertexBuffer = null;
@@ -638,7 +638,7 @@ package molehill.core.render.particles
 				
 			if (_mainVertexBuffer == null || _lastMainBufferSize != numParticles)
 			{
-				if (_mainVertexBuffer != null && _lastMainBufferSize < numParticles)
+				if (_mainVertexBuffer != null && _lastMainBufferSize != numParticles)
 				{
 					_mainVertexBuffer.dispose();
 					_mainVertexBuffer = null;
@@ -688,6 +688,7 @@ package molehill.core.render.particles
 			{
 				_indexBufferSize = numParticles * 6;
 				_indexBuffer = context.createIndexBuffer(_indexBufferSize);
+				_indicesChanged = true;
 			}
 			if (_indicesChanged)
 			{
