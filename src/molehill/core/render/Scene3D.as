@@ -409,7 +409,6 @@ package molehill.core.render
 					else
 					{
 						updateLastBatcherValue(batchingTree.firstChild);
-						_batcherInsertPosition = _listSpriteBatchers.indexOf(_currentBatcher) + 1;
 					}
 					
 					// scroll rect changed
@@ -468,6 +467,7 @@ package molehill.core.render
 		
 		private function updateLastBatcherValue(batchingTreeNode:TreeNode):void
 		{
+			var lastBatcher:IVertexBatcher;
 			while (batchingTreeNode != null)
 			{
 				if (batchingTreeNode.hasChildren)
@@ -487,12 +487,18 @@ package molehill.core.render
 					
 					if (batcher != null)
 					{
-						_currentBatcher = batcher;
+						lastBatcher = batcher;
 						_lastBatchedChild = batchingInfo.child;
 					}
 				}
 				
 				batchingTreeNode = batchingTreeNode.nextSibling;
+			}
+			
+			if (lastBatcher != null)
+			{
+				_batcherInsertPosition = _listSpriteBatchers.indexOf(lastBatcher) + 1;
+				_currentBatcher = lastBatcher;
 			}
 		}
 		
@@ -548,19 +554,6 @@ package molehill.core.render
 		 **/
 		private function prepareBatchers(renderTree:TreeNode, batcherTree:TreeNode, cameraOwner:Sprite3D):void
 		{
-			if (_currentBatcher == null)
-			{
-				_currentBatcher = _listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1];
-				if (_currentBatcher == null)
-				{
-					_batcherInsertPosition = 0;
-				}
-				else
-				{
-					_batcherInsertPosition = _listSpriteBatchers.length;
-				}
-			}
-			//var currentBatcher:IVertexBatcher = _currentBatcher != null ? _currentBatcher : (_listSpriteBatchers.length == 0 ? null : _listSpriteBatchers[_listSpriteBatchers.length - 1]);
 			var node:TreeNode = renderTree;
 			if (node == null)
 			{
