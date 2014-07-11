@@ -649,6 +649,7 @@ package molehill.core.render.particles
 					if (_mainVertexBuffer == null)
 					{
 						_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+						_mainVerticesDataChanged = true;
 					}
 					
 					orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
