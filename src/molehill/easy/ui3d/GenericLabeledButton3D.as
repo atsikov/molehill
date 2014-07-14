@@ -78,7 +78,7 @@ package molehill.easy.ui3d
 			resize();
 		}
 		
-		private var _autoSize:Boolean = true;
+		protected var _autoSize:Boolean = true;
 		public function get autoSize():Boolean
 		{
 			return _autoSize;
@@ -101,16 +101,14 @@ package molehill.easy.ui3d
 			resize();
 		}
 
-		private function resize():void
+		protected function resize():void
 		{
 			if (_autoSize)
 			{
 				width = Math.max(_label.width + 2 * _labelGap, _minWidth);
 			}
-			else
-			{
-				updateLabelPostion();
-			}
+			
+			updateLabelPostion();
 		}
 		
 		protected function updateLabelPostion():void
