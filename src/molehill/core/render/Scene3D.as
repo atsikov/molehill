@@ -519,10 +519,10 @@ package molehill.core.render
 						batcher = _hashBatchersOldToNew[batcher];
 					}
 					
+					batchingInfo.child.addedToScene = false;
 					if (batcher != null)
 					{
 						batcher.removeChild(batchingInfo.child);
-						batchingInfo.child.addedToScene = false;
 						if (batcher.numSprites <= 0)
 						{
 							_listSpriteBatchers.splice(
