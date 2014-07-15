@@ -1152,6 +1152,9 @@ package molehill.core.sprite
 			{
 				_listChildren[i].parentScaleX = sx;
 				_listChildren[i].parentScaleY = sy;
+				
+				_listChildren[i].parentShiftX = _listChildren[i]._parentShiftX;
+				_listChildren[i].parentShiftY = _listChildren[i]._parentShiftY;
 			}
 			
 			super.setScale(scaleX, scaleY);

@@ -15,6 +15,7 @@ package molehill.core.text
 			super();
 			
 			updateOnRender = true;
+			snapToPixels = true;
 		}
 		
 		override public function toString():String
