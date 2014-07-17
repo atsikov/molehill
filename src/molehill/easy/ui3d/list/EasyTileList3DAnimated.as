@@ -538,7 +538,6 @@ package molehill.easy.ui3d.list
 		
 		private function animatePage(value:int):void
 		{
-			
 			if (_velocity != 0)
 			{
 				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
@@ -547,29 +546,52 @@ package molehill.easy.ui3d.list
 				onAnimationCompleted();
 			}
 			
-			if (value == currentPage)
+			var newPosition:uint = Math.min(scrollPositionMax, value * numItemsPerPage);
+			var nextPage:Boolean = newPosition > _scrollPosition;
+			
+			if (value == currentPage || Math.abs(newPosition - _scrollPosition) < numItemsPerPage)
 			{
-				if (_itemsContainerCamera.scrollX != 0 || _itemsContainerCamera.scrollY != 0)
+				if (_scrollPosition != value * numItemsPerPage)
 				{
-					_isAnimated = true;
-					lockItems();
-					OpenTween.go(
-						_itemsContainerCamera,
-						{
-							scrollX : 0,
-							scrollY : 0
-						},
-						PAGE_ANIMATION_DURATION / 2,
-						0,
-						Linear.easeNone,
-						onAnimationCompleted
+					var numItemsToScroll:int = numItemsPerPage - Math.abs(newPosition - value * numItemsPerPage);
+					var numLinesToScroll:int = Math.floor(
+						numItemsToScroll / numItemsPerLine
 					);
+					
+					numLinesToScroll *= nextPage ? -1 : 1;
+					
+					if (_direction == Direction.HORIZONTAL)
+					{
+						_itemsContainerCamera.scrollY = lineSize * numLinesToScroll;
+					}
+					else
+					{
+						_itemsContainerCamera.scrollX = lineSize * numLinesToScroll;
+					}
 				}
+				
+				_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
+				
+				_isAnimated = true;
+				lockItems();
+				
+				update();
+				
+				OpenTween.go(
+					_itemsContainerCamera,
+					{
+						scrollX : 0,
+						scrollY : 0
+					},
+					PAGE_ANIMATION_DURATION / 2,
+					0,
+					Linear.easeNone,
+					onAnimationCompleted
+				);
 				
 				return;
 			}
 			
-			var nextPage:Boolean = value > currentPage;
 			var immediate:Boolean = Math.abs(value - currentPage) > 1;
 			
 			_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
