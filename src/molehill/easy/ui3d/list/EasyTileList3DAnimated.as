@@ -553,20 +553,18 @@ package molehill.easy.ui3d.list
 			{
 				if (_scrollPosition != value * numItemsPerPage)
 				{
-					var numItemsToScroll:int = numItemsPerPage - Math.abs(newPosition - value * numItemsPerPage);
+					var numItemsToScroll:int = _scrollPosition - newPosition;
 					var numLinesToScroll:int = Math.floor(
 						numItemsToScroll / numItemsPerLine
 					);
 					
-					numLinesToScroll *= nextPage ? -1 : 1;
-					
 					if (_direction == Direction.HORIZONTAL)
 					{
-						_itemsContainerCamera.scrollY = lineSize * numLinesToScroll;
+						_itemsContainerCamera.scrollY += lineSize * numLinesToScroll;
 					}
 					else
 					{
-						_itemsContainerCamera.scrollX = lineSize * numLinesToScroll;
+						_itemsContainerCamera.scrollX += lineSize * numLinesToScroll;
 					}
 				}
 				
