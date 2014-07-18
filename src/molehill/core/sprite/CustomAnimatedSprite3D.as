@@ -16,12 +16,22 @@ package molehill.core.sprite
 		private var _isPlaying:Boolean = false;
 		override public function play(frame:int=-1):void
 		{
+			if (frame < -1)
+			{
+				return;
+			}
+			
 			if (_isPlaying && frame == -1)
 			{
 				return;
 			}
 			
-			_currentFrameIndex = 0;
+			if (frame > customAnimationData.listFrames.length - 1)
+			{
+				frame = customAnimationData.listFrames.length - 1;
+			}
+				
+			_currentFrameIndex = frame;
 			_currentFrameRepeated = 0;
 			_isReversed = false;
 			
