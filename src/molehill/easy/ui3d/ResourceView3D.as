@@ -25,7 +25,7 @@ package molehill.easy.ui3d
 			_type = type;
 			super();
 			
-			hasDynamicTexture = true;
+			uiHasDynamicTexture = true;
 		}
 		
 		public function set type(value:int):void

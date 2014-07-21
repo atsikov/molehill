@@ -16,7 +16,12 @@ package molehill.core.sprite
 	import utils.CachingFactory;
 	
 	use namespace molehill_internal;
-
+	
+	/**
+	 * 
+	 * Container for sprites. Allows to arrange sprites by depth and apply transformations to them.
+	 * 
+	 **/
 	public class Sprite3DContainer extends InteractiveSprite3D
 	{
 		molehill_internal static var _cacheTreeNodes:CachingFactory;
@@ -83,6 +88,11 @@ package molehill.core.sprite
 			return _hashNodesByChild[child];
 		}
 		
+		/**
+		 * 
+		 * Adds new child to container.
+		 * 
+		 **/
 		public function addChild(child:Sprite3D):Sprite3D
 		{
 			if (child === this)
@@ -150,6 +160,11 @@ package molehill.core.sprite
 			return child;
 		}
 		
+		/**
+		 * 
+		 * Adds new child to container to certain depth.
+		 * 
+		 **/
 		public function addChildAt(child:Sprite3D, index:int):Sprite3D
 		{
 			if (child.parent != null)
@@ -1279,23 +1294,45 @@ package molehill.core.sprite
 			}
 		}
 		
+		// Special properties for UIComponent3D
+		
+		private var _uiHasDynamicTexture:Boolean = false;
 		/**
 		 * 
 		 * While located in UIComponent3D container sprites with hasDynamicTexture set to true will be moved to the middle while rendering, between other sprites and text.<br>
 		 * This can help to batch UI textures and present UI component with less draw calls. 
 		 * 
+		 * @see molehill.core.render.UIComponent3D
+		 * 
 		 **/
-		private var _hasDynamicTexture:Boolean = false;
-		public function get hasDynamicTexture():Boolean
+		public function get uiHasDynamicTexture():Boolean
 		{
-			return _hasDynamicTexture;
+			return _uiHasDynamicTexture;
 		}
 		
-		public function set hasDynamicTexture(value:Boolean):void
+		public function set uiHasDynamicTexture(value:Boolean):void
 		{
-			_hasDynamicTexture = value;
+			_uiHasDynamicTexture = value;
 		}
 		
+		private var _uiMoveToForeground:Boolean = false;
+		/**
+		 * 
+		 * While located in UIComponent3D container sprites with moveToForeground set to true will be moved to the front while rendering, even over text.<br>
+		 * This allows to draw sprites over text for certain cases without workarounds with differnt UI containers. 
+		 * 
+		 * @see molehill.core.render.UIComponent3D
+		 * 
+		 **/
+		public function get uiMoveToForeground():Boolean
+		{
+			return _uiMoveToForeground;
+		}
+		
+		public function set uiMoveToForeground(value:Boolean):void
+		{
+			_uiMoveToForeground = value;
+		}
 	}
 	
 }

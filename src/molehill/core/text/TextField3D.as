@@ -564,5 +564,10 @@ package molehill.core.text
 				updateDimensions(this);
 			}
 		}
+		
+		override public function get uiHasDynamicTexture():Boolean
+		{
+			return false;
+		}
 	}
 }

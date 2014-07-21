@@ -3,6 +3,7 @@ package molehill.core.render
 	import easy.collections.TreeNode;
 	
 	import flash.text.TextField;
+	import flash.utils.Dictionary;
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.sprite.Sprite3D;
@@ -10,14 +11,18 @@ package molehill.core.render
 	import molehill.core.text.TextField3D;
 	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
 	
+	import tempire.view.ui.forms.CheatsForm;
+	
 	import utils.ObjectUtils;
 	import utils.StringUtils;
 	
 	use namespace molehill_internal;
 	/**
 	 * 
-	 *  This class is using certain batching to move all text fields to the top layer.
-	 *  This allow to draw all texts in container within one draw call. 
+	 *  Class creates special render tree where all texts are moved to one subtree which minimizes draw calls.
+	 *  Also sprites with changing textures can be placed in separate subtree using Sprite3DContainer.uiHasDynamicTexture flag to optimize batching.
+	 * 
+	 *  @see molehill.core.sprite.Sprite3DContainer
 	 * 
 	 **/
 	public class UIComponent3D extends Sprite3DContainer
@@ -31,6 +36,7 @@ package molehill.core.render
 			_containerGeneric = new Sprite3DContainer();
 			_containerTexts = new Sprite3DContainer();
 			_containerDynamic = new Sprite3DContainer();
+			_containerForeground = new Sprite3DContainer();
 		}
 		
 		molehill_internal var flattenedRenderTree:TreeNode;
@@ -38,14 +44,17 @@ package molehill.core.render
 		private var _localTreeGeneric:TreeNode;
 		private var _localTreeDynamic:TreeNode;
 		private var _localTreeText:TreeNode;
+		private var _localTreeForeground:TreeNode;
 		
 		private var _localTreeGenericCursor:TreeNode;
 		private var _localTreeDynamicCursor:TreeNode;
 		private var _localTreeTextCursor:TreeNode;
+		private var _localTreeForegroundCursor:TreeNode;
 		
 		private var _containerGeneric:Sprite3DContainer;
 		private var _containerDynamic:Sprite3DContainer;
 		private var _containerTexts:Sprite3DContainer;
+		private var _containerForeground:Sprite3DContainer;
 		
 		molehill_internal function updateFlattnedTree():void
 		{
@@ -64,6 +73,9 @@ package molehill.core.render
 					
 					_localTreeText = _cacheTreeNodes.newInstance();
 					_localTreeText.value = _containerTexts;
+					
+					_localTreeForeground = _cacheTreeNodes.newInstance();
+					_localTreeForeground.value = _containerForeground;
 				}
 				else
 				{
@@ -72,13 +84,15 @@ package molehill.core.render
 					flattenedRenderTree.removeNode(_localTreeText);
 					flattenedRenderTree.removeNode(_localTreeDynamic);
 					flattenedRenderTree.removeNode(_localTreeGeneric);
+					flattenedRenderTree.removeNode(_localTreeForeground);
 				}
 				
-				syncTrees(localRenderTree, _localTreeGeneric);
+				syncTrees(localRenderTree.firstChild);
 				
 				flattenedRenderTree.addNode(_localTreeGeneric);
 				flattenedRenderTree.addNode(_localTreeDynamic);
 				flattenedRenderTree.addNode(_localTreeText);
+				flattenedRenderTree.addNode(_localTreeForeground);
 				
 				_containerDynamic.textureAtlasChanged = textureAtlasChanged;
 				_containerDynamic.treeStructureChanged = treeStructureChanged;
@@ -88,6 +102,9 @@ package molehill.core.render
 				
 				_containerTexts.textureAtlasChanged = textureAtlasChanged;
 				_containerTexts.treeStructureChanged = treeStructureChanged;
+				
+				_containerForeground.textureAtlasChanged = textureAtlasChanged;
+				_containerForeground.treeStructureChanged = treeStructureChanged;
 				
 			}
 			
@@ -159,151 +176,31 @@ package molehill.core.render
 			cacheAllNodes(nextNode);
 		}
 		
-		/*
-		private function createFlattenedTree(src:TreeNode):void
-		{
-			var node:TreeNode;
-			var sprite:Sprite3D = src.value as Sprite3D;
-			if (sprite !== this && (sprite is UIComponent3D))
-			{
-				
-				//(sprite as UIComponent3D).updateFlattnedTree();
-				//flattenedRenderTree.addNode(
-				//	copyTree(
-				//		(sprite as UIComponent3D).flattenedRenderTree
-				//	)
-				//);
-				
-				
-				(sprite as UIComponent3D).updateFlattnedTree();
-				if (sprite.isBackground)
-				{
-					_localTreeBack.addNode(
-						copyTree(
-							(sprite as UIComponent3D).flattenedRenderTree
-						)
-					);
-				}
-				else
-				{
-					_localTreeMisc.addNode(
-						copyTree(
-							(sprite as UIComponent3D).flattenedRenderTree
-						)
-					);
-				}
-				
-				
-				//node = _cacheTreeNodes.newInstance();
-				//node.value = sprite;
-				//
-				//if (sprite.isBackground)
-				//{
-				//	_localTreeBack.addNode(node);
-				//}
-				//else
-				//{
-				//	_localTreeMisc.addNode(node);
-				//}
-				
-				return;
-			}
-			
-			if (src.hasChildren && !(sprite is TextField3D))
-			{
-				createFlattenedTree(src.firstChild);
-				
-				var nextSibling:TreeNode = src.firstChild.nextSibling;
-				while (nextSibling != null)
-				{
-					createFlattenedTree(nextSibling)
-					nextSibling = nextSibling.nextSibling;
-				}
-			}
-			else
-			{
-				if (sprite != null)
-				{
-					var suitableTree:TreeNode;
-					if (sprite is TextField3D)
-					{
-						suitableTree = _localTreeText;
-					}
-					else if (sprite.isBackground)
-					{
-						suitableTree = _localTreeBack;
-					}
-					else
-					{
-						suitableTree = _localTreeMisc;
-					}
-					
-					node = _cacheTreeNodes.newInstance();
-					node.value = sprite;
-					suitableTree.addNode(
-						node
-					);
-					
-					if (sprite is TextField3D)
-					{
-						copyTree(src, node);
-					}
-				}
-			}
-		}
-		
-		private function copyTree(src:TreeNode, dest:TreeNode = null):TreeNode
-		{
-			if (dest == null)
-			{
-				dest = _cacheTreeNodes.newInstance();
-				dest.value = src.value;
-			}
-			
-			var node:TreeNode;
-			if (src.hasChildren)
-			{
-				dest.addAsFirstNode(
-					copyTree(src.firstChild)
-				);
-				
-				var nextSibling:TreeNode = src.firstChild.nextSibling;
-				while (nextSibling != null)
-				{
-					dest.addNode(
-						copyTree(nextSibling)
-					);
-					nextSibling = nextSibling.nextSibling;
-				}
-			}
-			
-			return dest;
-		}
-		*/
-		
-		private function syncTrees(src:TreeNode, dst:TreeNode):void
+		private function syncTrees(src:TreeNode):void
 		{
 			_localTreeDynamicCursor = null;
 			_localTreeGenericCursor = null;
 			_localTreeTextCursor = null;
-			
-			dst.value = this;
+			_localTreeForegroundCursor = null;
 			
 			//trace("==============================================================================================================================");
 			
-			if (_lastDst == null)
+			cacheAllNodes(_localTreeGeneric.firstChild);
+			cacheAllNodes(_localTreeDynamic.firstChild);
+			cacheAllNodes(_localTreeText.firstChild);
+			cacheAllNodes(_localTreeForeground.firstChild);
+			
+			doSyncTrees(src);
+			/*
+			if (_localTreeGenericCursor == null)
 			{
-				_lastDst = new Array();
+				_localTreeGenericCursor = _localTreeGeneric.firstChild;
 			}
-			
-			while (_lastDst.length > 0)
+			else
 			{
-				_lastDst.pop();
+				_localTreeGenericCursor = _localTreeGenericCursor.nextSibling;
 			}
-			
-			doSyncTrees(src, dst);
-			
-			dst.value = _containerGeneric;
+			cleanupTail(_localTreeGenericCursor);
 			
 			if (_localTreeDynamicCursor == null)
 			{
@@ -324,6 +221,17 @@ package molehill.core.render
 				_localTreeTextCursor = _localTreeTextCursor.nextSibling;
 			}
 			cleanupTail(_localTreeTextCursor);
+			
+			if (_localTreeForegroundCursor == null)
+			{
+				_localTreeForegroundCursor = _localTreeForeground.firstChild;
+			}
+			else
+			{
+				_localTreeForegroundCursor = _localTreeForegroundCursor.nextSibling;
+			}
+			cleanupTail(_localTreeForegroundCursor);
+			*/
 		}
 		
 		private function cleanupTail(tree:TreeNode):void
@@ -338,286 +246,210 @@ package molehill.core.render
 			}
 		}
 		
-		private var _lastDst:Array;
-		private var _insideUIComponent:Boolean = false;
-		private function doSyncTrees(src:TreeNode, dst:TreeNode, inSpecTree:Boolean = false):void
+		private var _addAsChild:Boolean = false;
+		
+		private var _needMoveCursorBack:Object;
+		
+		private function doSyncTrees(src:TreeNode):void
 		{
 			//trace('syncing subtree');
 			while (src != null)
 			{
-				var treeChanged:Boolean = false;
-				var origDst:TreeNode = dst;
+				updateTreeFlags(src.value as Sprite3DContainer);
 				
-				var isDynamic:Boolean = _isDynamic;
-				var isText:Boolean = _isText;
+				addChildToTree(src.value);
 				
-				var targetTree:TreeNode = getTreeNodeByValue(src.value as Sprite3DContainer, dst);
-				
-				if (isDynamic != _isDynamic || isText != _isText)
+				if (src.value is Sprite3DContainer && !(src.value is UIComponent3D))
 				{
-					treeChanged = true;
-					_lastDst.push(dst);
-					dst = targetTree;
-					//trace('tree changed: origDst ' + StringUtils.getObjectAddress(origDst) + ', dst ' + StringUtils.getObjectAddress(dst) + '; \n\t_localTreeTextCursor.value == ' + (_localTreeTextCursor != null ? _localTreeTextCursor.value : null) +
-					//	'; \n\t_localTreeDynamicCursor.value == ' + (_localTreeDynamicCursor != null ? _localTreeDynamicCursor.value : null));
-				}
-				
-				//trace(src.value + "  <==>  " + dst.value + '; inSpecTree == ' + inSpecTree + '; _insideUIComponent == ' + _insideUIComponent);
-				//trace('Dynamic: ' + _isDynamic + '; text: ' + _isText);
-				
-				if (src.value !== dst.value)
-				{
-					if (!(src.value as Sprite3D).syncedInUIComponent)
+					if (src.hasChildren)
 					{
-						//trace("adding child to flattened list"); 
-						var dstParent:TreeNode = dst.parent;
-						var dstPrev:TreeNode = dst.prevSibling;
+						_addAsChild = true;
 						
-						dst = _cacheTreeNodes.newInstance();
-						dst.value = src.value;
+						doSyncTrees(src.firstChild);
 						
-						if (dstPrev == null)
-						{
-							dstParent.addAsFirstNode(dst);
-						}
-						else
-						{
-							dstParent.insertNodeAfter(
-								dstPrev,
-								dst
-							);
-						}
-					}
-					else
-					{
-						//trace("removing child from flattened list"); 
-						dstParent = dst.parent;
-						var dstNext:TreeNode = dst.nextSibling;
-						
-						// assigning pointer here because dst removing may affect cursors
-						if (dstNext != null)
-						{
-							if (_dstTreeRoot === _localTreeDynamic)
-							{
-								_localTreeDynamicCursor = _localTreeDynamicCursor.prevSibling;
-							}
-							else if (_dstTreeRoot === _localTreeText)
-							{
-								_localTreeTextCursor = _localTreeTextCursor.prevSibling;
-							}
-						}
-						
-						dstParent.removeNode(dst);
-						cacheAllNodes(dst);
-						
-						if (dstNext != null)
-						{
-							dst = dstNext;
-							dstNext = null;
-							continue;
-						}
-						else
-						{
-							dst = _cacheTreeNodes.newInstance();
-							dst.value = src.value;
-							dstParent.addNode(dst);
-						}
+						moveCursorToParent();
 					}
 				}
 				
-				if (src.hasChildren)
-				{
-					if (!dst.hasChildren)
-					{
-						var node:TreeNode = _cacheTreeNodes.newInstance();
-						node.value = src.firstChild.value;
-						dst.addAsFirstNode(node);
-					}
-					
-					if (src !== localRenderTree && src.value is UIComponent3D)
-					{
-						_insideUIComponent = true;
-					}
-					
-					doSyncTrees(src.firstChild, dst.firstChild, inSpecTree || /*origDst !== dst*/treeChanged);
-					
-					if (src !== localRenderTree && src.value is UIComponent3D)
-					{
-						_insideUIComponent = false;
-					}
-				}
-				else
-				{
-					while (dst.hasChildren)
-					{
-						var firstChild:TreeNode = dst.firstChild;
-						dst.removeNode(firstChild);
-						cacheAllNodes(firstChild);
-					}
-				}
+				restoreFlags(src.value as Sprite3DContainer);
 				
-				isDynamic = _isDynamic;
-				isText = _isText;
-				
-				if (src.value == _lastDynamicContainer)
+				/*if (this is CheatsForm)
 				{
-					_localTreeDynamicCursor = dst;
-					_isDynamic = false;
-				}
+					trace(src.value);
+					trace("flags: " + _isDynamic + " " + _isText + " " + _isForeground);
+					trace("cursors: " + StringUtils.getObjectAddress(_localTreeGenericCursor) +" " +
+						StringUtils.getObjectAddress(_localTreeDynamicCursor) + " " +
+						StringUtils.getObjectAddress(_localTreeTextCursor) + " " +
+						StringUtils.getObjectAddress(_localTreeForegroundCursor)
+					);
+					traceTrees();
+				}*/
 				
-				if (src.value == _lastTextContainer)
-				{
-					_localTreeTextCursor = dst;
-					_isText = false;
-				}
-				
-				if (isDynamic != _isDynamic || isText != _isText)
-				{
-					dst = _lastDst.pop();
-				}
-				/*
-				var nextValue:Sprite3DContainer = src.nextSibling == null ? null : src.nextSibling.value as Sprite3DContainer;
-				var needMoveDstCursor:Boolean =
-					_insideUIComponent ||
-					inSpecTree ||
-					nextValue == null ||
-					!inSpecTree && !nextValue.hasDynamicTexture && !(nextValue is TextField3D);
-				
-				trace('need to move cursor: ' + needMoveDstCursor);
-				*/
-				
-				var nextSiblingNode:TreeNode = dst;
-				if (src !== localRenderTree && src.nextSibling != null)
-				{
-					nextSiblingNode = getTreeNodeByValue(src.nextSibling.value as Sprite3DContainer, dst, true);
-					if (nextSiblingNode.value !== src.nextSibling.value && nextSiblingNode.nextSibling == null)
-					{
-						node = _cacheTreeNodes.newInstance();
-						node.value = src.nextSibling.value;
-						nextSiblingNode.parent.insertNodeAfter(
-							nextSiblingNode,
-							node
-						);
-					}
-				}
-				
-				src.value.syncedInUIComponent = true;
-				
-				if (nextSiblingNode === dst)
-				{
-					//trace('changing dst pointer: ' + StringUtils.getObjectAddress(dst) + ' -> ' + StringUtils.getObjectAddress(dst.nextSibling));
-					dst = dst.nextSibling;
-				}
-				
-				if (src !== localRenderTree)
-				{
-					src = src.nextSibling;
-				}
-				else
-				{
-					break;
-				}
-			}
-			
-			while (dst != null)
-			{
-				dstNext = dst.nextSibling;
-				dst.parent.removeNode(dst);
-				cacheAllNodes(dst);
-				dst = dstNext;
+				src = src.nextSibling;
 			}
 		}
 		
-		private var _dstTreeRoot:TreeNode;
-		private var _isDynamic:Boolean;
+		private var _isDynamic:Boolean = false;
+		private var _isForeground:Boolean = false;
+		private var _isText:Boolean = false;
+		
 		private var _lastDynamicContainer:Sprite3DContainer;
-		private var _isText:Boolean;
 		private var _lastTextContainer:Sprite3DContainer;
-		private function getTreeNodeByValue(value:Sprite3DContainer, dst:TreeNode, keepFlags:Boolean = false):TreeNode
+		private var _lastForegroundContainer:Sprite3DContainer;
+		private function updateTreeFlags(value:Sprite3DContainer):void
 		{
-			if (value == null || _insideUIComponent)
+			if (value == null)
 			{
-				_localTreeGenericCursor = dst;
-				return dst;
+				return;
 			}
 			
+			if (_isForeground)
+			{
+				return;
+			}
+			else if (value.uiMoveToForeground)
+			{
+				_isForeground = true;
+				_lastForegroundContainer = value;
+			}
+			
+			if (value.uiHasDynamicTexture && !_isDynamic)
+			{
+				_isDynamic = true;
+				_lastDynamicContainer = value;
+			}
+			
+			if (value is TextField3D && !_isText)
+			{
+				_isText = true;
+				_lastTextContainer = value;
+			}
+		}
+		
+		private function restoreFlags(value:Sprite3DContainer):void
+		{
+			if (value == null)
+			{
+				return;
+			}
+			
+			if (value === _lastForegroundContainer)
+			{
+				_isForeground = false;
+				_lastForegroundContainer = null;
+			}
+			
+			if (value === _lastDynamicContainer)
+			{
+				_isDynamic = false;
+				_lastDynamicContainer = null;
+			}
+			
+			if (value === _lastTextContainer)
+			{
+				_isText = false;
+				_lastTextContainer = null;
+			}
+		}
+		
+		private function addChildToTree(child:Sprite3D):void
+		{
 			var targetNode:TreeNode;
 			var targetRoot:TreeNode;
-			if (value.hasDynamicTexture)
+			
+			if (_isForeground)
 			{
-				targetNode = _localTreeDynamicCursor;
-				targetRoot = _localTreeDynamic;
-				_dstTreeRoot = _localTreeDynamic;
-				
-				if (!keepFlags)
-				{
-					if (!_isDynamic)
-					{
-						_lastDynamicContainer = value;
-					}
-					_isDynamic = true;
-				}
+				targetRoot = _localTreeForeground;
+				targetNode = _localTreeForegroundCursor;
 			}
-			else if (value is TextField3D)
+			else if (_isText)
 			{
-				targetNode = _localTreeTextCursor;
 				targetRoot = _localTreeText;
-				_dstTreeRoot = _localTreeText;
-				
-				if (!keepFlags)
-				{
-					if (!_isText)
-					{
-						_lastTextContainer = value;
-					}
-					_isText = true;
-				}
+				targetNode = _localTreeTextCursor;
+			}
+			else if (_isDynamic)
+			{
+				targetRoot = _localTreeDynamic;
+				targetNode = _localTreeDynamicCursor;
 			}
 			else
 			{
-				_localTreeGenericCursor = dst;
-				_dstTreeRoot = _localTreeGeneric;
-				return dst;
+				targetRoot = _localTreeGeneric;
+				targetNode = _localTreeGenericCursor;
 			}
 			
-			if (targetNode != null)
-			{
-				targetNode = targetNode.nextSibling;
-			}
-			else
-			{
-				targetNode = targetRoot.firstChild;
-			}
+			var node:TreeNode = _cacheTreeNodes.newInstance();
+			node.value = child;
 			
 			if (targetNode == null)
 			{
-				var node:TreeNode = _cacheTreeNodes.newInstance();
-				node.value = value;
-				targetRoot.addNode(node);
-				
-				targetNode = targetRoot.lastChild;
+				targetRoot.addAsFirstNode(node);
 			}
-			
-			if (!keepFlags)
+			else
 			{
-				if (value.hasDynamicTexture)
+				if (_addAsChild)
 				{
-					_localTreeDynamicCursor = targetNode;
+					targetNode.addNode(node);
 				}
-				else if (value is TextField3D)
+				else
 				{
-					_localTreeTextCursor = targetNode;
+					targetNode.parent.insertNodeAfter(
+						targetNode,
+						node
+					);
 				}
 			}
 			
-			return targetNode;
+			if (targetRoot === _localTreeForeground)
+			{
+				_localTreeForegroundCursor = node;
+			}
+			else if (targetRoot === _localTreeText)
+			{
+				_localTreeTextCursor = node;
+			}
+			else if (targetRoot === _localTreeDynamic)
+			{
+				_localTreeDynamicCursor = node;
+			}
+			else
+			{
+				_localTreeGenericCursor = node;
+			}
+			
+		}
+		
+		private function moveCursorToParent():void
+		{
+			if (_isForeground)
+			{
+				_localTreeForegroundCursor = _localTreeForegroundCursor.parent;
+			}
+			else if (_isText)
+			{
+				_localTreeTextCursor = _localTreeTextCursor.parent;
+			}
+			else if (_isDynamic)
+			{
+				_localTreeDynamicCursor = _localTreeDynamicCursor.parent;
+			}
+			else
+			{
+				_localTreeGenericCursor = _localTreeGenericCursor.parent;
+			}
 		}
 		
 		private function traceTrees():void
 		{
-			trace(ObjectUtils.traceTree(localRenderTree));
-			trace('-----------------');
-			trace(ObjectUtils.traceTree(flattenedRenderTree));
+//			trace(ObjectUtils.traceTree(localRenderTree));
+//			trace('-----------------');
+			trace(ObjectUtils.traceTree(_localTreeGeneric));
+			trace('----')
+			trace(ObjectUtils.traceTree(_localTreeDynamic));
+			trace('----')
+			trace(ObjectUtils.traceTree(_localTreeText));
+			trace('----')
+			trace(ObjectUtils.traceTree(_localTreeForeground));
 			trace('================================');
 		}
 	}

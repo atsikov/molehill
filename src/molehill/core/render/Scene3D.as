@@ -370,14 +370,16 @@ package molehill.core.render
 					_lastBatchedChild = (batchingTree.value as BatchingInfo).child;
 				}
 				
-				if (renderTree.hasChildren)
+				// UIComnponent3D inside another UIComponent3D won't have children in parent's flattened tree
+				// need to check all UIComponent3D's no matter if they have children in current render tree
+				if (renderTree.hasChildren || (sprite is UIComponent3D))
 				{
 					var container:Sprite3DContainer = sprite as Sprite3DContainer;
 					
 					if (container.textureAtlasChanged || container.treeStructureChanged || container.cameraChanged)
 					{
 						// found new non-empty container in render tree
-						// adding children tom bacthing
+						// adding children to bacthing
 						
 						var containerRenderTree:TreeNode = renderTree;
 						
