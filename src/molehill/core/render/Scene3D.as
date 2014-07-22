@@ -565,13 +565,15 @@ package molehill.core.render
 			while (node != null)
 			{
 				var sprite:Sprite3D = node.value as Sprite3D;
-				if (node.hasChildren)
+				var uiNode:TreeNode = null;
+				if (sprite is UIComponent3D)
 				{
-					if (sprite is UIComponent3D)
-					{
-						(sprite as UIComponent3D).updateFlattnedTree();
-					}
-					
+					(sprite as UIComponent3D).updateFlattnedTree();
+					uiNode = (sprite as UIComponent3D).flattenedRenderTree;
+				}
+				
+				if (node.hasChildren || uiNode != null && uiNode.hasChildren)
+				{
 					var renderTreeFirstChild:TreeNode = sprite is UIComponent3D ? (sprite as UIComponent3D).flattenedRenderTree.firstChild : node.firstChild;
 					if (batcherTree.firstChild == null)
 					{
