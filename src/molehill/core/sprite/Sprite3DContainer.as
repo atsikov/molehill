@@ -720,6 +720,11 @@ package molehill.core.sprite
 		
 		override public function set visible(value:Boolean):void
 		{
+			if (_visible == value)
+			{
+				return;
+			}
+			
 			super.visible = value;
 			
 			for each (var child:Sprite3D in _listChildren)
@@ -732,11 +737,16 @@ package molehill.core.sprite
 		
 		override molehill_internal function set parentVisible(value:Boolean):void
 		{
+			if (_parentVisible == value)
+			{
+				return;
+			}
+			
 			super.parentVisible = value;
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
-				child.parentVisible = _visible && value;
+				child.parentVisible = visible && value;
 			}
 		}
 		
