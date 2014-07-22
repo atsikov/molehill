@@ -13,6 +13,7 @@ package molehill.core.render
 	
 	import tempire.view.ui.forms.CheatsForm;
 	
+	import utils.DebugLogger;
 	import utils.ObjectUtils;
 	import utils.StringUtils;
 	
@@ -190,7 +191,32 @@ package molehill.core.render
 			cacheAllNodes(_localTreeText.firstChild);
 			cacheAllNodes(_localTreeForeground.firstChild);
 			
-			doSyncTrees(src);
+			var hasError:Boolean = false;
+			try
+			{
+				doSyncTrees(src);
+			}
+			catch (e:Error)
+			{
+				hasError = true;
+				//log('!!!!!!!!!\n' + e);
+			}
+			
+			if (hasError)
+			{
+				//log(ObjectUtils.traceTree(localRenderTree));
+				//log('----');
+				//log(ObjectUtils.traceTree(_localTreeGeneric));
+				//log('----');
+				//log(ObjectUtils.traceTree(_localTreeDynamic));
+				//log('----');
+				//log(ObjectUtils.traceTree(_localTreeText));
+				//log('----');
+				//log(ObjectUtils.traceTree(_localTreeForeground));
+				//log('================================');
+			}
+			
+			savelog();
 			/*
 			if (_localTreeGenericCursor == null)
 			{
@@ -250,25 +276,39 @@ package molehill.core.render
 		
 		private var _needMoveCursorBack:Object;
 		
-		private function doSyncTrees(src:TreeNode):void
+		private function doSyncTrees(src:TreeNode, asChild:Boolean = false):void
 		{
 			//trace('syncing subtree');
+			
+			//log('syncing subtree');
+			
+			var needMoveUp:Boolean = false;
 			while (src != null)
 			{
+				//log('sprite: ' + src.value);
+				
+				var dyn:Boolean = _isDynamic;
+				var text:Boolean = _isText;
+				var fore:Boolean = _isForeground;
 				updateTreeFlags(src.value as Sprite3DContainer);
 				
-				addChildToTree(src.value);
+				//log('flags: ' + (_isDynamic ? 'dyn' : '') + ' ' + (_isText ? 'text' : '') + ' ' + (_isForeground ? 'fore' : ''));
 				
-				if (src.value is Sprite3DContainer && !(src.value is UIComponent3D))
+				var flagsChanged:Boolean = dyn != _isDynamic || text != _isText || fore != _isForeground;
+				
+				asChild &&= !flagsChanged;
+				needMoveUp ||= asChild;
+				
+				addChildToTree(src.value, asChild);
+				
+				if (src.hasChildren && !(src.value is UIComponent3D))
 				{
-					if (src.hasChildren)
-					{
-						_addAsChild = true;
-						
-						doSyncTrees(src.firstChild);
-						
-						moveCursorToParent();
-					}
+					doSyncTrees(src.firstChild, true);
+				}
+				
+				if (!flagsChanged)
+				{
+					asChild = false;
 				}
 				
 				restoreFlags(src.value as Sprite3DContainer);
@@ -286,6 +326,11 @@ package molehill.core.render
 				}*/
 				
 				src = src.nextSibling;
+			}
+			
+			if (needMoveUp)
+			{
+				moveCursorToParent();
 			}
 		}
 		
@@ -337,22 +382,25 @@ package molehill.core.render
 			{
 				_isForeground = false;
 				_lastForegroundContainer = null;
+				//log('\'fore\' flag dropped');
 			}
 			
 			if (value === _lastDynamicContainer)
 			{
 				_isDynamic = false;
 				_lastDynamicContainer = null;
+				//log('\'dyn\' flag dropped');
 			}
 			
 			if (value === _lastTextContainer)
 			{
 				_isText = false;
 				_lastTextContainer = null;
+				//log('\'text\' flag dropped');
 			}
 		}
 		
-		private function addChildToTree(child:Sprite3D):void
+		private function addChildToTree(child:Sprite3D, asChild:Boolean):void
 		{
 			var targetNode:TreeNode;
 			var targetRoot:TreeNode;
@@ -387,12 +435,14 @@ package molehill.core.render
 			}
 			else
 			{
-				if (_addAsChild)
+				if (asChild)
 				{
+					//log('adding as child to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node));
 					targetNode.addNode(node);
 				}
 				else
 				{
+					//log('adding to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node) + ' after ' + StringUtils.getObjectAddress(targetNode));
 					targetNode.parent.insertNodeAfter(
 						targetNode,
 						node
@@ -402,18 +452,22 @@ package molehill.core.render
 			
 			if (targetRoot === _localTreeForeground)
 			{
+				//log('_localTreeForegroundCursor now ' + StringUtils.getObjectAddress(node));
 				_localTreeForegroundCursor = node;
 			}
 			else if (targetRoot === _localTreeText)
 			{
+				//log('_localTreeTextCursor now ' + StringUtils.getObjectAddress(node));
 				_localTreeTextCursor = node;
 			}
 			else if (targetRoot === _localTreeDynamic)
 			{
+				//log('_localTreeDynamicCursor now ' + StringUtils.getObjectAddress(node));
 				_localTreeDynamicCursor = node;
 			}
 			else
 			{
+				//log('_localTreeGenericCursor now ' + StringUtils.getObjectAddress(node));
 				_localTreeGenericCursor = node;
 			}
 			
@@ -423,18 +477,22 @@ package molehill.core.render
 		{
 			if (_isForeground)
 			{
+				//log('moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeForegroundCursor.parent));
 				_localTreeForegroundCursor = _localTreeForegroundCursor.parent;
 			}
 			else if (_isText)
 			{
+				//log('moving _localTreeTextCursor up to ' + StringUtils.getObjectAddress(_localTreeTextCursor.parent));
 				_localTreeTextCursor = _localTreeTextCursor.parent;
 			}
 			else if (_isDynamic)
 			{
+				//log('moving _localTreeDynamicCursor up to ' + StringUtils.getObjectAddress(_localTreeDynamicCursor.parent));
 				_localTreeDynamicCursor = _localTreeDynamicCursor.parent;
 			}
 			else
 			{
+				//log('moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeGenericCursor.parent));
 				_localTreeGenericCursor = _localTreeGenericCursor.parent;
 			}
 		}
@@ -451,6 +509,25 @@ package molehill.core.render
 			trace('----')
 			trace(ObjectUtils.traceTree(_localTreeForeground));
 			trace('================================');
+		}
+		
+		private var _log:String;
+		private function log(entry:String):void
+		{
+			if (_log == null)
+			{
+				_log = entry;
+			}
+			else
+			{
+				_log += '\n' + entry;
+			}
+		}
+		
+		private function savelog():void
+		{
+			//DebugLogger.writeExternalLog(_log);
+			_log = null;
 		}
 	}
 }

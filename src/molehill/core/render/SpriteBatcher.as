@@ -833,7 +833,8 @@ package molehill.core.render
 				"\ttextureAtlas: " + _textureAtlasID + "\n" +
 				"\tfirstChild: " + (_listSprites.head != null ? _listSprites.head.data : "null") + "\n" +
 				"\tlastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n" +
-				"\tcameraOwner: " + _cameraOwner + "\n";
+				"\tcameraOwner: " + _cameraOwner + "\n" +
+				"\tshader: " + _shader + "\n";
 		}
 	}
 }

@@ -1299,7 +1299,7 @@ package molehill.core.sprite
 		private var _uiHasDynamicTexture:Boolean = false;
 		/**
 		 * 
-		 * While located in UIComponent3D container sprites with hasDynamicTexture set to true will be moved to the middle while rendering, between other sprites and text.<br>
+		 * While located in UIComponent3D container sprites with uiHasDynamicTexture set to true will be moved to the middle while rendering, between other sprites and text.<br>
 		 * This can help to batch UI textures and present UI component with less draw calls. 
 		 * 
 		 * @see molehill.core.render.UIComponent3D
@@ -1318,7 +1318,7 @@ package molehill.core.sprite
 		private var _uiMoveToForeground:Boolean = false;
 		/**
 		 * 
-		 * While located in UIComponent3D container sprites with moveToForeground set to true will be moved to the front while rendering, even over text.<br>
+		 * While located in UIComponent3D container sprites with uiMoveToForeground set to true will be moved to the front while rendering, even over text.<br>
 		 * This allows to draw sprites over text for certain cases without workarounds with differnt UI containers. 
 		 * 
 		 * @see molehill.core.render.UIComponent3D

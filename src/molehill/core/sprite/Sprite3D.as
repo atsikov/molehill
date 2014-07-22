@@ -1466,7 +1466,7 @@ package molehill.core.sprite
 		override public function toString():String
 		{
 			var className:String = getQualifiedClassName(this);
-			return className + " @ " + StringUtils.getObjectAddress(this) + " texture: " + textureID;
+			return className + " @ " + StringUtils.getObjectAddress(this) + " texture: " + textureID + "; shader: " + shader;
 		}
 		
 		/**
