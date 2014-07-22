@@ -179,27 +179,32 @@ package molehill.core.render
 		
 		private function syncTrees(src:TreeNode):void
 		{
-			_localTreeDynamicCursor = null;
-			_localTreeGenericCursor = null;
-			_localTreeTextCursor = null;
-			_localTreeForegroundCursor = null;
+			_localTreeDynamicCursor = _localTreeDynamic;
+			_localTreeGenericCursor = _localTreeGeneric;
+			_localTreeTextCursor = _localTreeText;
+			_localTreeForegroundCursor = _localTreeForeground;
 			
 			//trace("==============================================================================================================================");
-			
+			/*
 			cacheAllNodes(_localTreeGeneric.firstChild);
 			cacheAllNodes(_localTreeDynamic.firstChild);
 			cacheAllNodes(_localTreeText.firstChild);
 			cacheAllNodes(_localTreeForeground.firstChild);
-			
+			*/
 			var hasError:Boolean = false;
 			try
 			{
+				//log('roots: gen ' + StringUtils.getObjectAddress(_localTreeGeneric) + '; dyn ' +
+				//	StringUtils.getObjectAddress(_localTreeDynamic) + '; text ' +
+				//	StringUtils.getObjectAddress(_localTreeText) + '; fore ' +
+				//	StringUtils.getObjectAddress(_localTreeForeground));
 				doSyncTrees(src);
+				//log(' -- finished parsing\n');
 			}
 			catch (e:Error)
 			{
 				hasError = true;
-				//log('!!!!!!!!!\n' + e);
+				//log('!!!!!!!!!\n' + e + '!!!!!!!!!\n');
 			}
 			
 			if (hasError)
@@ -216,8 +221,8 @@ package molehill.core.render
 				//log('================================');
 			}
 			
-			savelog();
-			/*
+			//savelog();
+			
 			if (_localTreeGenericCursor == null)
 			{
 				_localTreeGenericCursor = _localTreeGeneric.firstChild;
@@ -257,7 +262,7 @@ package molehill.core.render
 				_localTreeForegroundCursor = _localTreeForegroundCursor.nextSibling;
 			}
 			cleanupTail(_localTreeForegroundCursor);
-			*/
+			
 		}
 		
 		private function cleanupTail(tree:TreeNode):void
@@ -426,51 +431,110 @@ package molehill.core.render
 				targetNode = _localTreeGenericCursor;
 			}
 			
-			var node:TreeNode = _cacheTreeNodes.newInstance();
-			node.value = child;
+			asChild ||= targetRoot === targetNode;
 			
-			if (targetNode == null)
+			if (targetNode != null)
 			{
-				targetRoot.addAsFirstNode(node);
-			}
-			else
-			{
-				if (asChild)
+				if (asChild && targetNode.firstChild != null)
 				{
-					//log('adding as child to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node));
-					targetNode.addNode(node);
+					//log('getting node first child');
+					targetNode = targetNode.firstChild;
+				}
+				else if (!asChild && targetNode.nextSibling != null)
+				{
+					//log('getting node next sibling');
+					targetNode = targetNode.nextSibling;
+				}
+			}
+			
+			if (targetNode == null || targetNode != null && targetNode.value !== child)
+			{
+				if (!child.syncedInUIComponent)
+				{
+					var node:TreeNode = _cacheTreeNodes.newInstance();
+					node.value = child;
+				
+					if (targetNode == null)
+					{
+						//log('adding child as first node');
+						targetRoot.addAsFirstNode(node);
+					}
+					else
+					{
+						if (asChild)
+						{
+							//log('adding as child to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node));
+							targetNode.addNode(node);
+						}
+						else
+						{
+							//log('adding to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node) + ' after ' + StringUtils.getObjectAddress(targetNode));
+							targetNode.parent.insertNodeAfter(
+								targetNode,
+								node
+							);
+						}
+					}
+					
+					targetNode = node;
 				}
 				else
 				{
-					//log('adding to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node) + ' after ' + StringUtils.getObjectAddress(targetNode));
-					targetNode.parent.insertNodeAfter(
-						targetNode,
-						node
-					);
+					var targetNodeParent:TreeNode = targetNode.parent;
+					while (targetNode != null && targetNode.value !== child)
+					{
+						//log('removing child ' + targetNode.value);
+						var nextNode:TreeNode = targetNode.nextSibling;
+						targetNodeParent.removeNode(targetNode);
+						
+						storeNode(targetNode);
+						_cacheTreeNodes.storeInstance(targetNode);
+						
+						targetNode = nextNode;
+					}
+					
+					if (targetNode == null)
+					{
+						//log('all children removed, adding as next node');
+						node = _cacheTreeNodes.newInstance();
+						node.value = child;
+						
+						targetNodeParent.addNode(node);
+						targetNode = node;
+					}
+					else
+					{
+						//log('child found');
+					}
 				}
+			}
+			else
+			{
+				//log('children are equal');
 			}
 			
 			if (targetRoot === _localTreeForeground)
 			{
-				//log('_localTreeForegroundCursor now ' + StringUtils.getObjectAddress(node));
-				_localTreeForegroundCursor = node;
+				//log('_localTreeForegroundCursor now ' + StringUtils.getObjectAddress(targetNode));
+				_localTreeForegroundCursor = targetNode;
 			}
 			else if (targetRoot === _localTreeText)
 			{
-				//log('_localTreeTextCursor now ' + StringUtils.getObjectAddress(node));
-				_localTreeTextCursor = node;
+				//log('_localTreeTextCursor now ' + StringUtils.getObjectAddress(targetNode));
+				_localTreeTextCursor = targetNode;
 			}
 			else if (targetRoot === _localTreeDynamic)
 			{
-				//log('_localTreeDynamicCursor now ' + StringUtils.getObjectAddress(node));
-				_localTreeDynamicCursor = node;
+				//log('_localTreeDynamicCursor now ' + StringUtils.getObjectAddress(targetNode));
+				_localTreeDynamicCursor = targetNode;
 			}
 			else
 			{
-				//log('_localTreeGenericCursor now ' + StringUtils.getObjectAddress(node));
-				_localTreeGenericCursor = node;
+				//log('_localTreeGenericCursor now ' + StringUtils.getObjectAddress(targetNode));
+				_localTreeGenericCursor = targetNode;
 			}
 			
+			child.syncedInUIComponent = true;
 		}
 		
 		private function moveCursorToParent():void
@@ -494,6 +558,28 @@ package molehill.core.render
 			{
 				//log('moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeGenericCursor.parent));
 				_localTreeGenericCursor = _localTreeGenericCursor.parent;
+			}
+		}
+		
+		private function storeNode(node:TreeNode):void
+		{
+			while (node != null)
+			{
+				if (node.hasChildren)
+				{
+					storeNode(node.firstChild);
+				}
+				else
+				{
+					var nextNode:TreeNode = node.nextSibling;
+					if (node.parent != null)
+					{
+						node.parent.removeNode(node);
+						_cacheTreeNodes.storeInstance(node);
+					}
+				}
+				
+				node = nextNode;
 			}
 		}
 		
@@ -526,7 +612,7 @@ package molehill.core.render
 		
 		private function savelog():void
 		{
-			//DebugLogger.writeExternalLog(_log);
+			DebugLogger.writeExternalLog(_log + '\n\n');
 			_log = null;
 		}
 	}
