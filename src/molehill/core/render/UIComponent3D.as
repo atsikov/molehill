@@ -172,6 +172,10 @@ package molehill.core.render
 			
 			if (currentNode.parent != null)
 			{
+				if (_debug)
+				{
+					log(' - removing ' + currentNode.value + ' from parent ' + StringUtils.getObjectAddress(currentNode.parent));
+				}
 				currentNode.parent.removeNode(currentNode);
 			}
 			currentNode.reset();
@@ -259,7 +263,7 @@ package molehill.core.render
 			
 			if (_debug)
 			{
-				savelog();
+				saveLog();
 			}
 			
 			if (_localTreeGenericCursor === _localTreeGeneric)
@@ -786,7 +790,7 @@ package molehill.core.render
 			}
 		}
 		
-		private function savelog():void
+		private function saveLog():void
 		{
 			DebugLogger.writeExternalLog(_log + '\n\n');
 		}
