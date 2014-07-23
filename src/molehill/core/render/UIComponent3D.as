@@ -11,7 +11,10 @@ package molehill.core.render
 	import molehill.core.text.TextField3D;
 	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
 	
+	import tempire.controller.RouteInformersController;
 	import tempire.view.ui.forms.CheatsForm;
+	import tempire.view.ui.forms.shop.renderers.ShopItemRenderer;
+	import tempire.view.world.BuildingInformersView;
 	
 	import utils.DebugLogger;
 	import utils.ObjectUtils;
@@ -177,6 +180,7 @@ package molehill.core.render
 			cacheAllNodes(nextNode);
 		}
 		
+		private var _debug:Boolean = false;
 		private function syncTrees(src:TreeNode):void
 		{
 			_localTreeDynamicCursor = _localTreeDynamic;
@@ -191,73 +195,108 @@ package molehill.core.render
 			cacheAllNodes(_localTreeText.firstChild);
 			cacheAllNodes(_localTreeForeground.firstChild);
 			*/
+			
+			_log = null;
+			
 			var hasError:Boolean = false;
-			try
-			{
-				//log('roots: gen ' + StringUtils.getObjectAddress(_localTreeGeneric) + '; dyn ' +
-				//	StringUtils.getObjectAddress(_localTreeDynamic) + '; text ' +
-				//	StringUtils.getObjectAddress(_localTreeText) + '; fore ' +
-				//	StringUtils.getObjectAddress(_localTreeForeground));
+//			if (parent is ShopItemRenderer)
+//			{
+//				if (_debug)
+//				{
+//					log(ObjectUtils.traceTree(localRenderTree));
+//					log('----');
+//					log(ObjectUtils.traceTree(_localTreeGeneric));
+//					log('----');
+//					log(ObjectUtils.traceTree(_localTreeDynamic));
+//					log('----');
+//					log(ObjectUtils.traceTree(_localTreeText));
+//					log('----');
+//					log(ObjectUtils.traceTree(_localTreeForeground));
+//					log('================================');
+//				}
+//			}
+			
+//			try
+//			{
+				if (_debug)
+				{
+					log('roots: gen ' + StringUtils.getObjectAddress(_localTreeGeneric) + '; dyn ' +
+						StringUtils.getObjectAddress(_localTreeDynamic) + '; text ' +
+						StringUtils.getObjectAddress(_localTreeText) + '; fore ' +
+						StringUtils.getObjectAddress(_localTreeForeground));
+				}
 				doSyncTrees(src);
-				//log(' -- finished parsing\n');
-			}
-			catch (e:Error)
+				if (_debug)
+				{
+					log(' -- finished parsing\n');
+				}
+//			}
+//			catch (e:Error)
+//			{
+//				hasError = true;
+//				if (_debug)
+//				{
+//					log('!!!!!!!!!\n' + e + '!!!!!!!!!\n');
+//				}
+//			}
+			
+			if (hasError/* || parent is ShopItemRenderer*/)
 			{
-				hasError = true;
-				//log('!!!!!!!!!\n' + e + '!!!!!!!!!\n');
+				if (_debug)
+				{
+					log(ObjectUtils.traceTree(localRenderTree));
+					log('----');
+					log(ObjectUtils.traceTree(_localTreeGeneric));
+					log('----');
+					log(ObjectUtils.traceTree(_localTreeDynamic));
+					log('----');
+					log(ObjectUtils.traceTree(_localTreeText));
+					log('----');
+					log(ObjectUtils.traceTree(_localTreeForeground));
+					log('================================');
+				}
 			}
 			
-			if (hasError)
+			if (_debug)
 			{
-				//log(ObjectUtils.traceTree(localRenderTree));
-				//log('----');
-				//log(ObjectUtils.traceTree(_localTreeGeneric));
-				//log('----');
-				//log(ObjectUtils.traceTree(_localTreeDynamic));
-				//log('----');
-				//log(ObjectUtils.traceTree(_localTreeText));
-				//log('----');
-				//log(ObjectUtils.traceTree(_localTreeForeground));
-				//log('================================');
+				savelog();
 			}
 			
-			//savelog();
-			
-			if (_localTreeGenericCursor == null)
+			if (_localTreeGenericCursor === _localTreeGeneric)
 			{
 				_localTreeGenericCursor = _localTreeGeneric.firstChild;
 			}
-			else
+			else if (_localTreeGenericCursor != null)
 			{
 				_localTreeGenericCursor = _localTreeGenericCursor.nextSibling;
 			}
 			cleanupTail(_localTreeGenericCursor);
 			
-			if (_localTreeDynamicCursor == null)
+			if (_localTreeDynamicCursor === _localTreeDynamic)
 			{
 				_localTreeDynamicCursor = _localTreeDynamic.firstChild;
 			}
-			else
+			else if (_localTreeGenericCursor != null)
 			{
 				_localTreeDynamicCursor = _localTreeDynamicCursor.nextSibling;
 			}
 			cleanupTail(_localTreeDynamicCursor);
 			
-			if (_localTreeTextCursor == null)
+			if (_localTreeTextCursor === _localTreeText)
 			{
 				_localTreeTextCursor = _localTreeText.firstChild;
 			}
-			else
+			else if (_localTreeTextCursor != null)
 			{
 				_localTreeTextCursor = _localTreeTextCursor.nextSibling;
 			}
 			cleanupTail(_localTreeTextCursor);
 			
-			if (_localTreeForegroundCursor == null)
+			if (_localTreeForegroundCursor === _localTreeForeground)
 			{
 				_localTreeForegroundCursor = _localTreeForeground.firstChild;
 			}
-			else
+			else if (_localTreeForegroundCursor != null)
 			{
 				_localTreeForegroundCursor = _localTreeForegroundCursor.nextSibling;
 			}
@@ -285,19 +324,28 @@ package molehill.core.render
 		{
 			//trace('syncing subtree');
 			
-			//log('syncing subtree');
+			if (_debug)
+			{
+				log('syncing subtree');
+			}
 			
 			var needMoveUp:Boolean = false;
 			while (src != null)
 			{
-				//log('sprite: ' + src.value);
+				if (_debug)
+				{
+					log('sprite: ' + src.value + '; is synced: ' + (src.value as Sprite3D).syncedInUIComponent.toString());
+				}
 				
 				var dyn:Boolean = _isDynamic;
 				var text:Boolean = _isText;
 				var fore:Boolean = _isForeground;
 				updateTreeFlags(src.value as Sprite3DContainer);
 				
-				//log('flags: ' + (_isDynamic ? 'dyn' : '') + ' ' + (_isText ? 'text' : '') + ' ' + (_isForeground ? 'fore' : ''));
+				if (_debug)
+				{
+					log('flags: ' + (_isDynamic ? 'dyn' : '') + ' ' + (_isText ? 'text' : '') + ' ' + (_isForeground ? 'fore' : ''));
+				}
 				
 				var flagsChanged:Boolean = dyn != _isDynamic || text != _isText || fore != _isForeground;
 				
@@ -387,21 +435,30 @@ package molehill.core.render
 			{
 				_isForeground = false;
 				_lastForegroundContainer = null;
-				//log('\'fore\' flag dropped');
+				if (_debug)
+				{
+					log('\'fore\' flag dropped');
+				}
 			}
 			
 			if (value === _lastDynamicContainer)
 			{
 				_isDynamic = false;
 				_lastDynamicContainer = null;
-				//log('\'dyn\' flag dropped');
+				if (_debug)
+				{
+					log('\'dyn\' flag dropped');
+				}
 			}
 			
 			if (value === _lastTextContainer)
 			{
 				_isText = false;
 				_lastTextContainer = null;
-				//log('\'text\' flag dropped');
+				if (_debug)
+				{
+					log('\'text\' flag dropped');
+				}
 			}
 		}
 		
@@ -433,69 +490,145 @@ package molehill.core.render
 			
 			asChild ||= targetRoot === targetNode;
 			
+			var nextSibling:TreeNode;
+			var firstChild:TreeNode;
 			if (targetNode != null)
 			{
-				if (asChild && targetNode.firstChild != null)
+				if (asChild)
 				{
-					//log('getting node first child');
-					targetNode = targetNode.firstChild;
+					firstChild = targetNode.firstChild;
 				}
-				else if (!asChild && targetNode.nextSibling != null)
+				else if (!asChild)
 				{
-					//log('getting node next sibling');
-					targetNode = targetNode.nextSibling;
+					nextSibling = targetNode.nextSibling;
 				}
 			}
-			
-			if (targetNode == null || targetNode != null && targetNode.value !== child)
+
+			if (_debug)
 			{
-				if (!child.syncedInUIComponent)
+				log('asChild: ' + asChild + '; firstChild: ' + StringUtils.getObjectAddress(firstChild) + '; nextSibling: ' + StringUtils.getObjectAddress(nextSibling));
+			}
+			
+			var childIsEqual:Boolean = asChild && firstChild != null && firstChild.value === child ||
+									   !asChild && nextSibling != null && nextSibling.value === child;
+			
+			if (!childIsEqual)
+			{
+				if (asChild && firstChild == null)
 				{
 					var node:TreeNode = _cacheTreeNodes.newInstance();
 					node.value = child;
-				
-					if (targetNode == null)
+					
+					if (_debug)
 					{
-						//log('adding child as first node');
-						targetRoot.addAsFirstNode(node);
+						log(' +1 adding as first child to root ' + StringUtils.getObjectAddress(targetRoot) + ', parent ' + StringUtils.getObjectAddress(targetNode) + ' as node ' + StringUtils.getObjectAddress(node));
+					}
+					targetNode.addNode(node);
+					targetNode = node;
+				}
+				else if (!asChild && nextSibling == null)
+				{
+					node = _cacheTreeNodes.newInstance();
+					node.value = child;
+					
+					if (_debug)
+					{
+						log(' + adding as last child to root ' + StringUtils.getObjectAddress(targetRoot) + ', parent ' + StringUtils.getObjectAddress(targetNode.parent) + ' as node ' + StringUtils.getObjectAddress(node));
+					}
+					targetNode.parent.addNode(node);
+					targetNode = node;
+				}
+				else if (!child.syncedInUIComponent)
+				{
+					node = _cacheTreeNodes.newInstance();
+					node.value = child;
+				
+					if (asChild)
+					{
+						if (_debug)
+						{
+							log(' +1 adding as first child to root ' + StringUtils.getObjectAddress(targetRoot) + ', parent ' + StringUtils.getObjectAddress(targetNode) + ' as node ' + StringUtils.getObjectAddress(node));
+						}
+						if (!(targetNode.value is Sprite3DContainer))
+						{
+							throw new Error('tree integrity failed');
+						}
+						
+						targetNode.addAsFirstNode(node);
 					}
 					else
 					{
-						if (asChild)
+						if (nextSibling != null)
 						{
-							//log('adding as child to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node));
-							targetNode.addNode(node);
+							var prevNode:TreeNode = targetNode;
+							targetNode = nextSibling;
+							if (_debug)
+							{
+								log(' -> getting node next sibling');
+							}
+							targetNode = nextSibling;
+							if (_debug)
+							{
+								log(' +' + (prevNode == null ? '1' : '') + ' adding to root ' + StringUtils.getObjectAddress(targetRoot) + ' as ' + (prevNode == null ? 'first' : '') + ' node ' + StringUtils.getObjectAddress(node) + (prevNode != null ? ' before ' + StringUtils.getObjectAddress(targetNode) : ''));
+							}
+							if (prevNode != null)
+							{
+								targetNode.parent.insertNodeAfter(
+									prevNode,
+									node
+								);
+							}
+							else
+							{
+								if (!(targetNode.value is Sprite3DContainer))
+								{
+									throw new Error('tree integrity failed');
+								}
+								
+								targetNode.parent.addAsFirstNode(node);
+							}
 						}
 						else
 						{
-							//log('adding to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node) + ' after ' + StringUtils.getObjectAddress(targetNode));
-							targetNode.parent.insertNodeAfter(
-								targetNode,
-								node
-							);
+							log(' + adding to root ' + StringUtils.getObjectAddress(targetRoot) + ' as node ' + StringUtils.getObjectAddress(node) + ' after ' + StringUtils.getObjectAddress(targetNode));
+							targetNode.parent.addNode(node);
 						}
 					}
 					
 					targetNode = node;
 				}
-				else
+				else if (child.syncedInUIComponent)
 				{
+					if (firstChild != null)
+					{
+						targetNode = firstChild;
+					}
+					else if (nextSibling != null)
+					{
+						targetNode = nextSibling;
+					}
+					
 					var targetNodeParent:TreeNode = targetNode.parent;
 					while (targetNode != null && targetNode.value !== child)
 					{
-						//log('removing child ' + targetNode.value);
+						if (_debug)
+						{
+							log(' - removing child ' + targetNode.value + ' from ' + StringUtils.getObjectAddress(targetNodeParent) + ' (' + StringUtils.getObjectAddress(targetNode) + ').parent');
+						}
 						var nextNode:TreeNode = targetNode.nextSibling;
 						targetNodeParent.removeNode(targetNode);
 						
-						storeNode(targetNode);
-						_cacheTreeNodes.storeInstance(targetNode);
+						cacheAllNodes(targetNode);
 						
 						targetNode = nextNode;
 					}
 					
 					if (targetNode == null)
 					{
-						//log('all children removed, adding as next node');
+						if (_debug)
+						{
+							log(' -- all children removed, adding as next node');
+						}
 						node = _cacheTreeNodes.newInstance();
 						node.value = child;
 						
@@ -504,33 +637,59 @@ package molehill.core.render
 					}
 					else
 					{
-						//log('child found');
+						if (_debug)
+						{
+							log(' == child found');
+						}
 					}
 				}
 			}
 			else
 			{
-				//log('children are equal');
+				if (_debug)
+				{
+					log(' == children are equal');
+				}
+				if (asChild && firstChild != null)
+				{
+					targetNode = firstChild;
+				}
+				else if (!asChild && nextSibling != null)
+				{
+					targetNode = nextSibling;
+				}
 			}
 			
 			if (targetRoot === _localTreeForeground)
 			{
-				//log('_localTreeForegroundCursor now ' + StringUtils.getObjectAddress(targetNode));
+				if (_debug)
+				{
+					log('_localTreeForegroundCursor now ' + StringUtils.getObjectAddress(targetNode));
+				}
 				_localTreeForegroundCursor = targetNode;
 			}
 			else if (targetRoot === _localTreeText)
 			{
-				//log('_localTreeTextCursor now ' + StringUtils.getObjectAddress(targetNode));
+				if (_debug)
+				{
+					log('_localTreeTextCursor now ' + StringUtils.getObjectAddress(targetNode));
+				}
 				_localTreeTextCursor = targetNode;
 			}
 			else if (targetRoot === _localTreeDynamic)
 			{
-				//log('_localTreeDynamicCursor now ' + StringUtils.getObjectAddress(targetNode));
+				if (_debug)
+				{
+					log('_localTreeDynamicCursor now ' + StringUtils.getObjectAddress(targetNode));
+				}
 				_localTreeDynamicCursor = targetNode;
 			}
 			else
 			{
-				//log('_localTreeGenericCursor now ' + StringUtils.getObjectAddress(targetNode));
+				if (_debug)
+				{
+					log('_localTreeGenericCursor now ' + StringUtils.getObjectAddress(targetNode));
+				}
 				_localTreeGenericCursor = targetNode;
 			}
 			
@@ -541,25 +700,42 @@ package molehill.core.render
 		{
 			if (_isForeground)
 			{
-				//log('moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeForegroundCursor.parent));
+				if (_debug)
+				{
+					log(' ^ moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeForegroundCursor.parent));
+				}
+				cacheAllNodes(_localTreeForegroundCursor.nextSibling);
 				_localTreeForegroundCursor = _localTreeForegroundCursor.parent;
 			}
 			else if (_isText)
 			{
-				//log('moving _localTreeTextCursor up to ' + StringUtils.getObjectAddress(_localTreeTextCursor.parent));
+				if (_debug)
+				{
+					log(' ^ moving _localTreeTextCursor up to ' + StringUtils.getObjectAddress(_localTreeTextCursor.parent));
+				}
+				cacheAllNodes(_localTreeTextCursor.nextSibling);
 				_localTreeTextCursor = _localTreeTextCursor.parent;
 			}
 			else if (_isDynamic)
 			{
-				//log('moving _localTreeDynamicCursor up to ' + StringUtils.getObjectAddress(_localTreeDynamicCursor.parent));
+				if (_debug)
+				{
+					log(' ^ moving _localTreeDynamicCursor up to ' + StringUtils.getObjectAddress(_localTreeDynamicCursor.parent));
+				}
+				cacheAllNodes(_localTreeDynamicCursor.nextSibling);
 				_localTreeDynamicCursor = _localTreeDynamicCursor.parent;
 			}
 			else
 			{
-				//log('moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeGenericCursor.parent));
+				if (_debug)
+				{
+					log(' ^ moving _localTreeGenericCursor up to ' + StringUtils.getObjectAddress(_localTreeGenericCursor.parent));
+				}
+				cacheAllNodes(_localTreeGenericCursor.nextSibling);
 				_localTreeGenericCursor = _localTreeGenericCursor.parent;
 			}
 		}
+		
 		
 		private function storeNode(node:TreeNode):void
 		{
@@ -613,7 +789,6 @@ package molehill.core.render
 		private function savelog():void
 		{
 			DebugLogger.writeExternalLog(_log + '\n\n');
-			_log = null;
 		}
 	}
 }
