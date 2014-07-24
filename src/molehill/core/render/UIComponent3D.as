@@ -363,9 +363,16 @@ package molehill.core.render
 				
 				addChildToTree(src.value, asChild);
 				
-				if (src.hasChildren && !(src.value is UIComponent3D))
+				if (!(src.value is UIComponent3D))
 				{
-					doSyncTrees(src.firstChild, true);
+					if (src.hasChildren)
+					{
+						doSyncTrees(src.firstChild, true);
+					}
+					else
+					{
+						cleanUpChildren();
+					}
 				}
 				
 				if (!flagsChanged)
@@ -745,6 +752,25 @@ package molehill.core.render
 			}
 		}
 		
+		private function cleanUpChildren():void
+		{
+			if (_isForeground)
+			{
+				cacheAllNodes(_localTreeForegroundCursor.firstChild);
+			}
+			else if (_isText)
+			{
+				cacheAllNodes(_localTreeTextCursor.firstChild);
+			}
+			else if (_isDynamic)
+			{
+				cacheAllNodes(_localTreeDynamicCursor.firstChild);
+			}
+			else
+			{
+				cacheAllNodes(_localTreeGenericCursor.firstChild);
+			}
+		}
 		
 		private function storeNode(node:TreeNode):void
 		{

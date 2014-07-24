@@ -176,11 +176,11 @@ package molehill.core.render
 			{
 				var sprite:Sprite3D = renderTree.value as Sprite3D;
 				
-				if ((sprite.currentAtlasData != null &&
+				if ((batchingTree.value as BatchingInfo).batcher != null &&
+					((sprite.currentAtlasData != null &&
 					sprite.currentAtlasData.atlasID !== (batchingTree.value as BatchingInfo).batcher.textureAtlasID) ||
 					(sprite.currentAtlasData == null &&
-					(batchingTree.value as BatchingInfo).batcher != null &&
-					(batchingTree.value as BatchingInfo).batcher.textureAtlasID != null))
+					(batchingTree.value as BatchingInfo).batcher.textureAtlasID != null)))
 				{
 					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
 					while (_hashBatchersOldToNew[currentBatcher] != null)
