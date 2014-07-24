@@ -1135,6 +1135,7 @@ package molehill.core.sprite
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleX = sx;
+				_listChildren[i].parentShiftX = _listChildren[i]._parentShiftX;
 			}
 			
 			super.scaleX = value;
@@ -1146,6 +1147,7 @@ package molehill.core.sprite
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleY = sy;
+				_listChildren[i].parentShiftY = _listChildren[i]._parentShiftY;
 			}
 			
 			super.scaleY = value;
