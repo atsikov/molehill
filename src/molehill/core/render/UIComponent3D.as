@@ -179,6 +179,10 @@ package molehill.core.render
 				currentNode.parent.removeNode(currentNode);
 			}
 			currentNode.reset();
+			if (_debug)
+			{
+				log(' * storing node ' + StringUtils.getObjectAddress(currentNode) + '; value: ' + currentNode.value);
+			}
 			_cacheTreeNodes.storeInstance(currentNode);
 			
 			cacheAllNodes(nextNode);
@@ -244,10 +248,11 @@ package molehill.core.render
 //				}
 //			}
 			
-			if (hasError/* || parent is ShopItemRenderer*/)
+			if (!hasError/* || parent is ShopItemRenderer*/)
 			{
 				if (_debug)
 				{
+					log(' ========= ' + this + ' ========== ');
 					log(ObjectUtils.traceTree(localRenderTree));
 					log('----');
 					log(ObjectUtils.traceTree(_localTreeGeneric));
@@ -280,7 +285,7 @@ package molehill.core.render
 			{
 				_localTreeDynamicCursor = _localTreeDynamic.firstChild;
 			}
-			else if (_localTreeGenericCursor != null)
+			else if (_localTreeDynamicCursor != null)
 			{
 				_localTreeDynamicCursor = _localTreeDynamicCursor.nextSibling;
 			}

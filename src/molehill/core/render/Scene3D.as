@@ -210,7 +210,7 @@ package molehill.core.render
 						prepareBatchers(renderTree, batchNode, cameraOwner);
 						if (renderTreePrevNode == null)
 						{
-							renderTreeParent.addAsFirstNode(firstChild);
+							renderTreeParent.addAsFirstNode(renderTree);
 						}
 						else
 						{
@@ -649,6 +649,11 @@ package molehill.core.render
 		 **/
 		private function prepareBatchers(renderTree:TreeNode, batcherTree:TreeNode, cameraOwner:Sprite3D):void
 		{
+			if (_debug)
+			{
+				log('preparing batchers for\n' + ObjectUtils.traceTree(renderTree));
+			}
+			
 			var node:TreeNode = renderTree;
 			if (node == null)
 			{
@@ -752,14 +757,7 @@ package molehill.core.render
 							)
 							{
 								var tailBatcher:SpriteBatcher;
-								if (_lastBatchedChild == (_currentBatcher as SpriteBatcher).getFirstChild())
-								{
-									_batcherInsertPosition--;
-								}
-								else
-								{
-									tailBatcher = (_currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
-								}
+								tailBatcher = (_currentBatcher as SpriteBatcher).splitAfterChild(_lastBatchedChild);
 								if (tailBatcher != null)
 								{
 									_listSpriteBatchers.splice(_batcherInsertPosition, 0, tailBatcher);
@@ -964,6 +962,8 @@ package molehill.core.render
 				if (_debug)
 				{
 					saveLog();
+					
+					traceTrees();
 				}
 			}
 			_needUpdateBatchers = false;
@@ -1053,7 +1053,7 @@ package molehill.core.render
 			return _renderInfo;
 		}
 		
-		private var _debug:Boolean = true;
+		private var _debug:Boolean = false;
 		private var _log:String;
 		private function log(entry:String):void
 		{
