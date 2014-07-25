@@ -475,9 +475,17 @@ package molehill.core.sprite
 		}
 		
 		molehill_internal var _parentRotation:Number = 0;
+		molehill_internal var _parentRotationSin:Number = 0;
+		molehill_internal var _parentRotationCos:Number = 0;
 		molehill_internal function set parentRotation(value:Number):void
 		{
 			_parentRotation = value;
+			
+			_parentRotationSin = Math.sin(_parentRotation / 180 * Math.PI);
+			_parentRotationCos = Math.cos(_parentRotation / 180 * Math.PI);
+			_totalRotationSin = Math.sin((_rotation + _parentRotation) / 180 * Math.PI);
+			_totalRotationCos = Math.cos((_rotation + _parentRotation) / 180 * Math.PI);
+			
 			_valuesUpdated = false;
 		}
 		
@@ -488,9 +496,6 @@ package molehill.core.sprite
 				return;
 
 			}
-			
-			var rad:Number = (_rotation + _parentRotation) / 180 * Math.PI;
-			var parentRad:Number = _parentRotation / 180 * Math.PI;
 			
 			var scaledWidth:Number;
 			var scaledHeight:Number;
@@ -506,11 +511,11 @@ package molehill.core.sprite
 			scaledWidth = _width * _parentScaleX * _scaleX;
 			scaledHeight = _height * _parentScaleY * _scaleY;
 			
-			cos = Math.cos(rad);
-			sin = Math.sin(rad);
+			cos = _totalRotationCos;
+			sin = _totalRotationSin;
 			
-			parentCos = Math.cos(parentRad);
-			parentSin = Math.sin(parentRad);
+			parentCos = _parentRotationCos;
+			parentSin = _parentRotationSin;
 			
 			dx0 = _shiftX * _parentScaleX;
 			dy0 = _shiftY * _parentScaleY;
@@ -648,6 +653,10 @@ package molehill.core.sprite
 		}
 		
 		molehill_internal var _rotation:Number = 0;
+		molehill_internal var _rotationSin:Number = 0;
+		molehill_internal var _rotationCos:Number = 1;
+		molehill_internal var _totalRotationSin:Number = 0;
+		molehill_internal var _totalRotationCos:Number = 1;
 		public function get rotation():Number
 		{
 			return _rotation;
@@ -661,6 +670,11 @@ package molehill.core.sprite
 			}
 			
 			_rotation = value;
+			
+			_rotationSin = Math.sin(_rotation / 180 * Math.PI);
+			_rotationCos = Math.cos(_rotation / 180 * Math.PI);
+			_totalRotationSin = Math.sin((_rotation + _parentRotation) / 180 * Math.PI);
+			_totalRotationCos = Math.cos((_rotation + _parentRotation) / 180 * Math.PI);
 			
 			markChanged(true);
 		}

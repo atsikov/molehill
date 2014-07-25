@@ -293,8 +293,11 @@ package molehill.core.sprite
 		
 		protected function updateChildParentValues(child:Sprite3D):void
 		{
-			child.parentShiftX = _parentShiftX + _shiftX * _parentScaleX;
-			child.parentShiftY = _parentShiftY + _shiftY * _parentScaleY;
+			var dx:Number = _shiftX * _parentScaleX;
+			var dy:Number = _shiftY * _parentScaleY;
+			
+			child.parentShiftX = _parentShiftX + dx * _rotationCos - dy * _rotationSin;
+			child.parentShiftY = _parentShiftY + dx * _rotationSin + dy * _rotationCos;
 			child.parentShiftZ = _parentShiftZ + _shiftZ;
 			
 			child.parentScaleX = _parentScaleX * _scaleX;
@@ -1008,21 +1011,25 @@ package molehill.core.sprite
 		override molehill_internal function set parentShiftX(value:Number):void
 		{
 			super.parentShiftX = value;
-			
+			x = _shiftX;
+			/*
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentShiftX = value + _shiftX * _parentScaleX;
 			}
+			*/
 		}
 		
 		override molehill_internal function set parentShiftY(value:Number):void
 		{
 			super.parentShiftY = value;
-			
+			y = _shiftY;
+			/*
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = value + _shiftY * _parentScaleY;
+				_listChildren[i].parentShiftY = value + _shiftY * _parentScaleY * _parentRotationSin;
 			}
+			*/
 		}
 		
 		override molehill_internal function set parentShiftZ(value:Number):void
@@ -1103,16 +1110,18 @@ package molehill.core.sprite
 			{
 				_listChildren[i].parentRotation = value + _rotation;
 			}
+			moveTo(_shiftX, _shiftY);
 		}
 		// ----
 		
 		// self properties
 		override public function set x(value:Number):void
 		{
-			var dx:Number = _parentShiftX + value * _parentScaleX;
+			var dx:Number = value * _parentScaleX;
+			var dy:Number = _shiftY * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = dx;
+				_listChildren[i].parentShiftX = _parentShiftX + dx * _parentRotationCos - dy * _parentRotationSin;
 			}
 			
 			super.x = value;
@@ -1120,10 +1129,11 @@ package molehill.core.sprite
 		
 		override public function set y(value:Number):void
 		{
-			var dy:Number = _parentShiftY + value * _parentScaleY;
+			var dx:Number = _shiftX * _parentScaleX;
+			var dy:Number = value * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = dy;
+				_listChildren[i].parentShiftY = _parentShiftY + dx * _parentRotationSin + dy * _parentRotationCos;
 			}
 			
 			super.y = value;
@@ -1159,8 +1169,8 @@ package molehill.core.sprite
 			var dy:Number = y * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = _parentShiftX + dx;
-				_listChildren[i].parentShiftY = _parentShiftY + dy;
+				_listChildren[i].parentShiftX = _parentShiftX + dx * _parentRotationCos - dy * _parentRotationSin;
+				_listChildren[i].parentShiftY = _parentShiftY + dx * _parentRotationSin + dy * _parentRotationCos;
 			}
 			
 			super.moveTo(x, y, z);
@@ -1241,12 +1251,15 @@ package molehill.core.sprite
 		
 		override public function set rotation(value:Number):void
 		{
+			super.rotation = value;
+			
+			var dx:Number = x * _parentScaleX;
+			var dy:Number = y * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentRotation = _parentRotation + value;
 			}
-			
-			super.rotation = value;
+			moveTo(_shiftX, _shiftY);
 		}
 		
 		override public function set updateOnRender(value:Boolean):void

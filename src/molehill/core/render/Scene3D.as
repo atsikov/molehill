@@ -931,6 +931,7 @@ package molehill.core.render
 			{
 				_lastBatchedChild = null;
 				_currentBatcher = null;
+				_batcherInsertPosition = 0;
 				
 				_log = null;
 				
