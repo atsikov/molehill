@@ -1011,25 +1011,27 @@ package molehill.core.sprite
 		override molehill_internal function set parentShiftX(value:Number):void
 		{
 			super.parentShiftX = value;
-			x = _shiftX;
-			/*
+			
+			var dx:Number = _shiftX * _parentScaleX;
+			var dy:Number = _shiftY * _parentScaleY;
+			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftX = value + _shiftX * _parentScaleX;
+				_listChildren[i].parentShiftX = value + dx * _parentRotationCos - dy * _parentRotationSin;
 			}
-			*/
 		}
 		
 		override molehill_internal function set parentShiftY(value:Number):void
 		{
 			super.parentShiftY = value;
-			y = _shiftY;
-			/*
+			
+			var dx:Number = _shiftX * _parentScaleX;
+			var dy:Number = _shiftY * _parentScaleY;
+			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentShiftY = value + _shiftY * _parentScaleY * _parentRotationSin;
+				_listChildren[i].parentShiftY = value + dx * _parentRotationSin + dy * _parentRotationCos;
 			}
-			*/
 		}
 		
 		override molehill_internal function set parentShiftZ(value:Number):void

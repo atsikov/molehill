@@ -3,9 +3,7 @@ package molehill.core.render
 	import easy.collections.TreeNode;
 	
 	import flash.display.BitmapData;
-	import flash.display.Sprite;
 	import flash.display3D.textures.Texture;
-	import flash.events.Event;
 	import flash.utils.ByteArray;
 	import flash.utils.Dictionary;
 	import flash.utils.getTimer;

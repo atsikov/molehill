@@ -37,6 +37,7 @@ package molehill.core.text
 			format.align = _align;
 			format.color = darkenColor;
 			format.size = _fontSize;
+			format.leading = _leading;
 			
 			return format;
 		}
@@ -49,6 +50,7 @@ package molehill.core.text
 			_align = value.align;
 			_fontSize = value.size;
 			_fontTextureSize = Font3DManager.getInstance().getSuitableFontSize(_fontName, value.size);
+			_leading = value.leading;
 			
 			updateLayout();
 		}
@@ -57,6 +59,7 @@ package molehill.core.text
 		private var _fontSize:int;
 		private var _fontTextureSize:int;
 		private var _align:String;
+		private var _leading:int;
 		
 		private var _text:String = "";
 		public function get text():String
@@ -139,7 +142,7 @@ package molehill.core.text
 					placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
 					placedChildIndex = childIndex;
 					
-					_lineY += _lineHeight;
+					_lineY += _lineHeight + _leading;
 					numLineBreaks++;
 
 					lineWidth = 0;
@@ -173,7 +176,7 @@ package molehill.core.text
 						currentLineWidth = 0;
 					}
 					
-					_lineY += _lineHeight;
+					_lineY += _lineHeight + _leading;
 					_numLines++;
 					
 					placedChildIndex = lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex;
@@ -270,7 +273,7 @@ package molehill.core.text
 					currentLineWidth = 0;
 				}
 				
-				_lineY += _lineHeight;
+				_lineY += _lineHeight + _leading;
 				_numLines++;
 				
 				placedChildIndex = lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex;
@@ -281,7 +284,7 @@ package molehill.core.text
 			{
 				_textWidth = lineWidth;
 			}
-			_textHeight = _lineY + _lineHeight;
+			_textHeight = _lineY + _lineHeight + _leading;
 			
 			while (numChildren > childIndex)
 			{
@@ -357,7 +360,7 @@ package molehill.core.text
 				
 				if (j < lastChildIndex)
 				{
-					_lineY += _lineHeight;
+					_lineY += _lineHeight + _leading;
 					lastLineWidth = 0;
 					_numLines++;
 				}

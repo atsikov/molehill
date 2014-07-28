@@ -6,6 +6,7 @@ package molehill.core.text
 		public var color:uint;
 		public var font:String;
 		public var size:uint;
+		public var leading:int = 0;
 		
 		public function TextField3DFormat(
 			font:String = "",
