@@ -583,7 +583,7 @@ package molehill.easy.ui3d.list
 		
 		public function update():void
 		{
-			if ((scene != null) || (_updateAnyway))
+			if ((scene != null && scene.isActive) || (_updateAnyway))
 			{
 				doUpdate();
 			}

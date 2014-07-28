@@ -37,9 +37,6 @@ package molehill.core.render
 			
 			_listSpriteBatchers = new Vector.<IVertexBatcher>();
 			
-			_enterFrameListener = new Sprite();
-			_enterFrameListener.addEventListener(Event.EXIT_FRAME, onRenderEnterFrame);
-			
 			_scene = this;
 			
 			addEventListener(Input3DMouseEvent.CLICK, onSceneMouseClick);
@@ -151,7 +148,6 @@ package molehill.core.render
 		
 		molehill_internal var _needUpdateBatchers:Boolean = false;
 		private var _listSpriteBatchers:Vector.<IVertexBatcher>;
-		private var _enterFrameListener:Sprite;
 		
 		private var _currentBatcher:IVertexBatcher;
 		private var _lastBatchedChild:Sprite3D;
@@ -923,7 +919,7 @@ package molehill.core.render
 			_needUpdateBatchers = value;
 		}
 		
-		private function renderScene():void
+		molehill_internal function renderScene():void
 		{
 			var i:int = 0;
 			var spriteBatcher:SpriteBatcher;
@@ -968,8 +964,6 @@ package molehill.core.render
 				}
 			}
 			_needUpdateBatchers = false;
-			
-			_renderEngine.clear();
 			
 			var tm:TextureManager = TextureManager.getInstance();
 			var passedVertices:uint = 0;
@@ -1026,33 +1020,6 @@ package molehill.core.render
 		}
 		
 		private var _lastTexture:Texture;
-		private var _t:uint;
-		private function onRenderEnterFrame(event:Event):void
-		{
-			if (_renderEngine == null || !_renderEngine.isReady)
-			{
-				return;
-			}
-			
-			renderScene();
-			
-			_renderEngine.present();
-			
-			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
-			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
-			
-			_renderInfo.mode = _renderEngine.renderMode;
-			_renderInfo.drawCalls = _renderEngine.drawCalls;
-			_renderInfo.totalTris = _renderEngine.totalTris;
-			_renderInfo.numBitmapAtlases = numBitmapAtlases;
-			_renderInfo.numCompressedAtlases = numCompressedAtlases;
-		}
-		
-		private var _renderInfo:Object = new Object();
-		public function get renderInfo():Object
-		{
-			return _renderInfo;
-		}
 		
 		private var _debug:Boolean = false;
 		private var _log:String;

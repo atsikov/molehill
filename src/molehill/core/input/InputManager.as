@@ -276,15 +276,18 @@ package molehill.core.input
 				return;
 			}
 			
-			var activeScene:Scene3D = Scene3DManager.getInstance().activeScene;
-			var molehillObjects:Vector.<Sprite3D> = activeScene.getObjectsUnderPoint(mousePoint);
+			var sceneManager:Scene3DManager = Scene3DManager.getInstance();
+			for (var i:int = 0; i < sceneManager.numScenes; i++)
+			{
+				var molehillObjects:Vector.<Sprite3D> = sceneManager.getSceneAt(i).getObjectsUnderPoint(mousePoint, molehillObjects);
+			}
 			var numObjects:Number = molehillObjects.length;
 			
 			var firstInteractiveContainer:Sprite3DContainer;
 			var topInteractiveParent:InteractiveSprite3D;
 			var eventsProcessed:Boolean = false;
 			var triggerSprite:Sprite3D;
-			for (var i:int = numObjects - 1; i >= 0; i--)
+			for (i = numObjects - 1; i >= 0; i--)
 			{
 				var candidate:Sprite3D = molehillObjects[i] as Sprite3D;
 				

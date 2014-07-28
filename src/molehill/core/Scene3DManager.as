@@ -1,5 +1,6 @@
 package molehill.core
 {
+	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DRenderMode;
@@ -10,6 +11,8 @@ package molehill.core
 	import molehill.core.render.shader.Shader3DCache;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.texture.TextureManager;
+	
+	use namespace molehill_internal;
 
 	public class Scene3DManager
 	{
@@ -28,6 +31,7 @@ package molehill.core
 		
 		private static var _allowInstantion:Boolean = false;
 		private static var _renderer:RenderEngine;
+		private var _enterFrameListener:Sprite;
 		public function Scene3DManager()
 		{
 			if (!_allowInstantion)
@@ -35,7 +39,10 @@ package molehill.core
 				throw new Error("Use SceneManager::getInstance()");
 			}
 			
-			_hashScenes = new Object();
+			_listActiveScenes = new Vector.<Scene3D>();
+			
+			_enterFrameListener = new Sprite();
+			_enterFrameListener.addEventListener(Event.EXIT_FRAME, onRenderEnterFrame);
 		}
 		
 		/**
@@ -79,9 +86,9 @@ package molehill.core
 					Sprite3D.NUM_ELEMENTS_PER_VERTEX
 				);
 				
-				if (_activeScene != null)
+				for each (var scene:Scene3D in _listActiveScenes)
 				{
-					_activeScene.setRenderEngine(_renderer);
+					scene.setRenderEngine(_renderer);
 				}
 				
 				_stage.stage3Ds[0].removeEventListener(Event.CONTEXT3D_CREATE, onContext3DReady);
@@ -103,7 +110,7 @@ package molehill.core
 			_renderer.setContext3D(context);
 			_renderer.setViewportSize(_stage.stageWidth, _stage.stageHeight);
 			
-			for each (var scene:Scene3D in _hashScenes)
+			for each (var scene:Scene3D in _listActiveScenes)
 			{
 				scene.onContextRestored();
 			}
@@ -114,87 +121,116 @@ package molehill.core
 			}
 		}
 		
-		/**
-		 *  Scenes management
-		 **/
-		private var _hashScenes:Object;
-		private var _activeScene:Scene3D;
-		public function createEmptyScene(alias:String):void
-		{
-			var scene:Scene3D = new Scene3D();
-			
-			if (_hashScenes[alias] != null)
-			{
-				throw new Error("SceneManager: scene with alias " + alias + " already added. Remove existing scene or use new alias.");
-			}
-			
-			_hashScenes[alias] = scene;
-			
-			if (_activeScene == null)
-			{
-				switchScene(alias);
-			}
-		}
-		
-		public function addScene(alias:String, scene:Scene3D):void
-		{
-			if (_hashScenes[alias] != null)
-			{
-				throw new Error("Scene3DManager: scene with alias " + alias + " already added. Remove existing scene or use new alias.");
-			}
-			
-			_hashScenes[alias] = scene;
-			
-			if (_activeScene == null)
-			{
-				switchScene(alias);
-			}
-		}
-		
-		public function removeScene(alias:String):void
-		{
-			if (_hashScenes[alias] === _activeScene)
-			{
-				throw new Error("Scene3DManager: unable to remove active scene. Switch to another scene first.");
-			}
-			
-			if (_hashScenes[alias] != null)
-			{
-				delete _hashScenes[alias];
-			}
-		}
-		
 		public function get renderEngine():RenderEngine
 		{
 			return _renderer;
 		}
 		
-		public function getScene(alias:String):Scene3D
+		/**
+		 *  Scenes management
+		 **/
+		private var _listActiveScenes:Vector.<Scene3D>;
+		public function addScene(scene:Scene3D):Scene3D
 		{
-			return _hashScenes[alias];
+			_listActiveScenes.push(scene);
+			scene.setRenderEngine(_renderer);
+			return scene;
 		}
 		
-		public function switchScene(alias:String):void
+		public function removeScene(scene:Scene3D):Scene3D
 		{
-			if (_activeScene != null)
+			var index:int = _listActiveScenes.indexOf(scene);
+			if (index != -1)
 			{
-				_activeScene.setRenderEngine(null);
+				_listActiveScenes.splice(index, 1);
+			}
+			scene.setRenderEngine(null);
+			return scene;
+		}
+		
+		public function addSceneAt(scene:Scene3D, index:int):Scene3D
+		{
+			if (index < 0)
+			{
+				index = 0;
 			}
 			
-			_activeScene = _hashScenes[alias];
-			_activeScene.setRenderEngine(_renderer);
-			_activeSceneAlias = alias;
+			if (index > _listActiveScenes.length)
+			{
+				index = _listActiveScenes.length;
+			}
+			scene.setRenderEngine(_renderer);
+			_listActiveScenes.splice(index, 0, scene);
+			return scene;
 		}
 		
-		public function get activeScene():Scene3D
+		public function removeSceneAt(index:int):Scene3D
 		{
-			return _activeScene;
+			if (index < 0 || index > _listActiveScenes.length - 1)
+			{
+				return null;
+			}
+			
+			var scene:Scene3D = _listActiveScenes[index];
+			scene.setRenderEngine(null);
+			_listActiveScenes.splice(index, 1);
+			return scene;
 		}
 		
-		private var _activeSceneAlias:String = "";
-		public function get activeSceneAlias():String
+		public function getSceneAt(index:int):Scene3D
 		{
-			return _activeSceneAlias;
+			if (index < 0 || index > _listActiveScenes.length - 1)
+			{
+				return null;
+			}
+			
+			return _listActiveScenes[index];
 		}
+		
+		public function getSceneIndex(scene:Scene3D):int
+		{
+			return _listActiveScenes.indexOf(scene);
+		}
+		
+		public function get numScenes():uint
+		{
+			return _listActiveScenes.length;
+		}
+		
+		/**
+		 * Render cycle
+		 **/
+		private var _renderInfo:Object = new Object();
+		public function get renderInfo():Object
+		{
+			return _renderInfo;
+		}
+		
+		private function onRenderEnterFrame(event:Event):void
+		{
+			if (_renderer == null || !_renderer.isReady)
+			{
+				return;
+			}
+			
+			_renderer.clear();
+			
+			for (var i:int = 0; i < _listActiveScenes.length; i++)
+			{
+				_listActiveScenes[i].renderScene();
+			}
+			
+			_renderer.present();
+			
+			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
+			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
+			
+			_renderInfo.mode = _renderer.renderMode;
+			_renderInfo.drawCalls = _renderer.drawCalls;
+			_renderInfo.totalTris = _renderer.totalTris;
+			_renderInfo.numBitmapAtlases = numBitmapAtlases;
+			_renderInfo.numCompressedAtlases = numCompressedAtlases;
+		}
+		
 	}
 }

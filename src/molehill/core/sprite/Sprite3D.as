@@ -50,7 +50,6 @@ package molehill.core.sprite
 		
 		public static const NUM_ELEMENTS_PER_SPRITE:uint = NUM_ELEMENTS_PER_VERTEX * NUM_VERTICES_PER_SPRITE;
 		
-		private static var SCENE_MANAGER:Scene3DManager = Scene3DManager.getInstance();
 		private static var TEXTURE_MANAGER:TextureManager = TextureManager.getInstance();
 		
 		/**
@@ -1418,7 +1417,7 @@ package molehill.core.sprite
 					_cutout.shader = null;
 				}
 				
-				if (value != null && SCENE_MANAGER.renderEngine != null)
+				if (value != null && Scene3DManager.getInstance().renderEngine != null)
 				{
 					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
 					shader = Shader3DFactory.getInstance().getShaderInstance(CutoutObjectShader);
@@ -1621,7 +1620,7 @@ package molehill.core.sprite
 		
 		molehill_internal function get isOnScreen():Boolean
 		{
-			var renderEngine:RenderEngine = SCENE_MANAGER.renderEngine;
+			var renderEngine:RenderEngine = Scene3DManager.getInstance().renderEngine;
 			
 			globalToLocalCoords(0, 0);
 			if (_localPointX > width || _localPointY > height)

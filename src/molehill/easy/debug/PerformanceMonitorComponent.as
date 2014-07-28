@@ -5,6 +5,7 @@ package molehill.easy.debug
 	import flash.system.System;
 	import flash.utils.getTimer;
 	
+	import molehill.core.Scene3DManager;
 	import molehill.core.render.UIComponent3D;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.base.ColorFillShader;
@@ -204,13 +205,10 @@ package molehill.easy.debug
 			_tfMemory.text = int(currentConsumedMemory / 1024 / 1024) + "/" + int(_maxMemory / 1024 / 1024) + " Mb";
 			//_tfMemory.appendText("\nCPU: " + System.processCPUUsage.toFixed(2));
 			
-			if (scene != null)
-			{
-				var renderInfo:Object = scene.renderInfo;
-				_tfDrawCalls.text = "Draw calls: " + renderInfo.drawCalls;
-				_tfTriangles.text = "Triangles: " + renderInfo.totalTris;
-				_tfRenderMode.text = "Render mode: " + renderInfo.mode;
-			}
+			var renderInfo:Object = Scene3DManager.getInstance().renderInfo;
+			_tfDrawCalls.text = "Draw calls: " + renderInfo.drawCalls;
+			_tfTriangles.text = "Triangles: " + renderInfo.totalTris;
+			_tfRenderMode.text = "Render mode: " + renderInfo.mode;
 		}
 	}
 }

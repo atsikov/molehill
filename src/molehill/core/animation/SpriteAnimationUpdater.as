@@ -181,7 +181,7 @@ package molehill.core.animation
 			
 			for each (animation in _listCustomAnimations)
 			{
-				if (animation.scene == null)
+				if (animation.scene == null || !animation.scene.isActive)
 				{
 					continue;
 				}

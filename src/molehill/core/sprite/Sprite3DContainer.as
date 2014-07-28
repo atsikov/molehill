@@ -872,7 +872,7 @@ package molehill.core.sprite
 			{
 				var child:Sprite3D = _listChildren[i];
 				
-				if (child is Sprite3DContainer && child.scene == null)
+				if (child is Sprite3DContainer && (child.scene == null || !child.scene.isActive))
 				{
 					continue;
 				}
