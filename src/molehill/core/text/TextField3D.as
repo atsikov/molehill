@@ -73,10 +73,33 @@ package molehill.core.text
 			{
 				return;
 			}
-			_text = value;
+			
+			if (!_convertLineBreaks)
+			{
+				_text = value;
+			}
+			else
+			{
+				_text = value.replace(/\r\n/g, '\n');
+			}
 			
 			updateLayout();
 		}
+		
+		private var _convertLineBreaks:Boolean = true;
+		/**
+		 * This param is used to convert \\r\\n endings to \\n
+		 **/
+		public function get convertLineBreaks():Boolean
+		{
+			return _convertLineBreaks;
+		}
+		
+		public function set convertLineBreaks(value:Boolean):void
+		{
+			_convertLineBreaks = value;
+		}
+
 		
 		private var _cacheSprites:Vector.<TextField3DCharacter>;
 		private function getCharacterSprite():TextField3DCharacter
@@ -141,6 +164,8 @@ package molehill.core.text
 				{
 					placeCharacters(i, numLineBreaks, placedChildIndex, childIndex, lineWidth, currentLineWidth);
 					placedChildIndex = childIndex;
+					
+					_numSpaces = i - childIndex - numLineBreaks;
 					
 					_lineY += _lineHeight + _leading;
 					numLineBreaks++;
