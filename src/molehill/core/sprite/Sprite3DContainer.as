@@ -1048,9 +1048,13 @@ package molehill.core.sprite
 		{
 			super.parentScaleX = value;
 			
+			var dx:Number = _shiftX * _parentScaleX;
+			var dy:Number = _shiftY * _parentScaleY;
+			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleX = value * _scaleX;
+				_listChildren[i]._parentShiftX = _parentShiftX + dx * _parentRotationCos - dy * _parentRotationSin;
 			}
 		}
 		
@@ -1058,9 +1062,13 @@ package molehill.core.sprite
 		{
 			super.parentScaleY = value;
 			
+			var dx:Number = _shiftX * _parentScaleX;
+			var dy:Number = _shiftY * _parentScaleY;
+			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleY = value * _scaleY;
+				_listChildren[i]._parentShiftY = _parentShiftY + dx * _parentRotationSin + dy * _parentRotationCos;
 			}
 		}
 		
@@ -1108,10 +1116,17 @@ package molehill.core.sprite
 		{
 			super.parentRotation = value;
 			
+			var dx:Number = x * _parentScaleX;
+			var dy:Number = y * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentRotation = value + _rotation;
+				var child:Sprite3D = _listChildren[i];
+				
+				child.parentRotation = value + _rotation;
+				child._parentShiftX = _parentShiftX + dx * _parentRotationCos - dy * _parentRotationSin;
+				child._parentShiftY = _parentShiftY + dx * _parentRotationSin + dy * _parentRotationCos;
 			}
+			
 			moveTo(_shiftX, _shiftY);
 		}
 		// ----
@@ -1147,7 +1162,6 @@ package molehill.core.sprite
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleX = sx;
-				_listChildren[i].parentShiftX = _listChildren[i]._parentShiftX;
 			}
 			
 			super.scaleX = value;
@@ -1159,7 +1173,6 @@ package molehill.core.sprite
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleY = sy;
-				_listChildren[i].parentShiftY = _listChildren[i]._parentShiftY;
 			}
 			
 			super.scaleY = value;
@@ -1191,9 +1204,6 @@ package molehill.core.sprite
 			{
 				_listChildren[i].parentScaleX = sx;
 				_listChildren[i].parentScaleY = sy;
-				
-				_listChildren[i].parentShiftX = _listChildren[i]._parentShiftX;
-				_listChildren[i].parentShiftY = _listChildren[i]._parentShiftY;
 			}
 			
 			super.setScale(scaleX, scaleY);
@@ -1253,15 +1263,14 @@ package molehill.core.sprite
 		
 		override public function set rotation(value:Number):void
 		{
-			super.rotation = value;
-			
 			var dx:Number = x * _parentScaleX;
 			var dy:Number = y * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentRotation = _parentRotation + value;
 			}
-			moveTo(_shiftX, _shiftY);
+			
+			super.rotation = value;
 		}
 		
 		override public function set updateOnRender(value:Boolean):void
