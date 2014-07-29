@@ -171,12 +171,18 @@ package molehill.core.render
 			{
 				var sprite:Sprite3D = renderTree.value as Sprite3D;
 				
+				if (_debug)
+				{
+					log('checking sprite ' + sprite);
+				}
+				
 				if ((batchingTree.value as BatchingInfo).batcher != null &&
 					((sprite.currentAtlasData != null &&
 					sprite.currentAtlasData.atlasID !== (batchingTree.value as BatchingInfo).batcher.textureAtlasID) ||
 					(sprite.currentAtlasData == null &&
 					(batchingTree.value as BatchingInfo).batcher.textureAtlasID != null)))
 				{
+					/*
 					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
 					
 					if (_hashWaitForSprite[sprite] != null)
@@ -193,6 +199,7 @@ package molehill.core.render
 							currentBatcher = _hashBatchersOldToNew[currentBatcher];
 						}
 					}
+					*/
 					prevNode = batchingTree.prevSibling;
 					nextNode = batchingTree.nextSibling;
 					
@@ -453,10 +460,11 @@ package molehill.core.render
 						delete _hashWaitForSprite[sprite];
 					}
 					
-					if (_hashBatchersOldToNew[oldBatcher] != null &&
+					while (_hashBatchersOldToNew[oldBatcher] != null &&
 						_hashChangeBatchersLater[oldBatcher] == null)
 					{
 						(batchingTree.value as BatchingInfo).batcher = _hashBatchersOldToNew[oldBatcher];
+						oldBatcher = (batchingTree.value as BatchingInfo).batcher;
 					}
 					
 					if (_currentBatcher !== (batchingTree.value as BatchingInfo).batcher)
@@ -584,7 +592,7 @@ package molehill.core.render
 						delete _hashWaitForSprite[batchingInfo.child];
 					}
 					
-					if (_hashBatchersOldToNew[batcher] != null &&
+					while (_hashBatchersOldToNew[batcher] != null &&
 						_hashChangeBatchersLater[batcher] == null)
 					{
 						batchingInfo.batcher = _hashBatchersOldToNew[batcher];
@@ -631,13 +639,10 @@ package molehill.core.render
 						delete _hashWaitForSprite[batchingInfo.child];
 					}
 					
-					if (_hashBatchersOldToNew[batcher] != null &&
+					while (_hashBatchersOldToNew[batcher] != null &&
 						_hashChangeBatchersLater[batcher] == null)
 					{
-						while (_hashBatchersOldToNew[batcher] != null)
-						{
-							batcher = _hashBatchersOldToNew[batcher];
-						}
+						batcher = _hashBatchersOldToNew[batcher];
 					}
 					
 					batchingInfo.child.addedToScene = false;
