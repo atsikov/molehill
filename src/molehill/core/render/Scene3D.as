@@ -152,7 +152,8 @@ package molehill.core.render
 		private var _batcherInsertPosition:uint;
 		
 		private var _hashBatchersOldToNew:Dictionary;
-		private var _hashBatchersNewToOld:Dictionary;
+		private var _hashChangeBatchersLater:Dictionary;
+		private var _hashWaitForSprite:Dictionary;
 		
 		/**
 		 * Main method to build batchers on current render tree
@@ -177,9 +178,20 @@ package molehill.core.render
 					(batchingTree.value as BatchingInfo).batcher.textureAtlasID != null)))
 				{
 					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
-					while (_hashBatchersOldToNew[currentBatcher] != null)
+					
+					if (_hashWaitForSprite[sprite] != null)
 					{
-						currentBatcher = _hashBatchersOldToNew[currentBatcher];
+						delete _hashChangeBatchersLater[_hashWaitForSprite[sprite]];
+						delete _hashWaitForSprite[sprite];
+					}
+					
+					if (_hashBatchersOldToNew[currentBatcher] != null && 
+						_hashChangeBatchersLater[currentBatcher] == null)
+					{
+						while (_hashBatchersOldToNew[currentBatcher] != null)
+						{
+							currentBatcher = _hashBatchersOldToNew[currentBatcher];
+						}
 					}
 					prevNode = batchingTree.prevSibling;
 					nextNode = batchingTree.nextSibling;
@@ -434,7 +446,15 @@ package molehill.core.render
 				if ((batchingTree.value as BatchingInfo).batcher != null)
 				{
 					var oldBatcher:IVertexBatcher = (batchingTree.value as BatchingInfo).batcher;
-					if (_hashBatchersOldToNew[oldBatcher] != null)
+					
+					if (_hashWaitForSprite[sprite] != null)
+					{
+						delete _hashChangeBatchersLater[_hashWaitForSprite[sprite]];
+						delete _hashWaitForSprite[sprite];
+					}
+					
+					if (_hashBatchersOldToNew[oldBatcher] != null &&
+						_hashChangeBatchersLater[oldBatcher] == null)
 					{
 						(batchingTree.value as BatchingInfo).batcher = _hashBatchersOldToNew[oldBatcher];
 					}
@@ -558,7 +578,14 @@ package molehill.core.render
 					var batchingInfo:BatchingInfo = batchingTreeNode.value as BatchingInfo;
 					var batcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
 					
-					if (_hashBatchersOldToNew[batcher] != null)
+					if (_hashWaitForSprite[batchingInfo.child] != null)
+					{
+						delete _hashChangeBatchersLater[_hashWaitForSprite[batchingInfo.child]];
+						delete _hashWaitForSprite[batchingInfo.child];
+					}
+					
+					if (_hashBatchersOldToNew[batcher] != null &&
+						_hashChangeBatchersLater[batcher] == null)
 					{
 						batchingInfo.batcher = _hashBatchersOldToNew[batcher];
 						batcher = _hashBatchersOldToNew[batcher];
@@ -597,9 +624,20 @@ package molehill.core.render
 						log('removing ' + batchingInfo.child + ' from batching, batcher ' + StringUtils.getObjectAddress(batchingInfo.batcher));
 					}
 					var batcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
-					while (_hashBatchersOldToNew[batcher] != null)
+					
+					if (_hashWaitForSprite[batchingInfo.child] != null)
 					{
-						batcher = _hashBatchersOldToNew[batcher];
+						delete _hashChangeBatchersLater[_hashWaitForSprite[batchingInfo.child]];
+						delete _hashWaitForSprite[batchingInfo.child];
+					}
+					
+					if (_hashBatchersOldToNew[batcher] != null &&
+						_hashChangeBatchersLater[batcher] == null)
+					{
+						while (_hashBatchersOldToNew[batcher] != null)
+						{
+							batcher = _hashBatchersOldToNew[batcher];
+						}
 					}
 					
 					batchingInfo.child.addedToScene = false;
@@ -761,12 +799,9 @@ package molehill.core.render
 										log('last batcher splitted and inserted to ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length + ' position. tail batcher:\n' + tailBatcher);
 									}
 									
-									_hashBatchersNewToOld[tailBatcher] = _currentBatcher;
-									while (_hashBatchersNewToOld[_currentBatcher] != null)
-									{
-										_currentBatcher = _hashBatchersNewToOld[_currentBatcher];
-									}
 									_hashBatchersOldToNew[_currentBatcher] = tailBatcher;
+									_hashChangeBatchersLater[_currentBatcher] = true;
+									_hashWaitForSprite[sprite] = _currentBatcher;
 								}
 							}
 							_listSpriteBatchers.splice(_batcherInsertPosition, 0, newBatcher);
@@ -932,7 +967,8 @@ package molehill.core.render
 				if (_listSpriteBatchers != null && _listSpriteBatchers.length > 0)
 				{
 					_hashBatchersOldToNew = new Dictionary();
-					_hashBatchersNewToOld = new Dictionary();
+					_hashChangeBatchersLater = new Dictionary();
+					_hashWaitForSprite = new Dictionary();
 					
 					//traceTrees();
 					
