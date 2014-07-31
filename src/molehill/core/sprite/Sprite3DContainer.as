@@ -491,40 +491,6 @@ package molehill.core.sprite
 			return _listChildren.indexOf(child);
 		}
 		
-		public function getChildAbsoluteIndex(child:Sprite3D):int
-		{
-			var index:int = 0;
-			var found:Boolean = false;
-			for (var i:int = 0; i < _listChildren.length; i++)
-			{
-				var candidate:Sprite3D = _listChildren[i];
-				if (candidate === child)
-				{
-					found = true;
-					break;
-				}
-				else
-				{
-					if (candidate is Sprite3DContainer)
-					{
-						var innerIndex:int = (candidate as Sprite3DContainer).getChildAbsoluteIndex(child);
-						if (innerIndex == -1)
-						{
-							index += (candidate as Sprite3DContainer).numTotalChildren;
-						}
-						else
-						{
-							index += innerIndex;
-							found = true;
-							break;
-						}
-					}
-				}
-			}
-			
-			return found ? index : -1;
-		}
-		
 		public function contains(child:Sprite3D):Boolean
 		{
 			return _hashNodesByChild[child] != null;
@@ -678,47 +644,6 @@ package molehill.core.sprite
 		public function get numChildren():uint
 		{
 			return _numChildren;
-		}
-		
-		// number of Sprite3D instances, for batch update purposes only
-		molehill_internal function get numSimpleChildren():uint
-		{
-			return _numSimpleChildren;
-		}
-		
-		private var _numTotalChildren:uint;
-		private function updateNumTotalChildren(child:Sprite3D, increment:Boolean = true):void
-		{
-			var delta:uint = 0;
-			if (!(child is Sprite3DContainer))
-			{
-				delta = 1;
-			}
-			else
-			{
-				var container:Sprite3DContainer = child as Sprite3DContainer;
-				for (var i:int = 0; i < container.numChildren; i++)
-				{
-					var nextChild:Sprite3D = container.getChildAt(i);
-					delta += nextChild is Sprite3DContainer ? (nextChild as Sprite3DContainer).numTotalChildren : 1;
-				}
-			}
-			
-			if (increment)
-			{
-				_numTotalChildren += delta;
-			}
-			else
-			{
-				_numTotalChildren -= delta;
-			}
-			
-			//InputManager.getInstance().sortListeners();
-		}
-		
-		public function get numTotalChildren():uint
-		{
-			return _numTotalChildren;
 		}
 		
 		override public function set visible(value:Boolean):void
