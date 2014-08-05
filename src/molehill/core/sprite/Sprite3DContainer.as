@@ -978,8 +978,8 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentScaleX = value * _scaleX;
 				_listChildren[i]._parentShiftX = _parentShiftX + dx * _parentRotationCos - dy * _parentRotationSin;
+				_listChildren[i].parentScaleX = value * _scaleX;
 			}
 		}
 		
@@ -992,8 +992,8 @@ package molehill.core.sprite
 			
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
-				_listChildren[i].parentScaleY = value * _scaleY;
 				_listChildren[i]._parentShiftY = _parentShiftY + dx * _parentRotationSin + dy * _parentRotationCos;
+				_listChildren[i].parentScaleY = value * _scaleY;
 			}
 		}
 		
@@ -1103,35 +1103,35 @@ package molehill.core.sprite
 			super.scaleY = value;
 		}
 		
-		override public function moveTo(x:Number, y:Number, z:Number=0):void
+		override public function moveTo(valueX:Number, valueY:Number, valueZ:Number=0):void
 		{
-			var dx:Number = x * _parentScaleX;
-			var dy:Number = y * _parentScaleY;
+			var dx:Number = valueX * _parentScaleX;
+			var dy:Number = valueY * _parentScaleY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentShiftX = _parentShiftX + dx * _parentRotationCos - dy * _parentRotationSin;
 				_listChildren[i].parentShiftY = _parentShiftY + dx * _parentRotationSin + dy * _parentRotationCos;
 			}
 			
-			super.moveTo(x, y, z);
+			super.moveTo(valueX, valueY, valueZ);
 		}
 		
-		override public function setSize(w:Number, h:Number):void
+		override public function setSize(valueWidth:Number, valueHeight:Number):void
 		{
-			setScale(w / width, h / height);
+			setScale(valueWidth / width, valueHeight / height);
 		}
 		
-		override public function setScale(scaleX:Number, scaleY:Number):void
+		override public function setScale(valueX:Number, valueY:Number):void
 		{
-			var sx:Number = _parentScaleX * scaleX;
-			var sy:Number = _parentScaleY * scaleY;
+			var sx:Number = _parentScaleX * valueX;
+			var sy:Number = _parentScaleY * valueY;
 			for (var i:int = 0; i < _listChildren.length; i++) 
 			{
 				_listChildren[i].parentScaleX = sx;
 				_listChildren[i].parentScaleY = sy;
 			}
 			
-			super.setScale(scaleX, scaleY);
+			super.setScale(valueX, valueY);
 		}
 		
 		override public function set redMultiplier(value:Number):void
