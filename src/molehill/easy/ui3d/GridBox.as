@@ -103,7 +103,7 @@ package molehill.easy.ui3d
 						maxBoundsWidth = boundsWidth;
 					}
 					
-					currentX = int(maxBoundsWidth - boundsWidth) / 2;
+					currentX = isCenter ? int(maxBoundsWidth - boundsWidth) / 2 : 0;
 					
 					_boxWidth = maxBoundsWidth;
 					_boxHeight = currentY + _vSpace + boundsHeight;
