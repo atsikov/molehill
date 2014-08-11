@@ -43,6 +43,8 @@ package molehill.core
 			
 			_enterFrameListener = new Sprite();
 			_enterFrameListener.addEventListener(Event.EXIT_FRAME, onRenderEnterFrame);
+			
+			_listRestoredScenes = new Vector.<Scene3D>();
 		}
 		
 		/**
@@ -102,8 +104,11 @@ package molehill.core
 			
 		}
 		
+		private var _listRestoredScenes:Vector.<Scene3D>;
 		private function onContext3DLost(event:Event):void
 		{
+			_listRestoredScenes.splice(0, _listRestoredScenes.length);
+			
 			var context:Context3D = _stage.stage3Ds[0].context3D;
 			TextureManager.getInstance().setContext(context);
 			Shader3DCache.getInstance().init(context);
@@ -113,6 +118,7 @@ package molehill.core
 			for each (var scene:Scene3D in _listActiveScenes)
 			{
 				scene.onContextRestored();
+				_listRestoredScenes.push(scene);
 			}
 			
 			if (_contextLossCallback != null)
@@ -132,6 +138,12 @@ package molehill.core
 		private var _listActiveScenes:Vector.<Scene3D>;
 		public function addScene(scene:Scene3D):Scene3D
 		{
+			if (_listRestoredScenes.indexOf(scene) == -1)
+			{
+				scene.onContextRestored();
+				_listRestoredScenes.push(scene);
+			}
+			
 			_listActiveScenes.push(scene);
 			scene.setRenderEngine(_renderer);
 			return scene;
@@ -150,6 +162,12 @@ package molehill.core
 		
 		public function addSceneAt(scene:Scene3D, index:int):Scene3D
 		{
+			if (_listRestoredScenes.indexOf(scene) == -1)
+			{
+				scene.onContextRestored();
+				_listRestoredScenes.push(scene);
+			}
+			
 			if (index < 0)
 			{
 				index = 0;
