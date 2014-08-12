@@ -2,19 +2,10 @@ package molehill.core.render
 {
 	import easy.collections.TreeNode;
 	
-	import flash.text.TextField;
-	import flash.utils.Dictionary;
-	
 	import molehill.core.molehill_internal;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.text.TextField3D;
-	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
-	
-	import tempire.controller.RouteInformersController;
-	import tempire.view.ui.forms.CheatsForm;
-	import tempire.view.ui.forms.shop.renderers.ShopItemRenderer;
-	import tempire.view.world.BuildingInformersView;
 	
 	import utils.DebugLogger;
 	import utils.ObjectUtils;
