@@ -407,7 +407,7 @@ package molehill.core.texture
 		{
 			if (fontBitmap.textureAtlasData.atlasID == null)
 			{
-				fontBitmap.textureAtlasData.atlasID = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
+				fontBitmap.textureAtlasData.atlasID = '__font__' + (fontBitmap.textureAtlasData as FontTextureData).fontName;
 			}
 			
 			if (_hashTexturesByAtlasID[fontBitmap.textureAtlasData.atlasID] != null)

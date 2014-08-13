@@ -121,24 +121,10 @@ package molehill.core.render.engine
 			return _viewportHeight;
 		}
 		
-		private var _toBitmapData:Boolean = false;
-		public function getScreenshot():BitmapData
+		molehill_internal var toBitmapData:Boolean = false;
+		public function copyToBitmapData(bd:BitmapData):void 
 		{
-			if (!isReady)
-			{
-				return null;
-			}
-			
-			_toBitmapData = true;
-			
-			doRender();
-			
-			var bd:BitmapData = new BitmapData(_viewportWidth, _viewportHeight);
 			_context3D.drawToBitmapData(bd);
-			
-			_toBitmapData = false;
-			
-			return bd;
 		}
 		
 		private var _orthoMatrix:Matrix3D;
@@ -443,7 +429,7 @@ package molehill.core.render.engine
 				var currentShader:Shader3D = chunkData.shader;
 				if (currentShader == null)
 				{
-					if (tm.textureIsCompressed(chunkData.texture) || _toBitmapData)
+					if (tm.textureIsCompressed(chunkData.texture) || toBitmapData)
 					{
 						currentShader = shaderFactory.getShaderInstance(BaseShader);
 					}

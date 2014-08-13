@@ -133,6 +133,7 @@ package molehill.core.text
 			var tm:TextureManager = TextureManager.getInstance();
 			
 			var fontBitmap:FontBRFTextureData = new FontBRFTextureData(loader.fontBitmapData, loader.fontTextureData);
+			fontBitmap.textureAtlasData.atlasID = '__font__' + loader.fontTextureData.fontName;
 			TextureManager.getInstance().createFontTextureFromBitmapData(fontBitmap);
 			
 			_hashLoadedFonts[loader.fontTextureData.fontName] = loader.fontTextureData;

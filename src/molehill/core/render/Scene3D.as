@@ -897,18 +897,6 @@ package molehill.core.render
 			return candidateBatcher;
 		}
 		
-		public function getScreenshot():BitmapData
-		{
-			if (_renderEngine == null || !_renderEngine.isReady)
-			{
-				return null;
-			}
-			
-			renderScene();
-			
-			return (_renderEngine as RenderEngine).getScreenshot();
-		}
-		
 		private var _cameraOwner:Sprite3DContainer;
 		private function setCameraOwner(node:TreeNode, cameraOwner:Sprite3D):void
 		{

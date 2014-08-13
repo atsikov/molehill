@@ -1,5 +1,6 @@
 package molehill.core
 {
+	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display3D.Context3D;
@@ -215,6 +216,26 @@ package molehill.core
 			return _listActiveScenes.length;
 		}
 		
+		public function getScreenshot():BitmapData
+		{
+			if (!_renderer.isReady)
+			{
+				return null;
+			}
+			
+			_renderer.toBitmapData = true;
+			
+			var bd:BitmapData = new BitmapData(_renderer.getViewportWidth(), _renderer.getViewportHeight(), true, 0x00000000);
+			doRender();
+			
+			_renderer.copyToBitmapData(bd);
+			_renderer.present();
+			
+			_renderer.toBitmapData = false;
+			
+			return bd;
+		}
+		
 		/**
 		 * Render cycle
 		 **/
@@ -225,6 +246,11 @@ package molehill.core
 		}
 		
 		private function onRenderEnterFrame(event:Event):void
+		{
+			doRender();
+		}
+		
+		private function doRender():void
 		{
 			if (_renderer == null || !_renderer.isReady)
 			{
@@ -238,7 +264,10 @@ package molehill.core
 				_listActiveScenes[i].renderScene();
 			}
 			
-			_renderer.present();
+			if (!_renderer.toBitmapData)
+			{
+				_renderer.present();
+			}
 			
 			var numBitmapAtlases:int = TextureManager.getInstance().numBitmapAtlases;
 			var numCompressedAtlases:int = TextureManager.getInstance().numCompressedAtlases;
@@ -249,6 +278,5 @@ package molehill.core
 			_renderInfo.numBitmapAtlases = numBitmapAtlases;
 			_renderInfo.numCompressedAtlases = numCompressedAtlases;
 		}
-		
 	}
 }
