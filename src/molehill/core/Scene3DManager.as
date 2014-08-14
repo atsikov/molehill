@@ -225,7 +225,7 @@ package molehill.core
 			
 			_renderer.toBitmapData = true;
 			
-			var bd:BitmapData = new BitmapData(_renderer.getViewportWidth(), _renderer.getViewportHeight(), true, 0x00000000);
+			var bd:BitmapData = new BitmapData(_renderer.getViewportWidth(), _renderer.getViewportHeight());
 			doRender();
 			
 			_renderer.copyToBitmapData(bd);
@@ -263,6 +263,8 @@ package molehill.core
 			{
 				_listActiveScenes[i].renderScene();
 			}
+			
+			_renderer.drawScenes();
 			
 			if (!_renderer.toBitmapData)
 			{

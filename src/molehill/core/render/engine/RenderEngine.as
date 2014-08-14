@@ -182,7 +182,7 @@ package molehill.core.render.engine
 			_clearB = (value & 0xFF) / 0xFF;
 		}
 		
-		public function clear():void
+		molehill_internal function clear():void
 		{
 			_context3D.clear(_clearR, _clearG, _clearB, 1, 1, 0);
 			
@@ -200,9 +200,13 @@ package molehill.core.render.engine
 			//trace(' --------------------- clear --------------------- ');
 		}
 		
-		public function present():void
+		molehill_internal function drawScenes():void
 		{
 			doRender();
+		}
+		
+		molehill_internal function present():void
+		{
 			_context3D.present();
 			
 			_driverInfoUpdated = false;
