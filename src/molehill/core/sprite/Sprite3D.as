@@ -409,6 +409,17 @@ package molehill.core.sprite
 			setSize(textureData.width * _scaleX, textureData.height * _scaleY);
 		}
 		
+		private var _name:String;
+		public function get name():String
+		{
+			return _name;
+		}
+		
+		public function set name(value:String):void
+		{
+			_name = value;
+		}
+		
 		molehill_internal var _parentShiftX:Number = 0;
 		molehill_internal function set parentShiftX(value:Number):void
 		{

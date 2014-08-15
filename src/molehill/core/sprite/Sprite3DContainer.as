@@ -486,6 +486,20 @@ package molehill.core.sprite
 			return _listChildren[index];
 		}
 		
+		public function getChildByName(childName:String):Sprite3D
+		{
+			for (var i:int = 0; i < _listChildren.length; i++)
+			{
+				var child:Sprite3D = _listChildren[i];
+				if (child.name == childName)
+				{
+					return child;
+				}
+			}
+			
+			return null;
+		}
+		
 		public function getChildIndex(child:Sprite3D):int
 		{
 			return _listChildren.indexOf(child);

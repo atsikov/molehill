@@ -534,6 +534,11 @@ package molehill.core.text
 			return null;
 		}
 		
+		override public function getChildByName(childName:String):Sprite3D
+		{
+			return null;
+		}
+		
 		override public function getChildIndex(child:Sprite3D):int
 		{
 			return -1;
