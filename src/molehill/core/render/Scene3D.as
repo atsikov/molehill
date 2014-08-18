@@ -681,6 +681,17 @@ package molehill.core.render
 		
 		private var _bacthingTree:TreeNode;
 		
+		private var _enableTextureCreatedCheck:Boolean = true;
+		public function get enableTextureCreatedCheck():Boolean
+		{
+			return _enableTextureCreatedCheck;
+		}
+		
+		public function set enableTextureCreatedCheck(value:Boolean):void
+		{
+			_enableTextureCreatedCheck = value;
+		}
+		
 		/**
 		 * Method to build branch of batchers based on branch from render tree
 		 **/
@@ -761,10 +772,19 @@ package molehill.core.render
 							var atlasData:TextureAtlasData = _textureManager.getAtlasDataByTextureID(sprite.textureID);
 							if (atlasData == null)
 							{
-								throw new Scene3DError("Scene3D/prepareBatchers(): Texture with id \"" + sprite.textureID + "\" is referenced but was never created!");
+								if (_enableTextureCreatedCheck)
+								{
+									throw new Scene3DError("Scene3D/prepareBatchers(): Texture with id \"" + sprite.textureID + "\" is referenced but was never created!");
+								}
+								else
+								{
+									textureAtlasID = null;
+								}
 							}
-							
-							textureAtlasID = atlasData.atlasID;
+							else
+							{
+								textureAtlasID = atlasData.atlasID;
+							}
 						}
 						var container:Sprite3DContainer = sprite.parent as Sprite3DContainer;
 						var maxSpritesPerBacther:Boolean = _currentBatcher is SpriteBatcher && _currentBatcher != null && (_currentBatcher as SpriteBatcher).numSprites >= MAX_SPRITES_PER_BATCHER;
