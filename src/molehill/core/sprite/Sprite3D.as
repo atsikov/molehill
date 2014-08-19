@@ -406,6 +406,8 @@ package molehill.core.sprite
 			_cachedWidth = 0;
 			_cachedHeight = 0;
 			
+			_cachedWidth = 0;
+			_cachedHeight = 0;
 			setSize(textureData.width * _scaleX, textureData.height * _scaleY);
 		}
 		
@@ -557,7 +559,7 @@ package molehill.core.sprite
 			_x3 = x3;
 			_y3 = y3;
 
-			if (_blankOffsetX == 0 && _blankOffsetY == 0)
+			if (_croppedWidth == _width && _croppedHeight == _height)
 			{
 				if (_snapToPixels)
 				{
