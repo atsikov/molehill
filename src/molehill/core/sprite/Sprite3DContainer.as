@@ -587,12 +587,12 @@ package molehill.core.sprite
 				node.reset();
 				_cacheTreeNodes.storeInstance(node);
 			}
-			
+			/*
 			if (child is AnimatedSprite3D)
 			{
 				(child as AnimatedSprite3D).stop();
 			}
-			
+			*/
 			child.setScene(null);
 			child._parent = null;
 			

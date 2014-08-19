@@ -140,8 +140,8 @@ package molehill.core.render.engine
 				return;
 			}
 			
-			_viewportWidth = width;
-			_viewportHeight = height;
+			_viewportWidth = Math.max(50, width);
+			_viewportHeight = Math.max(50, height);
 			
 			_orthoMatrix = new Matrix3D(Vector.<Number> ([
 				2/_viewportWidth, 0,  0,  0,

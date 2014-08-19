@@ -3,9 +3,12 @@ package molehill.core.utils
 	import flash.utils.getDefinitionByName;
 	
 	import molehill.core.animation.CustomAnimationData;
+	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.CustomAnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	
+	import spark.effects.Animate;
 
 	public class SpriteUtils
 	{
@@ -28,6 +31,11 @@ package molehill.core.utils
 				var child:Sprite3D = createSingleSprite(rawData[i].values);
 				parent.addChild(child);
 				createSpritesSturcture(rawData[i].children, child as Sprite3DContainer);
+				
+				if (child is AnimatedSprite3D)
+				{
+					(child as AnimatedSprite3D).play();
+				}
 			}
 		}
 		

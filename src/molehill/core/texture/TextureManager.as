@@ -17,6 +17,7 @@ package molehill.core.texture
 
 	public class TextureManager extends EventDispatcher
 	{
+		public static var asyncTexturesLoading:Boolean = true;
 		public static function createTexture(textureData:*, ... params):Texture
 		{
 			var tm:TextureManager = getInstance();
@@ -513,7 +514,7 @@ package molehill.core.texture
 			{
 				var arfData:ARFTextureData = _hashARFDataByTextureID[textureId];
 				texture = _context3D.createTexture(arfData.width, arfData.height, Context3DTextureFormat.BGRA, false, Math.min(arfData.numTextures, 7));
-				texture.uploadCompressedTextureFromByteArray(arfData.rawATFData, 0, true);
+				texture.uploadCompressedTextureFromByteArray(arfData.rawATFData, 0, asyncTexturesLoading);
 				
 				_hashCompressedTexturesByARFData[arfData] = texture;
 				_hashTexturesByAtlasData[arfData.textureAtlasData] = texture;
