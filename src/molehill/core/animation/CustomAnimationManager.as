@@ -160,5 +160,21 @@ package molehill.core.animation
 			_queueLoadingAnimations.shift();
 			checkLoadingQueue();
 		}
+		
+		public function addAnimationData(animationData:CustomAnimationData):void
+		{
+			_hashAnimations[animationData.animationName] = animationData;
+			
+			if (listAnimationNames.indexOf(animationData.animationName) == -1)
+			{
+				listAnimationNames.push(animationData.animationName);
+			}
+			
+			listAnimationNames.sort();
+			
+			dispatchEvent(
+				new CustomAnimationManagerEvent(CustomAnimationManagerEvent.ANIMATIONS_ADDED)
+			);
+		}
 	}
 }

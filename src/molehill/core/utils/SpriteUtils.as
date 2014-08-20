@@ -4,6 +4,7 @@ package molehill.core.utils
 	import flash.utils.getDefinitionByName;
 	
 	import molehill.core.animation.CustomAnimationData;
+	import molehill.core.animation.CustomAnimationManager;
 	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.CustomAnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
@@ -98,6 +99,8 @@ package molehill.core.utils
 				delete rawData['custom_animation'];
 				
 				(sprite as CustomAnimatedSprite3D).play();
+				
+				CustomAnimationManager.getInstance().addAnimationData(customAnimation);
 			}
 			
 			for (var field:String in rawData)
