@@ -993,6 +993,12 @@ package molehill.core.sprite
 			_textureW2 = _textureRegion.y;
 			_textureW3 = _textureRegion.y + _textureRegion.height;
 			
+			_blankOffsetX = 0;
+			_blankOffsetY = 0;
+			
+			_croppedWidth = _width;
+			_croppedHeight = _height;
+			
 			_textureChanged = true;
 		}
 		
