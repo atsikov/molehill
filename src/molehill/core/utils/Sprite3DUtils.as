@@ -16,6 +16,7 @@ package molehill.core.utils
 	{
 		public static function createFromPrefabBytes(rawData:ByteArray):Sprite3DContainer
 		{
+			rawData.position = 0;
 			while (rawData.bytesAvailable)
 			{
 				var header:String = rawData.readUTFBytes(3);
