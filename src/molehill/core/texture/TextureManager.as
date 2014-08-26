@@ -18,6 +18,7 @@ package molehill.core.texture
 	public class TextureManager extends EventDispatcher
 	{
 		public static var asyncTexturesLoading:Boolean = true;
+		public static var ignoreDuplicateTextures:Boolean = true;
 		public static function createTexture(textureData:*, ... params):Texture
 		{
 			var tm:TextureManager = getInstance();
@@ -269,7 +270,14 @@ package molehill.core.texture
 				
 				if (atlas.textureAtlasData.getTextureData(textureID) != null)
 				{
-					throw new Error("Texture with id " + textureID + " already created!");
+					if (!ignoreDuplicateTextures)
+					{
+						throw new Error("Texture with id " + textureID + " already created!");
+					}
+					else
+					{
+						trace("Texture with id " + textureID + " already created!");
+					}
 				}
 				
 				node = (atlas as TextureAtlasBitmapData).insert(bitmapData, textureID);
@@ -614,6 +622,12 @@ package molehill.core.texture
 		public function isARFUploaded(arf:ARFTextureData):Boolean
 		{
 			var listTextures:Array = arf.textureAtlasData.listTexturesNames;
+			return isTextureCreated(listTextures[0]);
+		}
+		
+		public function isBRFUploaded(brf:BRFTextureData):Boolean
+		{
+			var listTextures:Array = brf.textureAtlasData.listTexturesNames;
 			return isTextureCreated(listTextures[0]);
 		}
 		

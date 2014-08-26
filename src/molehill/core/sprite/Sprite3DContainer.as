@@ -483,6 +483,11 @@ package molehill.core.sprite
 		
 		public function getChildAt(index:int):Sprite3D
 		{
+			if (index < 0 || index >= _listChildren.length)
+			{
+				return null;
+			}
+			
 			return _listChildren[index];
 		}
 		

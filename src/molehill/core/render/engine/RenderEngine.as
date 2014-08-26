@@ -172,19 +172,21 @@ package molehill.core.render.engine
 			}
 		}
 		
+		private var _clearA:Number = 1;
 		private var _clearR:Number = 0.5;
 		private var _clearG:Number = 0.5;
 		private var _clearB:Number = 0.5;
-		public function setClearColor(value:uint):void
+		public function setClearColor(argb:uint):void
 		{
-			_clearR = (value >>> 16) / 0xFF;
-			_clearG = ((value & 0xFFFF) >>> 8) / 0xFF;
-			_clearB = (value & 0xFF) / 0xFF;
+			_clearA = (argb >>> 24) / 0xFF;
+			_clearR = ((argb & 0xFFFFFF) >>> 16) / 0xFF;
+			_clearG = ((argb & 0xFFFF) >>> 8) / 0xFF;
+			_clearB = (argb & 0xFF) / 0xFF;
 		}
 		
 		molehill_internal function clear():void
 		{
-			_context3D.clear(_clearR, _clearG, _clearB, 1, 1, 0);
+			_context3D.clear(_clearR, _clearG, _clearB, _clearA);
 			
 			drawCalls = 0;
 			totalTris = 0;
@@ -433,7 +435,8 @@ package molehill.core.render.engine
 				var currentShader:Shader3D = chunkData.shader;
 				if (currentShader == null)
 				{
-					if (tm.textureIsCompressed(chunkData.texture) || toBitmapData)
+					var isCompressed:Boolean = tm.textureIsCompressed(chunkData.texture);
+					if (isCompressed || toBitmapData)
 					{
 						currentShader = shaderFactory.getShaderInstance(BaseShader);
 					}

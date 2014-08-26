@@ -58,9 +58,12 @@ package molehill.core.render.shader
 			var shader:Shader3D = new shaderClass();
 			_cacheAssembledShaders[shaderClass] = shader;
 			
-			shader.setAssembledProgram(
-				_assembler.assemble2(_context3D, 1, shader.vertexShaderCode, shader.fragmentShaderCode)
-			);
+			if (_context3D != null)
+			{
+				shader.setAssembledProgram(
+					_assembler.assemble2(_context3D, 1, shader.vertexShaderCode, shader.fragmentShaderCode)
+				);
+			}
 			
 			return shader;
 		}

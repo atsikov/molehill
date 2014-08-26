@@ -281,7 +281,7 @@ package molehill.core.input
 			{
 				var molehillObjects:Vector.<Sprite3D> = sceneManager.getSceneAt(i).getObjectsUnderPoint(mousePoint, molehillObjects);
 			}
-			var numObjects:Number = molehillObjects.length;
+			var numObjects:Number = molehillObjects == null ? 0 : molehillObjects.length;
 			
 			var firstInteractiveContainer:Sprite3DContainer;
 			var topInteractiveParent:InteractiveSprite3D;

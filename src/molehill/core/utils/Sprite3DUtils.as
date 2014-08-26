@@ -5,17 +5,14 @@ package molehill.core.utils
 	
 	import molehill.core.animation.CustomAnimationData;
 	import molehill.core.animation.CustomAnimationManager;
-	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.CustomAnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.ARFTextureData;
 	import molehill.core.texture.BRFTextureData;
 	import molehill.core.texture.TextureManager;
-	
-	import spark.effects.Animate;
 
-	public class SpriteUtils
+	public class Sprite3DUtils
 	{
 		public static function createFromPrefabBytes(rawData:ByteArray):Sprite3DContainer
 		{
@@ -41,15 +38,19 @@ package molehill.core.utils
 						
 						if (header == 'ARF' || header == 'ATF')
 						{
-							TextureManager.createTexture(
-								new ARFTextureData(chunkData)
-							);
+							var arfTextureData:ARFTextureData = new ARFTextureData(chunkData);
+							if (!TextureManager.getInstance().isARFUploaded(arfTextureData))
+							{
+								TextureManager.createTexture(arfTextureData);
+							}
 						}
 						else if (header == 'BRF')
 						{
-							TextureManager.createTexture(
-								new BRFTextureData(chunkData)
-							);
+							var brfTextureData:BRFTextureData = new BRFTextureData(chunkData);
+							if (!TextureManager.getInstance().isBRFUploaded(brfTextureData))
+							{
+								TextureManager.createTexture(brfTextureData);
+							}
 						}
 						
 						break;
