@@ -324,6 +324,7 @@ package molehill.core.render
 		{
 			//trace('syncing subtree');
 			
+			var parentMask:int = 4 * (_isDynamic ? 1 : 0) + 2 * (_isText ? 1 : 0) + (_isForeground ? 1 : 0);
 			if (_debug)
 			{
 				log('syncing subtree');
@@ -347,10 +348,20 @@ package molehill.core.render
 					log('flags: ' + (_isDynamic ? 'dyn' : '') + ' ' + (_isText ? 'text' : '') + ' ' + (_isForeground ? 'fore' : ''));
 				}
 				
-				var flagsChanged:Boolean = dyn != _isDynamic || text != _isText || fore != _isForeground;
+				//var flagsChanged:Boolean = dyn != _isDynamic || text != _isText || fore != _isForeground;
+				//asChild &&= !flagsChanged;
 				
-				asChild &&= !flagsChanged;
-				needMoveUp ||= asChild;
+				var currentMask:int = 4 * (_isDynamic ? 1 : 0) + 2 * (_isText ? 1 : 0) + (_isForeground ? 1 : 0);
+				if (currentMask == parentMask)
+				{
+					asChild = true;
+					needMoveUp = true;
+					parentMask = -1;
+				}
+				else
+				{
+					asChild = false;
+				}
 				
 				addChildToTree(src.value, asChild);
 				
@@ -365,13 +376,19 @@ package molehill.core.render
 						cleanUpChildren();
 					}
 				}
-				
+				/*
 				if (!flagsChanged)
 				{
 					asChild = false;
 				}
-				
+				*/
 				restoreFlags(src.value as Sprite3DContainer);
+				
+				// cleaning children when all siblings belong to other trees
+				if (parentMask != -1 && src.nextSibling == null)
+				{
+					cleanUpChildren();
+				}
 				
 				/*if (this is CheatsForm)
 				{
@@ -385,6 +402,10 @@ package molehill.core.render
 					traceTrees();
 				}*/
 				
+				if (src.parent == localRenderTree)
+				{
+					needMoveUp = false;
+				}
 				src = src.nextSibling;
 			}
 			

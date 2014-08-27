@@ -178,6 +178,8 @@ package molehill.core.render
 			super.setTexture(textureId);
 		}
 		
+		
+		// IVertexBatcher
 		private var _vertexData:ByteArray;
 		public function getVerticesData():ByteArray
 		{
@@ -234,7 +236,6 @@ package molehill.core.render
 			return _listIndices;
 		}
 		
-		// IVertexBatcher
 		public function get numTriangles():uint
 		{
 			return visible ? _listIndices.length / 3 / 2 : 0;
