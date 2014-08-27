@@ -217,6 +217,8 @@ class FontImageLoader
 
 	private function onFontImageLoaded(event:Event):void
 	{
+		(event.currentTarget as LoaderInfo).removeEventListener(Event.COMPLETE, onFontImageLoaded);
+		
 		_fontBitmapData = ((event.currentTarget as LoaderInfo).loader.content as Bitmap).bitmapData;
 		_callback(this);
 	}
