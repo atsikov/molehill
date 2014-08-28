@@ -710,6 +710,12 @@ package molehill.core.sprite
 				return;
 			}
 			
+			if (_width == 0)
+			{
+				_width = value;
+				_croppedWidth = value;
+			}
+			
 			_scaleX = value / _width; 
 			_cachedWidth = _width * _scaleX;
 			
@@ -733,6 +739,12 @@ package molehill.core.sprite
 			if (_cachedHeight == value)
 			{
 				return;
+			}
+			
+			if (_height == 0)
+			{
+				_height = value;
+				_croppedHeight = value;
 			}
 			
 			_scaleY = value / _height;

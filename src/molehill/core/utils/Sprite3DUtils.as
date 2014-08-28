@@ -5,6 +5,8 @@ package molehill.core.utils
 	
 	import molehill.core.animation.CustomAnimationData;
 	import molehill.core.animation.CustomAnimationManager;
+	import molehill.core.render.shader.Shader3DFactory;
+	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.core.sprite.CustomAnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
@@ -90,20 +92,29 @@ package molehill.core.utils
 		{
 			var spriteClass:Class = getDefinitionByName(rawData['class_name']) as Class;
 			var sprite:Sprite3D = new spriteClass();
-			sprite.setTexture(rawData['textureID']);
-			delete rawData['textureID'];
-			delete rawData['class_name'];
+			if (rawData['textureID'] != null)
+			{
+				sprite.setTexture(rawData['textureID']);
+			}
+			if (rawData['shader'] == 'color')
+			{
+				sprite.shader = Shader3DFactory.getInstance().getShaderInstance(ColorFillShader);
+			}
 			
 			if (rawData['custom_animation'] != null)
 			{
 				var customAnimation:CustomAnimationData = CustomAnimationData.fromRawData(rawData['custom_animation']);
 				(sprite as CustomAnimatedSprite3D).customAnimationData = customAnimation;
-				delete rawData['custom_animation'];
 				
 				(sprite as CustomAnimatedSprite3D).play();
 				
 				CustomAnimationManager.getInstance().addAnimationData(customAnimation);
 			}
+			
+			delete rawData['class_name'];
+			delete rawData['textureID'];
+			delete rawData['shader'];
+			delete rawData['custom_animation'];
 			
 			for (var field:String in rawData)
 			{
