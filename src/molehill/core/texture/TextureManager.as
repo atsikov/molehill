@@ -325,6 +325,11 @@ package molehill.core.texture
 				atlas.textureAtlasData.getTextureData(textureID).spriteSheetData = (bitmapData as SpriteSheet).spriteSheetData;
 			}
 			
+			if (_hashAtlasIDByTextureID[textureID] != null)
+			{
+				throw new TextureManagerError("Adding texture '" + textureID + "' failed! Texture already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
+			}
+			
 			_hashAtlasIDByTextureID[textureID] = atlas.textureAtlasData.atlasID;
 			//_hashTexturesByTextureID[textureID] = texture;
 			_hashAtlasDataByTextureID[textureID] = atlas.textureAtlasData;
@@ -361,7 +366,7 @@ package molehill.core.texture
 				{
 					if (_hashAtlasIDByTextureID[textureID] != null)
 					{
-						throw new TextureManagerError("Atlas with the same texture ID already created!");
+						throw new TextureManagerError("Loading atlas '" + textureData.textureAtlasData.atlasID + "' failed! Texture '" + textureID + "' already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
 					}
 					
 					_hashAtlasIDByTextureID[textureID] = textureData.textureAtlasData.atlasID;
@@ -401,6 +406,11 @@ package molehill.core.texture
 				
 				for (var textureID:String in textureData.textureAtlasData._hashTextures)
 				{
+					if (_hashAtlasIDByTextureID[textureID] != null)
+					{
+						throw new TextureManagerError("Loading atlas '" + textureData.textureAtlasData.atlasID + "' failed! Texture '" + textureID + "' already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
+					}
+					
 					_hashAtlasIDByTextureID[textureID] = textureData.textureAtlasData.atlasID;
 					//_hashTexturesByTextureID[textureID] = texture;
 					_hashAtlasDataByTextureID[textureID] = textureData.textureAtlasData;
