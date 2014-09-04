@@ -74,7 +74,7 @@ package molehill.core.render.particles
 				_listGenerationTimes.push(_lastGenerationTime);
 			}
 			
-			while (_listGenerationTimes.length > 0 && timer - _listGenerationTimes[0] > _lifeTime)
+			while (_listGenerationTimes.length > 0 && timer - _listGenerationTimes[0] > _lifeTimeMax)
 			{
 				//trace('Removing dead particles. timer = ' + timer + '; lastGenerationTime = ' + _listGenerationTimes[0] + '; num generations: ' + _listGenerationTimes.length);
 				removeParticles();
@@ -140,7 +140,7 @@ package molehill.core.render.particles
 				}
 				
 				particle.appearTime = timer;
-				particle.lifeTime = _lifeTime;
+				particle.lifeTime = _lifeTimeMin + int(Math.random() * (_lifeTimeMax - _lifeTimeMin));
 				particle.speedX = speedX;
 				particle.speedY = speedY;
 				particle.accelerationX = _accelerationX;
@@ -247,12 +247,37 @@ package molehill.core.render.particles
 		{
 			return _lifeTime;
 		}
-
+		
 		public function set lifeTime(value:int):void
 		{
 			_lifeTime = value;
+			
+			_lifeTimeMin = value;
+			_lifeTimeMax = value;
 		}
-
+		
+		private var _lifeTimeMin:int;
+		public function get lifeTimeMin():int
+		{
+			return _lifeTimeMin;
+		}
+		
+		public function set lifeTimeMin(value:int):void
+		{
+			_lifeTimeMin = value;
+		}
+		
+		private var _lifeTimeMax:int;
+		public function get lifeTimeMax():int
+		{
+			return _lifeTimeMax;
+		}
+		
+		public function set lifeTimeMax(value:int):void
+		{
+			_lifeTimeMax = value;
+		}
+		
 		private var _appearInterval:int;
 		public function get appearInterval():int
 		{
