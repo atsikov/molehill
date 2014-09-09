@@ -27,11 +27,23 @@ package molehill.core.render.shader
 			}
 		}
 		
-		public function getShaderInstance(shaderClass:Class):Shader3D
+		private static const INITIAL_TEXTURE_PARAMS:uint = Shader3D.TEXTURE_REPEAT_CLAMP | Shader3D.TEXTURE_FILTER_LINEAR | Shader3D.TEXTURE_MIP_MIPNONE;
+		/**
+		 * Creates and caches shader instance
+		 * 
+		 * @param shaderClass Shader class to be instantiated
+		 * @param premultAlpha Defines if shader should divide color value to alpha
+		 * @param textureParams Parameters to read texture in shader. Defaut is Shader3D.TEXTURE_REPEAT_CLAMP | Shader3D.TEXTURE_FILTER_LINEAR | Shader3D.TEXTURE_MIP_MIPNONE
+		 **/
+		public function getShaderInstance(
+			shaderClass:Class,
+			premultAlpha:Boolean = false,
+			textureParams:uint = 268
+		):Shader3D
 		{
 			var shaderCache:Shader3DCache = Shader3DCache.getInstance();
 			_allowShaderInstantion = true;
-			var shader:Shader3D = shaderCache.registerShader(shaderClass);
+			var shader:Shader3D = shaderCache.registerShader(shaderClass, premultAlpha, textureParams);
 			_allowShaderInstantion = false;
 			return shader;
 		}

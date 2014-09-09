@@ -7,8 +7,8 @@ package molehill.easy.debug
 	
 	import molehill.core.Scene3DManager;
 	import molehill.core.render.UIComponent3D;
+	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.text.TextField3D;
@@ -34,7 +34,7 @@ package molehill.easy.debug
 		public function PerformanceMonitorComponent()
 		{
 			var bgMemoryMonitor:Sprite3D = new Sprite3D();
-			bgMemoryMonitor.shader = Shader3DFactory.getInstance().getShaderInstance(ColorFillShader);
+			bgMemoryMonitor.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			bgMemoryMonitor.setSize(150, 150);
 			bgMemoryMonitor.darkenColor = 0x2f2f2f;
 			addChild(bgMemoryMonitor);
@@ -196,7 +196,7 @@ package molehill.easy.debug
 			{
 				piece = _cacheSprites.newInstance();
 				piece.darkenColor = 0x00FF00;
-				piece.shader = Shader3DFactory.getInstance().getShaderInstance(ColorFillShader);
+				piece.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				piece.setSize(1, 1);
 				piece.moveTo(150 - _containerMemoryGraph.x, pointY);
 				_containerMemoryGraph.addChild(piece);

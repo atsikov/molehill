@@ -5,8 +5,8 @@ package molehill.core.utils
 	
 	import molehill.core.animation.CustomAnimationData;
 	import molehill.core.animation.CustomAnimationManager;
+	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.core.sprite.CustomAnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
@@ -98,7 +98,7 @@ package molehill.core.utils
 			}
 			if (rawData['shader'] == 'color')
 			{
-				sprite.shader = Shader3DFactory.getInstance().getShaderInstance(ColorFillShader);
+				sprite.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			}
 			
 			if (rawData['custom_animation'] != null)

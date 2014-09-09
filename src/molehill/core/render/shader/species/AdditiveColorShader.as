@@ -1,6 +1,7 @@
-package molehill.core.render.shader.species.base
+package molehill.core.render.shader.species
 {
 	import molehill.core.render.shader.Shader3D;
+	import molehill.core.render.shader.ShaderRegister;
 	
 	public class AdditiveColorShader extends Shader3D
 	{
@@ -17,6 +18,12 @@ package molehill.core.render.shader.species.base
 				"mov oc, ft1\n";
 			
 			return code;
+		}
+		
+		override protected function writeFragmentOutput(fragmentDataRegister:ShaderRegister):void
+		{
+			add(fragmentDataRegister.xyz, fragmentDataRegister.xyz, V0.xyz);
+			super.writeFragmentOutput(fragmentDataRegister);
 		}
 		
 	}

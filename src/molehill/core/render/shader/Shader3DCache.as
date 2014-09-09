@@ -48,15 +48,29 @@ package molehill.core.render.shader
 		}
 		
 		private var _cacheAssembledShaders:Dictionary;
-		public function registerShader(shaderClass:Class):Shader3D
+		public function registerShader(shaderClass:Class, premultAlpha:Boolean, textureParams:uint):Shader3D
 		{
-			if (_cacheAssembledShaders[shaderClass] != null)
+			var premultAlphaIndex:int = premultAlpha ? 1 : 0;
+			if (_cacheAssembledShaders[shaderClass] != null &&
+				_cacheAssembledShaders[shaderClass][premultAlphaIndex] != null &&
+				_cacheAssembledShaders[shaderClass][premultAlphaIndex][textureParams] != null)
 			{
-				return _cacheAssembledShaders[shaderClass];
+				return _cacheAssembledShaders[shaderClass][premultAlphaIndex][textureParams];
 			}
 			
 			var shader:Shader3D = new shaderClass();
-			_cacheAssembledShaders[shaderClass] = shader;
+			shader.premultAlpha = premultAlpha;
+			shader.textureReadParams = textureParams;
+			
+			if (_cacheAssembledShaders[shaderClass] == null)
+			{
+				_cacheAssembledShaders[shaderClass] = new Array();
+			}
+			if (_cacheAssembledShaders[shaderClass][premultAlphaIndex] == null)
+			{
+				_cacheAssembledShaders[shaderClass][premultAlphaIndex] = new Array();
+			}
+			_cacheAssembledShaders[shaderClass][premultAlphaIndex][textureParams] = shader;
 			
 			if (_context3D != null)
 			{

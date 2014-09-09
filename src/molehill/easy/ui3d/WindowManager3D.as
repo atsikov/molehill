@@ -5,10 +5,9 @@ package molehill.easy.ui3d
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	
-	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.render.InteractiveSprite3D;
+	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.easy.ui3d.effects.TweenCameraEffect;
@@ -170,7 +169,7 @@ package molehill.easy.ui3d
 		private function getModalBG():Sprite3D
 		{
 			var sprite:Sprite3D = new InteractiveSprite3D();
-			sprite.shader = Shader3DFactory.getInstance().getShaderInstance(ColorFillShader);
+			sprite.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			sprite.moveTo(contentRegion.x, contentRegion.y);
 			sprite.setSize(contentRegion.width, contentRegion.height);
 			sprite.darkenColor = _modalBGColor;

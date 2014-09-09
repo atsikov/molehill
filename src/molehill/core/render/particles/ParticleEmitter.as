@@ -1,5 +1,8 @@
 package molehill.core.render.particles
 {
+	import easy.collections.LinkedList;
+	import easy.collections.LinkedListElement;
+	
 	import flash.display.Sprite;
 	import flash.display3D.Context3D;
 	import flash.display3D.Context3DVertexBufferFormat;
@@ -42,7 +45,7 @@ package molehill.core.render.particles
 			_indicesData = new ByteArray();
 			_indicesData.endian = Endian.LITTLE_ENDIAN;
 			
-			_listParticles = new Vector.<ParticleData>();
+			_listParticles = new LinkedList();
 			
 			if (_cacheParticleData == null)
 			{
@@ -74,7 +77,7 @@ package molehill.core.render.particles
 				_listGenerationTimes.push(_lastGenerationTime);
 			}
 			
-			while (_listGenerationTimes.length > 0 && timer - _listGenerationTimes[0] > _lifeTimeMax)
+			while (_listGenerationTimes.length > 0 && timer - _listGenerationTimes[0] > _lifeTime)
 			{
 				//trace('Removing dead particles. timer = ' + timer + '; lastGenerationTime = ' + _listGenerationTimes[0] + '; num generations: ' + _listGenerationTimes.length);
 				removeParticles();
@@ -106,10 +109,11 @@ package molehill.core.render.particles
 			}
 		}
 		
-		private var _listParticles:Vector.<ParticleData>
+		private var _listParticles:LinkedList;
 		private var _hashParticlesByEndTime:Vector.<ParticleData>
 		private var _numAddedParticles:int = 0;
 		private var _numRemovedParticles:int = 0;
+		private var _numTotalParticles:int = 0;
 		
 		private static var _cacheParticleData:CachingFactory;
 		public function getParticleData():ParticleData
@@ -140,13 +144,14 @@ package molehill.core.render.particles
 				}
 				
 				particle.appearTime = timer;
-				particle.lifeTime = _lifeTimeMin + int(Math.random() * (_lifeTimeMax - _lifeTimeMin));
+				particle.lifeTime = _lifeTime;
 				particle.speedX = speedX;
 				particle.speedY = speedY;
 				particle.accelerationX = _accelerationX;
 				particle.accelerationY = _accelerationY;
 				
-				_listParticles.push(particle);
+				_listParticles.enqueue(particle);
+				_numTotalParticles++;
 			}
 			
 			_numAddedParticles += _appearCount;
@@ -154,15 +159,31 @@ package molehill.core.render.particles
 		
 		private function removeParticles():void
 		{
-			var length:uint = _listParticles.length;
-			var removedParticles:Vector.<ParticleData> = _listParticles.splice(0, _appearCount);
-			for (var i:int = 0; i < _appearCount; i++)
+			var numParticles:uint = _numTotalParticles;
+			var cursor:LinkedListElement = _listParticles.head;
+			var next:LinkedListElement;
+			
+			var i:int = 0;
+			
+			var time:uint = getTimer();
+			var maxGeneratedTime:int = time - _lifeTime;
+			
+			while (i < _appearCount && cursor != null)
 			{
-				_cacheParticleData.storeInstance(
-					removedParticles[i]
-				);
+				var particleData:ParticleData = cursor.data as ParticleData;
+				next = cursor.next;
+				
+				if (particleData.appearTime + particleData.lifeTime < time)
+				{
+					_listParticles.removeElement(cursor);
+					_cacheParticleData.storeInstance(particleData);
+					_numTotalParticles--;
+				}
+				
+				cursor = next;
 			}
-			_numRemovedParticles += length - _listParticles.length;
+			_numRemovedParticles += numParticles - _numTotalParticles;
+			//trace("Removed " + _numRemovedParticles + " particles");
 		}
 		
 		private var _emitterShape:String = ParticleEmitterShape.ELLIPTIC;
@@ -251,31 +272,6 @@ package molehill.core.render.particles
 		public function set lifeTime(value:int):void
 		{
 			_lifeTime = value;
-			
-			_lifeTimeMin = value;
-			_lifeTimeMax = value;
-		}
-		
-		private var _lifeTimeMin:int;
-		public function get lifeTimeMin():int
-		{
-			return _lifeTimeMin;
-		}
-		
-		public function set lifeTimeMin(value:int):void
-		{
-			_lifeTimeMin = value;
-		}
-		
-		private var _lifeTimeMax:int;
-		public function get lifeTimeMax():int
-		{
-			return _lifeTimeMax;
-		}
-		
-		public function set lifeTimeMax(value:int):void
-		{
-			_lifeTimeMax = value;
 		}
 		
 		private var _appearInterval:int;
@@ -387,7 +383,7 @@ package molehill.core.render.particles
 		private var _indicesChanged:Boolean = false;
 		public function getIndicesData(passedVertices:uint):ByteArray
 		{
-			var numParticles:uint = _listParticles.length;
+			var numParticles:uint = _numTotalParticles;
 			var numPassedParticles:uint = _indicesData.length / 12; // 2 bytes per index * 6 indices per particle (quad)
 			
 			if (numParticles != numPassedParticles)
@@ -419,7 +415,7 @@ package molehill.core.render.particles
 		public function get numTriangles():uint
 		{
 			//trace(_listParticles.length * 2);
-			return _listParticles.length * 2;
+			return _numTotalParticles * 2;
 		}
 		
 		private var _textureAtlasID:String;
@@ -545,7 +541,7 @@ package molehill.core.render.particles
 				_listAdditionalVertexBuffers.fixed = true;
 			}
 			
-			var numParticles:uint = _listParticles.length;
+			var numParticles:uint = _numTotalParticles;
 			
 			// 8 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 128
 			var bytesPerParticle:int = 128;
@@ -580,7 +576,7 @@ package molehill.core.render.particles
 				}
 				_vertexData.length = numParticles * bytesPerParticle;
 				_mainVerticesDataChanged = true;
-			
+				
 				_additionalVertexBufferData.position = 0;
 				numStoredParticles = _additionalVertexBufferData.length / bytesPerAdditionalParticleData;
 				if (_numRemovedParticles > 0)
@@ -611,9 +607,18 @@ package molehill.core.render.particles
 				_tempBuffer.position = 0;
 				
 				_additionalVertexBufferData.position = _additionalVertexBufferData.length;
-				for (i = numStoredParticles; i < numParticles; i++)
+				
+				i = 0;
+				var cursor:LinkedListElement = _listParticles.head;
+				while (i < numStoredParticles && cursor != null)
 				{
-					var particle:ParticleData = _listParticles[i];
+					cursor = cursor.next;
+					i++;
+				}
+				
+				while (i < numParticles && cursor != null)
+				{
+					var particle:ParticleData = cursor.data as ParticleData;
 					
 					//trace("====================>>>>>>>>>> " + particle.appearTime, particle.shiftX, particle.shiftY);
 					
@@ -634,6 +639,8 @@ package molehill.core.render.particles
 					}
 					
 					_tempBuffer.position = 0;
+					
+					cursor = cursor.next;
 				}
 				
 				if (_additionalVertexBuffer == null || _lastAdditionalBufferSize != numParticles)
@@ -703,7 +710,7 @@ package molehill.core.render.particles
 		private var _indexBufferSize:uint = 0;
 		public function getCustomIndexBuffer(context:Context3D):IndexBuffer3D
 		{
-			var numParticles:uint = _listParticles.length;
+			var numParticles:uint = _numTotalParticles;
 			if (_indexBuffer != null && _indexBufferSize != numParticles * 6)
 			{
 				_indexBuffer.dispose();

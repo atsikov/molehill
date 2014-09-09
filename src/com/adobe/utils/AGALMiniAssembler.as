@@ -86,7 +86,7 @@ package com.adobe.utils
 			return prog; 
 		}
 		
-		public function assemble( mode:String, source:String, version:uint=1 ):ByteArray
+		public function assemble( mode:String, source:String, version:uint=1, ignorelimits:Boolean=false ):ByteArray
 		{
 			var start:uint = getTimer();
 			
@@ -106,10 +106,9 @@ package com.adobe.utils
 			agalcode.writeByte( 0xa1 );				// tag program id
 			agalcode.writeByte( isFrag ? 1 : 0 );	// vertex or fragment
 			
-			initregmap(version); 
+			initregmap(version, ignorelimits); 
 			
 			var lines:Array = source.replace( /[\f\n\r\v]+/g, "\n" ).split( "\n" );
-			var nest:int = 0;
 			var nops:int = 0;
 			var i:int;
 			var lng:int = lines.length;
@@ -454,24 +453,25 @@ package com.adobe.utils
 			return agalcode;
 		}
 		
-		private function initregmap ( version:uint ) : void {
+		private function initregmap ( version:uint, ignorelimits:Boolean ) : void {
 			// version changes limits				
-			REGMAP[ VA ]	= new Register( VA,	"vertex attribute",		0x0,	7,						REG_VERT | REG_READ );
-			REGMAP[ VC ]	= new Register( VC,	"vertex constant",		0x1,	version==1?127:250,		REG_VERT | REG_READ );
-			REGMAP[ VT ]	= new Register( VT,	"vertex temporary",		0x2,	version==1?7:27,		REG_VERT | REG_WRITE | REG_READ );
-			REGMAP[ VO ]	= new Register( VO,	"vertex output",		0x3,	0,						REG_VERT | REG_WRITE );
-			REGMAP[ VI ]	= new Register( VI,	"varying",				0x4,	version==1?7:11,		REG_VERT | REG_FRAG | REG_READ | REG_WRITE );			
-			REGMAP[ FC ]	= new Register( FC,	"fragment constant",	0x1,	version==1?27:63,		REG_FRAG | REG_READ );
-			REGMAP[ FT ]	= new Register( FT,	"fragment temporary",	0x2,	version==1?7:27,		REG_FRAG | REG_WRITE | REG_READ );
-			REGMAP[ FS ]	= new Register( FS,	"texture sampler",		0x5,	7,						REG_FRAG | REG_READ );
-			REGMAP[ FO ]	= new Register( FO,	"fragment output",		0x3,	version==1?0:3,			REG_FRAG | REG_WRITE );				
-			REGMAP[ FD ]	= new Register( FD,	"fragment depth output",0x6,	version==1?-1:0,		REG_FRAG | REG_WRITE );
+			REGMAP[ VA ]	= new Register( VA,	"vertex attribute",		0x0,	ignorelimits?1024:7,						REG_VERT | REG_READ );
+			REGMAP[ VC ]	= new Register( VC,	"vertex constant",		0x1,	ignorelimits?1024:(version==1?127:250),		REG_VERT | REG_READ );
+			REGMAP[ VT ]	= new Register( VT,	"vertex temporary",		0x2,	ignorelimits?1024:(version==1?7:27),		REG_VERT | REG_WRITE | REG_READ );
+			REGMAP[ VO ]	= new Register( VO,	"vertex output",		0x3,	ignorelimits?1024:0,						REG_VERT | REG_WRITE );
+			REGMAP[ VI ]	= new Register( VI,	"varying",				0x4,	ignorelimits?1024:(version==1?7:11),		REG_VERT | REG_FRAG | REG_READ | REG_WRITE );			
+			REGMAP[ FC ]	= new Register( FC,	"fragment constant",	0x1,	ignorelimits?1024:(version==1?27:63),		REG_FRAG | REG_READ );
+			REGMAP[ FT ]	= new Register( FT,	"fragment temporary",	0x2,	ignorelimits?1024:(version==1?7:27),		REG_FRAG | REG_WRITE | REG_READ );
+			REGMAP[ FS ]	= new Register( FS,	"texture sampler",		0x5,	ignorelimits?1024:7,						REG_FRAG | REG_READ );
+			REGMAP[ FO ]	= new Register( FO,	"fragment output",		0x3,	ignorelimits?1024:(version==1?0:3),			REG_FRAG | REG_WRITE );				
+			REGMAP[ FD ]	= new Register( FD,	"fragment depth output",0x6,	ignorelimits?1024:(version==1?-1:0),		REG_FRAG | REG_WRITE );
 			
 			// aliases
 			REGMAP[ "op" ]	= REGMAP[ VO ];
 			REGMAP[ "i" ]	= REGMAP[ VI ];
 			REGMAP[ "v" ]	= REGMAP[ VI ];
-			REGMAP[ "oc" ]	= REGMAP[ FO ];					
+			REGMAP[ "oc" ]	= REGMAP[ FO ];
+			REGMAP[ "od" ]	= REGMAP[ FD ];					
 			REGMAP[ "fi" ]	= REGMAP[ VI ]; 
 		}
 		
@@ -540,7 +540,7 @@ package com.adobe.utils
 			SAMPLEMAP[ LINEAR ]		= new Sampler( LINEAR,		SAMPLER_FILTER_SHIFT,		1 );
 			SAMPLEMAP[ CENTROID ]	= new Sampler( CENTROID,	SAMPLER_SPECIAL_SHIFT,		1 << 0 );
 			SAMPLEMAP[ SINGLE ]		= new Sampler( SINGLE,		SAMPLER_SPECIAL_SHIFT,		1 << 1 );
-			SAMPLEMAP[ DEPTH ]		= new Sampler( DEPTH,		SAMPLER_SPECIAL_SHIFT,		1 << 2 );
+			SAMPLEMAP[ IGNORESAMPLER ]	= new Sampler( IGNORESAMPLER,		SAMPLER_SPECIAL_SHIFT,		1 << 2 );
 			SAMPLEMAP[ REPEAT ]		= new Sampler( REPEAT,		SAMPLER_REPEAT_SHIFT,		1 );
 			SAMPLEMAP[ WRAP ]		= new Sampler( WRAP,		SAMPLER_REPEAT_SHIFT,		1 );
 			SAMPLEMAP[ CLAMP ]		= new Sampler( CLAMP,		SAMPLER_REPEAT_SHIFT,		0 );
@@ -553,8 +553,7 @@ package com.adobe.utils
 		private static const REGMAP:Dictionary					= new Dictionary();
 		private static const SAMPLEMAP:Dictionary				= new Dictionary();
 		
-		private static const MAX_NESTING:int					= 4;
-		private static const MAX_OPCODES:int					= 256;
+		private static const MAX_OPCODES:int					= 2048;
 		
 		private static const FRAGMENT:String					= "fragment";
 		private static const VERTEX:String						= "vertex";
@@ -652,7 +651,7 @@ package com.adobe.utils
 		private static const LINEAR:String						= "linear";
 		private static const CENTROID:String					= "centroid";
 		private static const SINGLE:String						= "single";
-		private static const DEPTH:String						= "depth";
+		private static const IGNORESAMPLER:String				= "ignoresampler";
 		private static const REPEAT:String						= "repeat";
 		private static const WRAP:String						= "wrap";
 		private static const CLAMP:String						= "clamp";

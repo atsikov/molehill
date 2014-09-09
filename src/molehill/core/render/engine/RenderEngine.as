@@ -23,8 +23,6 @@ package molehill.core.render.engine
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.base.BaseShader;
-	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.CachingFactory;
@@ -436,14 +434,8 @@ package molehill.core.render.engine
 				if (currentShader == null)
 				{
 					var isCompressed:Boolean = tm.textureIsCompressed(chunkData.texture);
-					if (isCompressed || toBitmapData)
-					{
-						currentShader = shaderFactory.getShaderInstance(BaseShader);
-					}
-					else
-					{
-						currentShader = shaderFactory.getShaderInstance(BaseShaderPremultAlpha);
-					}
+					var premultAlpha:Boolean = !isCompressed && !toBitmapData
+					currentShader = shaderFactory.getShaderInstance(Shader3D, premultAlpha);
 				}
 				
 				var additionalVertexBuffers:Vector.<OrderedVertexBuffer> = chunkData.additionalVertexBuffers;

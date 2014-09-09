@@ -3,8 +3,8 @@ package molehill.core.text
 	import flash.geom.Point;
 	
 	import molehill.core.molehill_internal;
+	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.base.BaseShaderPremultAlpha;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureAtlasData;
@@ -27,7 +27,10 @@ package molehill.core.text
 			
 			_cacheSprites = new Vector.<TextField3DCharacter>();
 
-			shader = Shader3DFactory.getInstance().getShaderInstance(BaseShaderPremultAlpha);
+			shader = Shader3DFactory.getInstance().getShaderInstance(
+				Shader3D,
+				true
+			);
 		}
 		
 		public function get defaultTextFormat():TextField3DFormat
