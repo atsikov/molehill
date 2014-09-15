@@ -139,6 +139,11 @@ package molehill.core
 		private var _listActiveScenes:Vector.<Scene3D>;
 		public function addScene(scene:Scene3D):Scene3D
 		{
+			if (_listActiveScenes.indexOf(scene) != -1)
+			{
+				return scene;
+			}
+			
 			if (_listRestoredScenes.indexOf(scene) == -1)
 			{
 				scene.onContextRestored();

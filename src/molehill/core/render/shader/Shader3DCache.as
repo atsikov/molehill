@@ -39,11 +39,17 @@ package molehill.core.render.shader
 		{
 			_context3D = context3D;
 			
-			for each (var shader:Shader3D in _cacheAssembledShaders)
+			for each (var listShaderAlphas:Object in _cacheAssembledShaders)
 			{
-				shader.setAssembledProgram(
-					_assembler.assemble2(_context3D, 1, shader.vertexShaderCode, shader.fragmentShaderCode)
-				);
+				for each (var listShaderTextures:Object in listShaderAlphas)
+				{
+					for each (var shader:Shader3D in listShaderTextures)
+					{
+						shader.setAssembledProgram(
+							_assembler.assemble2(_context3D, 1, shader.vertexShaderCode, shader.fragmentShaderCode)
+						);
+					}
+				}
 			}
 		}
 		

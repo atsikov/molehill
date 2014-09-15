@@ -84,7 +84,7 @@ package molehill.core.render
 			return _renderEngine != null && _renderEngine.isReady;
 		}
 		
-		public function setRenderEngine(value:RenderEngine):void
+		molehill_internal function setRenderEngine(value:RenderEngine):void
 		{
 			_renderEngine = value;
 		}
