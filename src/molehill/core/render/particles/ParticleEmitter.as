@@ -62,6 +62,11 @@ package molehill.core.render.particles
 		{
 			var timer:uint = getTimer();
 			
+			if (_appearInterval == 0 || textureID == null)
+			{
+				return;
+			}
+			
 			while (_scene != null && (_lastGenerationTime == 0 || timer - _lastGenerationTime > _appearInterval))
 			{
 				//trace('Generating new particles. timer = ' + timer + '; lastGenerationTime = ' + _lastGenerationTime + '; num generations: ' + _listGenerationTimes.length);
