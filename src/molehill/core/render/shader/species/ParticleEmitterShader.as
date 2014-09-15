@@ -22,6 +22,7 @@ package molehill.core.render.shader.species
 		{
 			// va3 = x0, y0, appear time (ms), life time (ms)
 			// va4 = speedX, speedY, accelX, accelY
+			// va5 = targetSizeX, targetSizeY, targetAlpha
 			
 			var position:ShaderRegister = VT0;
 			
@@ -57,12 +58,16 @@ package molehill.core.render.shader.species
 			add(position.xy, position.xy, initialParams.xy);
 			add(position.xy, position.xy, offset.xy);
 			
+			multiply(VT3.xy, VA5.xy, time.yy);
+			add(position.xy, position.xy, VT3.xy);
+			
 			multiplyVectorMatrix(position, position, VC0);
 			move(V0, VA1);
 			move(V1, VA2);
 			
 			multiply(time.w, time.y, time.y);
 			move(V2, time);
+			move(V3, VA5);
 			
 			move(OP, position);
 //			
@@ -88,6 +93,16 @@ package molehill.core.render.shader.species
 //				"mov op, vt0\n";
 //			
 //			return code;
+		}
+		
+		override protected function writeFragmentOutput(fragmentDataRegister:ShaderRegister):void
+		{
+			move(FT2, V3);
+			multiply(FT2.z, FT2.z, V2.y);
+			multiply(FT2.z, FT2.z, fragmentDataRegister.w);
+			add(fragmentDataRegister.w, fragmentDataRegister.w, FT2.z);
+			
+			super.writeFragmentOutput(fragmentDataRegister);
 		}
 		
 		private var _vc4:Vector.<Number>;

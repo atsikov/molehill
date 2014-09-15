@@ -23,7 +23,7 @@ package molehill.core.render.particles
 		{
 			return _shiftY;
 		}
-
+		
 		public function set shiftY(value:Number):void
 		{
 			_shiftY = value;
@@ -82,6 +82,7 @@ package molehill.core.render.particles
 		public function set appearTime(value:uint):void
 		{
 			_appearTime = value;
+			_disappearTime = _appearTime + _lifeTime;
 		}
 
 		private var _lifeTime:uint = 0;
@@ -93,7 +94,57 @@ package molehill.core.render.particles
 		public function set lifeTime(value:uint):void
 		{
 			_lifeTime = value;
+			_disappearTime = _appearTime + _lifeTime;
 		}
-
+		
+		private var _disappearTime:uint;
+		public function get disappearTime():uint
+		{
+			return _disappearTime;
+		}
+		
+		private var _startScale:Number;
+		public function get startScale():Number
+		{
+			return _startScale;
+		}
+		
+		public function set startScale(value:Number):void
+		{
+			_startScale = value;
+		}
+		
+		private var _endScale:Number;
+		public function get endScale():Number
+		{
+			return _endScale;
+		}
+		
+		public function set endScale(value:Number):void
+		{
+			_endScale = value;
+		}
+		
+		private var _startAlpha:Number;
+		public function get startAlpha():Number
+		{
+			return _startAlpha;
+		}
+		
+		public function set startAlpha(value:Number):void
+		{
+			_startAlpha = value;
+		}
+		
+		private var _endAlpha:Number;
+		public function get endAlpha():Number
+		{
+			return _endAlpha;
+		}
+		
+		public function set endAlpha(value:Number):void
+		{
+			_endAlpha = value;
+		}
 	}
 }
