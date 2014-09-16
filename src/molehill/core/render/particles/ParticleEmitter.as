@@ -5,6 +5,7 @@ package molehill.core.render.particles
 	
 	import flash.display.Sprite;
 	import flash.display3D.Context3D;
+	import flash.display3D.Context3DProgramType;
 	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
@@ -616,6 +617,9 @@ package molehill.core.render.particles
 			return _y0;
 		}
 		
+		private static const NUM_VERTEX_DATA_COMPONENTS:uint = 8;
+		private static const NUM_ADDITIONAL_DATA_COMPONENTS:uint = 11;
+		
 		private var _additionalVertexBufferData:ByteArray;
 		private var _lastMainBufferSize:int = 0;
 		private var _listAdditionalVertexBuffers:Vector.<OrderedVertexBuffer>;
@@ -624,6 +628,8 @@ package molehill.core.render.particles
 		private var _mainVertexBuffer:VertexBuffer3D;
 		private var _additionalVertexBuffer:VertexBuffer3D;
 		private var _tempBuffer:ByteArray;
+		
+		private var _darkenColorData:Vector.<Number>;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
 			if (_additionalVertexBufferData == null)
@@ -643,10 +649,10 @@ package molehill.core.render.particles
 			var numParticles:uint = _numTotalParticles;
 			
 			// 8 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 128
-			var bytesPerParticle:int = 8 * 4 * 4;
+			var bytesPerParticle:int = NUM_VERTEX_DATA_COMPONENTS * 4 * 4;
 			
 			// 12 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 192
-			var bytesPerAdditionalParticleData:uint = 12 * 4 * 4;
+			var bytesPerAdditionalParticleData:uint = NUM_ADDITIONAL_DATA_COMPONENTS * 4 * 4;
 			
 			var numStoredParticles:uint = _vertexData.length / bytesPerParticle;
 			_vertexData.position = 0;
@@ -786,7 +792,8 @@ package molehill.core.render.particles
 					//trace(JSON.stringify(particle));
 					_additionalVertexBufferData.position = i * bytesPerAdditionalParticleData;
 					
-					particleAlpha = _parentAlpha * _alpha * ((particle.endAlpha - particle.startAlpha) / particle.startAlpha);
+					particleAlpha = _parentAlpha * _alpha * (particle.endAlpha - particle.startAlpha);
+					//trace(particleAlpha);
 					var deltaSizeX:Number = width2 * (particle.endScale - particle.startScale);
 					var deltaSizeY:Number = height2 * (particle.endScale - particle.startScale);
 					
@@ -809,6 +816,8 @@ package molehill.core.render.particles
 						commonData.position = 0;
 					}
 					
+					var bytesPerCommonData:Number = NUM_ADDITIONAL_DATA_COMPONENTS * 4;
+					
 					// va3
 					commonData.writeFloat(shiftX);
 					commonData.writeFloat(shiftY);
@@ -823,27 +832,26 @@ package molehill.core.render.particles
 					commonData.writeFloat(-deltaSizeX);
 					commonData.writeFloat(-deltaSizeY);
 					commonData.writeFloat(particleAlpha);
-					commonData.writeFloat(0);
 					
-					_additionalVertexBufferData.writeBytes(commonData, 0, 48);
+					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					commonData.position = 32;
 					commonData.writeFloat(-deltaSizeX);
 					commonData.writeFloat(deltaSizeY);
 					
-					_additionalVertexBufferData.writeBytes(commonData, 0, 48);
+					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					commonData.position = 32;
 					commonData.writeFloat(deltaSizeX);
 					commonData.writeFloat(deltaSizeY);
 					
-					_additionalVertexBufferData.writeBytes(commonData, 0, 48);
+					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					commonData.position = 32;
 					commonData.writeFloat(deltaSizeX);
 					commonData.writeFloat(-deltaSizeY);
 					
-					_additionalVertexBufferData.writeBytes(commonData, 0, 48);
+					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					i++;
 					cursor = cursor.next;
@@ -880,7 +888,7 @@ package molehill.core.render.particles
 					
 					if (_additionalVertexBuffer == null)
 					{
-						_additionalVertexBuffer = context.createVertexBuffer(numParticles * 4, 12);
+						_additionalVertexBuffer = context.createVertexBuffer(numParticles * 4, NUM_ADDITIONAL_DATA_COMPONENTS);
 						_lastAdditionalBufferSize = numParticles;
 					}
 					//trace('creating additional buffer for ' + numParticles + ' particles');
@@ -891,7 +899,7 @@ package molehill.core.render.particles
 					orderedVertexBuffer = new OrderedVertexBuffer(4, _additionalVertexBuffer, 4, Context3DVertexBufferFormat.FLOAT_4);
 					_listAdditionalVertexBuffers[4] = orderedVertexBuffer;
 					
-					orderedVertexBuffer = new OrderedVertexBuffer(5, _additionalVertexBuffer, 8, Context3DVertexBufferFormat.FLOAT_4);
+					orderedVertexBuffer = new OrderedVertexBuffer(5, _additionalVertexBuffer, 8, Context3DVertexBufferFormat.FLOAT_3);
 					_listAdditionalVertexBuffers[5] = orderedVertexBuffer;
 					
 
@@ -911,7 +919,7 @@ package molehill.core.render.particles
 				{
 					if (_mainVertexBuffer == null)
 					{
-						_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, Sprite3D.NUM_ELEMENTS_PER_VERTEX);
+						_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, NUM_VERTEX_DATA_COMPONENTS);
 						_lastMainBufferSize = numParticles;
 						_mainVerticesDataChanged = true;
 					}
@@ -935,7 +943,56 @@ package molehill.core.render.particles
 				//trace(numParticles * 2 + " triangles uploaded");
 			}
 			
+			if (_darkenColorData == null)
+			{
+				_darkenColorData = new Vector.<Number>();
+				_darkenColorData.length = 4;
+				_darkenColorData.fixed = true;
+				_darkenColorData[3] = 0;
+			}
+			
+			_darkenColorData[0] = _targetRedMultiplier - redMultiplier;
+			_darkenColorData[1] = _targetGreenMultiplier - greenMultiplier;
+			_darkenColorData[2] = _targetBlueMultiplier - blueMultiplier;
+			
+			//trace(_darkenColorData);
+			
+			context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 3, _darkenColorData);
+			
 			return _listAdditionalVertexBuffers;
+		}
+		
+		private var _targetRedMultiplier:Number = 1;
+		public function get targetRedMultiplier():Number
+		{
+			return _targetRedMultiplier;
+		}
+		
+		public function set targetRedMultiplier(value:Number):void
+		{
+			_targetRedMultiplier = value;
+		}
+		
+		private var _targetGreenMultiplier:Number = 1;
+		public function get targetGreenMultiplier():Number
+		{
+			return _targetGreenMultiplier;
+		}
+		
+		public function set targetGreenMultiplier(value:Number):void
+		{
+			_targetGreenMultiplier = value;
+		}
+		
+		private var _targetBlueMultiplier:Number = 1;
+		public function get targetBlueMultiplier():Number
+		{
+			return _targetBlueMultiplier;
+		}
+		
+		public function set targetBlueMultiplier(value:Number):void
+		{
+			_targetBlueMultiplier = value;
 		}
 		
 		private var _indexBuffer:IndexBuffer3D;

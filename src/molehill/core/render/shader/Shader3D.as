@@ -161,12 +161,12 @@ package molehill.core.render.shader
 			}
 			else
 			{
-				writeTextureToOutput(FT1, V1, FS0);
+				writeTextureToOutput(FT1, V1, FS0, V0);
 				writeFragmentOutput(FT1);
 			}
 		}
 		
-		protected function writeTextureToOutput(tetxureTempRegister:ShaderRegister, textureCoordsRegister:ShaderRegister, textureSampler:ShaderRegister):void
+		protected function writeTextureToOutput(tetxureTempRegister:ShaderRegister, textureCoordsRegister:ShaderRegister, textureSampler:ShaderRegister, fragmentColorRegister:ShaderRegister):void
 		{
 			readTexture(tetxureTempRegister, textureCoordsRegister, textureSampler, _textureReadParams);
 			if (_premultAlpha)
@@ -176,7 +176,7 @@ package molehill.core.render.shader
 				add(FT2.x, tetxureTempRegister.w, FT2.x);
 				divide(tetxureTempRegister.xyz, tetxureTempRegister.xyz, FT2.x);
 			}
-			multiply(tetxureTempRegister, tetxureTempRegister, V0);
+			multiply(tetxureTempRegister, tetxureTempRegister, fragmentColorRegister);
 		}
 		
 		protected function writeFragmentOutput(fragmentDataRegister:ShaderRegister):void

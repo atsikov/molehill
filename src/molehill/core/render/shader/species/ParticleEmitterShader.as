@@ -95,6 +95,26 @@ package molehill.core.render.shader.species
 //			return code;
 		}
 		
+		override protected function prepareFragmentShader():void
+		{
+			var fragmentColor:ShaderRegister = FT2;
+			
+			move(fragmentColor, FC3);
+			move(fragmentColor.w, V3.z);
+			multiply(fragmentColor, fragmentColor, V2.yyyy);
+			add(fragmentColor, fragmentColor, V0);
+			
+			if ((_textureReadParams & TEXTURE_DONT_USE_TEXTURE) > 0)
+			{
+				writeFragmentOutput(fragmentColor);
+			}
+			else
+			{
+				writeTextureToOutput(FT1, V1, FS0, fragmentColor);
+				writeFragmentOutput(FT1);
+			}
+		}
+		/*
 		override protected function writeFragmentOutput(fragmentDataRegister:ShaderRegister):void
 		{
 			move(FT2, V3);
@@ -104,7 +124,7 @@ package molehill.core.render.shader.species
 			
 			super.writeFragmentOutput(fragmentDataRegister);
 		}
-		
+		*/
 		private var _vc4:Vector.<Number>;
 		override public function prepareContext(context3D:Context3D):void
 		{
