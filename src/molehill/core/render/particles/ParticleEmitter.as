@@ -951,9 +951,9 @@ package molehill.core.render.particles
 				_darkenColorData[3] = 0;
 			}
 			
-			_darkenColorData[0] = _targetRedMultiplier - redMultiplier;
-			_darkenColorData[1] = _targetGreenMultiplier - greenMultiplier;
-			_darkenColorData[2] = _targetBlueMultiplier - blueMultiplier;
+			_darkenColorData[0] = _endRedMultiplier - redMultiplier;
+			_darkenColorData[1] = _endGreenMultiplier - greenMultiplier;
+			_darkenColorData[2] = _endBlueMultiplier - blueMultiplier;
 			
 			//trace(_darkenColorData);
 			
@@ -962,37 +962,37 @@ package molehill.core.render.particles
 			return _listAdditionalVertexBuffers;
 		}
 		
-		private var _targetRedMultiplier:Number = 1;
-		public function get targetRedMultiplier():Number
+		private var _endRedMultiplier:Number = 1;
+		public function get endRedMultiplier():Number
 		{
-			return _targetRedMultiplier;
+			return _endRedMultiplier;
 		}
 		
-		public function set targetRedMultiplier(value:Number):void
+		public function set endRedMultiplier(value:Number):void
 		{
-			_targetRedMultiplier = value;
+			_endRedMultiplier = value;
 		}
 		
-		private var _targetGreenMultiplier:Number = 1;
-		public function get targetGreenMultiplier():Number
+		private var _endGreenMultiplier:Number = 1;
+		public function get endGreenMultiplier():Number
 		{
-			return _targetGreenMultiplier;
+			return _endGreenMultiplier;
 		}
 		
-		public function set targetGreenMultiplier(value:Number):void
+		public function set endGreenMultiplier(value:Number):void
 		{
-			_targetGreenMultiplier = value;
+			_endGreenMultiplier = value;
 		}
 		
-		private var _targetBlueMultiplier:Number = 1;
-		public function get targetBlueMultiplier():Number
+		private var _endBlueMultiplier:Number = 1;
+		public function get endBlueMultiplier():Number
 		{
-			return _targetBlueMultiplier;
+			return _endBlueMultiplier;
 		}
 		
-		public function set targetBlueMultiplier(value:Number):void
+		public function set endBlueMultiplier(value:Number):void
 		{
-			_targetBlueMultiplier = value;
+			_endBlueMultiplier = value;
 		}
 		
 		private var _indexBuffer:IndexBuffer3D;
