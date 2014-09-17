@@ -152,8 +152,12 @@ package molehill.core.sprite
 			super(this);
 			
 			resetSprite();
+			
+			_spriteInstanceID = spriteInstanceID++;
 		}
 		
+		molehill_internal static var spriteInstanceID:uint = 0;
+		molehill_internal var _spriteInstanceID:uint = 0;
 		molehill_internal var _blendMode:String;
 
 		public function get blendMode():String

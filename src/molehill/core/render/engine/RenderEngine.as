@@ -553,7 +553,7 @@ package molehill.core.render.engine
 			catch (e:Error)
 			{
 				//trace("error drawing " + chunkData.numTriangles + " triangles from offest " + chunkData.firstIndex);
-				//trace(e);
+				trace(e);
 			}
 			
 			return 0;

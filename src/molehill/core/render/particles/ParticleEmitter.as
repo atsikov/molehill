@@ -456,7 +456,7 @@ package molehill.core.render.particles
 		// IVertexBatcher implementation
 		private var _vertexData:ByteArray;
 		private var _emptyByteArray:ByteArray;
-		private var _mainVerticesDataChanged:Boolean = false;
+		private var _verticesDataChanged:Boolean = false;
 		public function getVerticesData():ByteArray
 		{
 			updateScrollableContainerValues();
@@ -752,7 +752,7 @@ package molehill.core.render.particles
 					cursor = cursor.next;
 					i++;
 				}
-				_mainVerticesDataChanged = true;
+				_verticesDataChanged = true;
 				
 				_additionalVertexBufferData.position = 0;
 				numStoredParticles = _additionalVertexBufferData.length / bytesPerAdditionalParticleData;
@@ -857,57 +857,9 @@ package molehill.core.render.particles
 					cursor = cursor.next;
 				}
 				
-				if (_additionalVertexBuffer == null || _lastAdditionalBufferSize != numParticles)
-				{
-					/*
-					_additionalVertexBufferData.position = 0;
-					trace('=========');
-					while (_additionalVertexBufferData.bytesAvailable)
-					{
-						trace(
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat(),
-							_additionalVertexBufferData.readFloat()
-						);
-					}
-					*/
-					if (_additionalVertexBuffer != null && _lastAdditionalBufferSize < numParticles)
-					{
-						_additionalVertexBuffer.dispose();
-						_additionalVertexBuffer = null;
-					}
-					
-					if (_additionalVertexBuffer == null)
-					{
-						_additionalVertexBuffer = context.createVertexBuffer(numParticles * 4, NUM_ADDITIONAL_DATA_COMPONENTS);
-						_lastAdditionalBufferSize = numParticles;
-					}
-					//trace('creating additional buffer for ' + numParticles + ' particles');
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(3, _additionalVertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_4);
-					_listAdditionalVertexBuffers[3] = orderedVertexBuffer;
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(4, _additionalVertexBuffer, 4, Context3DVertexBufferFormat.FLOAT_4);
-					_listAdditionalVertexBuffers[4] = orderedVertexBuffer;
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(5, _additionalVertexBuffer, 8, Context3DVertexBufferFormat.FLOAT_3);
-					_listAdditionalVertexBuffers[5] = orderedVertexBuffer;
-					
-
-				}
-				_additionalVertexBuffer.uploadFromByteArray(_additionalVertexBufferData, 0, 0, numParticles * 4);
 			}
 				
-			if (_mainVertexBuffer == null || _lastMainBufferSize != numParticles)
+			if (_mainVertexBuffer == null || _lastMainBufferSize < numParticles)
 			{
 				if (_mainVertexBuffer != null && _lastMainBufferSize < numParticles)
 				{
@@ -921,27 +873,84 @@ package molehill.core.render.particles
 					{
 						_mainVertexBuffer = context.createVertexBuffer(numParticles * 4, NUM_VERTEX_DATA_COMPONENTS);
 						_lastMainBufferSize = numParticles;
-						_mainVerticesDataChanged = true;
+						_verticesDataChanged = true;
+						
+						//trace('creating main buffer for ' + numParticles + ' particles');
+						
+						orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
+						_listAdditionalVertexBuffers[0] = orderedVertexBuffer;
+						
+						orderedVertexBuffer = new OrderedVertexBuffer(1, _mainVertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4);
+						_listAdditionalVertexBuffers[1] = orderedVertexBuffer;
+						
+						orderedVertexBuffer = new OrderedVertexBuffer(2, _mainVertexBuffer, Sprite3D.TEXTURE_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
+						_listAdditionalVertexBuffers[2] = orderedVertexBuffer;
 					}
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
-					_listAdditionalVertexBuffers[0] = orderedVertexBuffer;
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(1, _mainVertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4);
-					_listAdditionalVertexBuffers[1] = orderedVertexBuffer;
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(2, _mainVertexBuffer, Sprite3D.TEXTURE_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
-					_listAdditionalVertexBuffers[2] = orderedVertexBuffer;
 				}
 			}
 			
-			if (_mainVertexBuffer != null && _mainVerticesDataChanged)
+			if (_mainVertexBuffer != null && _verticesDataChanged)
 			{
 				_mainVertexBuffer.uploadFromByteArray(_vertexData, 0, 0, numParticles * 4);
-				_mainVerticesDataChanged = false;
+				//_verticesDataChanged = false;
 				
 				//trace(numParticles * 2 + " triangles uploaded");
 			}
+			
+			if (_additionalVertexBuffer == null || _lastAdditionalBufferSize < numParticles)
+			{
+				/*
+				_additionalVertexBufferData.position = 0;
+				trace('=========');
+				while (_additionalVertexBufferData.bytesAvailable)
+				{
+				trace(
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat(),
+				_additionalVertexBufferData.readFloat()
+				);
+				}
+				*/
+				if (_additionalVertexBuffer != null && _lastAdditionalBufferSize < numParticles)
+				{
+					_additionalVertexBuffer.dispose();
+					_additionalVertexBuffer = null;
+				}
+				
+				if (_additionalVertexBuffer == null)
+				{
+					_additionalVertexBuffer = context.createVertexBuffer(numParticles * 4, NUM_ADDITIONAL_DATA_COMPONENTS);
+					_lastAdditionalBufferSize = numParticles;
+					_verticesDataChanged = true;
+					
+					//trace('creating additional buffer for ' + numParticles + ' particles');
+					
+					orderedVertexBuffer = new OrderedVertexBuffer(3, _additionalVertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_4);
+					_listAdditionalVertexBuffers[3] = orderedVertexBuffer;
+					
+					orderedVertexBuffer = new OrderedVertexBuffer(4, _additionalVertexBuffer, 4, Context3DVertexBufferFormat.FLOAT_4);
+					_listAdditionalVertexBuffers[4] = orderedVertexBuffer;
+					
+					orderedVertexBuffer = new OrderedVertexBuffer(5, _additionalVertexBuffer, 8, Context3DVertexBufferFormat.FLOAT_3);
+					_listAdditionalVertexBuffers[5] = orderedVertexBuffer;
+				}
+			}
+			
+			if (_verticesDataChanged)
+			{
+				_additionalVertexBuffer.uploadFromByteArray(_additionalVertexBufferData, 0, 0, numParticles * 4);
+			}
+			
+			_verticesDataChanged = false;
 			
 			if (_darkenColorData == null)
 			{
@@ -1033,18 +1042,21 @@ package molehill.core.render.particles
 			{
 				_mainVertexBuffer.dispose();
 				_mainVertexBuffer = null;
+				_lastMainBufferSize = 0;
 			}
 			
 			if (_additionalVertexBuffer != null)
 			{
 				_additionalVertexBuffer.dispose();
 				_additionalVertexBuffer = null;
+				_lastAdditionalBufferSize = 0;
 			}
 			
 			if (_indexBuffer != null)
 			{
 				_indexBuffer.dispose();
 				_indexBuffer = null;
+				_indexBufferSize = 0;
 			}
 		}
 	}
