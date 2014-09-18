@@ -926,12 +926,12 @@ package molehill.core.render.particles
 			_startDarkenColorData[0] = _parentRed * redMultiplier;
 			_startDarkenColorData[1] = _parentGreen * greenMultiplier;
 			_startDarkenColorData[2] = _parentBlue * blueMultiplier;
-			_startDarkenColorData[3] = _parentAlpha * startAlpha;
+			_startDarkenColorData[3] = _parentAlpha * _alpha * startAlpha;
 			
 			_endDarkenColorData[0] = _parentRed * (_endRedMultiplier - redMultiplier);
 			_endDarkenColorData[1] = _parentGreen * (_endGreenMultiplier - greenMultiplier);
 			_endDarkenColorData[2] = _parentBlue * (_endBlueMultiplier - blueMultiplier);
-			_endDarkenColorData[3] = _parentAlpha * (_endAlpha - startAlpha);
+			_endDarkenColorData[3] = _parentAlpha * _alpha * (_endAlpha - startAlpha);
 			
 			return _listAdditionalVertexBuffers;
 		}
