@@ -36,6 +36,7 @@ package molehill.core.render
 		
 		function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>;
 		function getCustomIndexBuffer(context:Context3D):IndexBuffer3D;
+		function getProgramConstantsData():Vector.<ProgramConstantsData>;
 		function get indexBufferOffset():int;
 	}
 }

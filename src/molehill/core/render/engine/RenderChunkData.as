@@ -6,6 +6,7 @@ package molehill.core.render.engine
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.render.OrderedVertexBuffer;
+	import molehill.core.render.ProgramConstantsData;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3D;
 	
@@ -18,6 +19,7 @@ package molehill.core.render.engine
 		public var blendMode:String;
 		public var camera:CustomCamera;
 		public var additionalVertexBuffers:Vector.<OrderedVertexBuffer>;
+		public var programConstantsData:Vector.<ProgramConstantsData>;
 		public var customIndexBuffer:IndexBuffer3D;
 	}
 }

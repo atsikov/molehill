@@ -423,5 +423,10 @@ package molehill.core.render
 			
 			_needUploadIndexData = true;
 		}
+		
+		public function getProgramConstantsData():Vector.<ProgramConstantsData>
+		{
+			return null;
+		}
 	}
 }

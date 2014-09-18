@@ -20,6 +20,7 @@ package molehill.core.render.engine
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.IVertexBatcher;
 	import molehill.core.render.OrderedVertexBuffer;
+	import molehill.core.render.ProgramConstantsData;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
@@ -264,6 +265,7 @@ package molehill.core.render.engine
 			}
 			
 			var batcherAdditionalVertexBufers:Vector.<OrderedVertexBuffer> = batcher.getAdditionalVertexBuffers(_context3D);
+			var programConstantsData:Vector.<ProgramConstantsData> = batcher.getProgramConstantsData();
 			var batcherIndexBuffer:IndexBuffer3D = batcher.getCustomIndexBuffer(_context3D);
 			if (_lastChunkData != null &&
 				_lastChunkData.texture == _currentTexture &&
@@ -271,6 +273,7 @@ package molehill.core.render.engine
 				_lastChunkData.blendMode == batcher.blendMode &&
 				camerasEqual &&
 				_lastChunkData.additionalVertexBuffers === batcherAdditionalVertexBufers &&
+				_lastChunkData.programConstantsData === programConstantsData &&
 				_lastChunkData.customIndexBuffer === batcherIndexBuffer)
 			{
 				_lastChunkData.numTriangles += batcher.numTriangles;
@@ -285,6 +288,7 @@ package molehill.core.render.engine
 				chunkData.blendMode = batcher.blendMode;
 				chunkData.camera = batcher.batcherCamera;
 				chunkData.additionalVertexBuffers = batcherAdditionalVertexBufers;
+				chunkData.programConstantsData = programConstantsData
 				chunkData.customIndexBuffer = batcherIndexBuffer;
 				
 				_listRenderChunks.enqueue(chunkData);
@@ -365,7 +369,7 @@ package molehill.core.render.engine
 			//_context3D.setVertexBufferAt(2, _vertexBuffer, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
 			var tm:TextureManager = TextureManager.getInstance();
 			
-			var blendMode:String = "";
+			var blendMode:String = null;
 			var lastShader:Shader3D;
 			
 			var m:Matrix3D = new Matrix3D();
@@ -430,6 +434,20 @@ package molehill.core.render.engine
 					//_context3D.setScissorRectangle(null);
 				}
 				
+				var programConstantsData:Vector.<ProgramConstantsData> = chunkData.programConstantsData;
+				if (programConstantsData != null)
+				{
+					for (i = 0; i < programConstantsData.length; i++)
+					{
+						if (programConstantsData[i] == null)
+						{
+							continue;
+						}
+						
+						_context3D.setProgramConstantsFromVector(programConstantsData[i].type, programConstantsData[i].index, programConstantsData[i].data);
+					}
+				}
+				
 				var currentShader:Shader3D = chunkData.shader;
 				if (currentShader == null)
 				{
@@ -444,6 +462,11 @@ package molehill.core.render.engine
 				{
 					for (var i:int = 0; i < numAdditionalBuffers; i++)
 					{
+						if (additionalVertexBuffers[i] == null)
+						{
+							continue;
+						}
+						
 						//trace("setting additional vertex buffer " + StringUtils.getObjectAddress(chunkData.additionalVertexBuffers[i].buffer) + " at " + chunkData.additionalVertexBuffers[i].index);
 						_context3D.setVertexBufferAt(
 							additionalVertexBuffers[i].index,
@@ -483,15 +506,16 @@ package molehill.core.render.engine
 				if (chunkData.additionalVertexBuffers != null)
 				{
 					//trace('restoring vertex buffers');
-					for (i = 0; i < chunkData.additionalVertexBuffers.length; i++)
+					for (i = 0; i < numAdditionalBuffers; i++)
 					{
-						if (chunkData.additionalVertexBuffers[i].index <= 2)
+						var orderedBuffer:OrderedVertexBuffer = additionalVertexBuffers[i];
+						if (orderedBuffer == null)
 						{
 							continue;
 						}
 						
 						_context3D.setVertexBufferAt(
-							chunkData.additionalVertexBuffers[i].index,
+							additionalVertexBuffers[i].index,
 							null
 						);
 					}

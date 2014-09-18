@@ -20,21 +20,21 @@ package molehill.core.render.shader.species
 		
 		override protected function prepareVertexShader():void
 		{
-			// va3 = x0, y0, appear time (ms), life time (ms)
-			// va4 = speedX, speedY, accelX, accelY
-			// va5 = targetSizeX, targetSizeY, targetAlpha
+			// va2 = x0, y0, appear time (ms), life time (ms)
+			// va3 = speedX, speedY, accelX, accelY
+			// va4 = targetSizeX, targetSizeY, targetAlpha
 			
 			var position:ShaderRegister = VT0;
 			
 			var currentTimer:String = VC4.x;
 			
-			var initialParams:ShaderRegister = VA3;
+			var initialParams:ShaderRegister = VA2;
 			var appearTime:String = initialParams.z;
 			var lifeTime:String = initialParams.w;
 			
 			// time.xyz = life time, life progress, life time ^ 2
 			var time:ShaderRegister = VT1;
-			move(time, VC4);
+			//move(time, VC4);
 			
 			subtract(time.x, currentTimer, appearTime);
 			divide(time.y, time.x, lifeTime);
@@ -42,7 +42,7 @@ package molehill.core.render.shader.species
 			multiply(time.z, time.x, time.x);
 			
 			var offset:ShaderRegister = VT2;
-			var speedsAccels:ShaderRegister = VA4;
+			var speedsAccels:ShaderRegister = VA3;
 			
 			multiply(offset.xy, speedsAccels.xy, time.x);
 			
@@ -58,16 +58,16 @@ package molehill.core.render.shader.species
 			add(position.xy, position.xy, initialParams.xy);
 			add(position.xy, position.xy, offset.xy);
 			
-			multiply(VT3.xy, VA5.xy, time.yy);
+			multiply(VT3.xy, VA4.xy, time.yy);
 			add(position.xy, position.xy, VT3.xy);
 			
 			multiplyVectorMatrix(position, position, VC0);
 			move(V0, VA1);
-			move(V1, VA2);
+			///move(V1, VA2);
 			
 			multiply(time.w, time.y, time.y);
 			move(V2, time);
-			move(V3, VA5);
+			//move(V3, VA4);
 			
 			move(OP, position);
 //			
@@ -97,21 +97,30 @@ package molehill.core.render.shader.species
 		
 		override protected function prepareFragmentShader():void
 		{
+			var outputColor:ShaderRegister = FT1;
+			var textureCoords:ShaderRegister = V0;
 			var fragmentColor:ShaderRegister = FT2;
 			
-			move(fragmentColor, FC3);
-			move(fragmentColor.w, V3.z);
-			multiply(fragmentColor, fragmentColor, V2.yyyy);
-			add(fragmentColor, fragmentColor, V0);
+			// x - lived for (secs), y - life progress, z - time^2 (secs), w - life progress^2
+			var time:ShaderRegister = V2;
 			
+			//move(fragmentColor, FC3);
+			//add(fragmentColor, fragmentColor, FC4);
+			//move(fragmentColor.w, V3.z);
+			multiply(fragmentColor, FC4, time.yyyy);
+			add(fragmentColor, fragmentColor, FC3);
+			
+			//writeFragmentOutput(FC3);
+			
+			//multiply(fragmentColor, fragmentColor, V0);
 			if ((_textureReadParams & TEXTURE_DONT_USE_TEXTURE) > 0)
 			{
 				writeFragmentOutput(fragmentColor);
 			}
 			else
 			{
-				writeTextureToOutput(FT1, V1, FS0, fragmentColor);
-				writeFragmentOutput(FT1);
+				writeTextureToOutput(outputColor, textureCoords, FS0, fragmentColor);
+				writeFragmentOutput(outputColor);
 			}
 		}
 		/*

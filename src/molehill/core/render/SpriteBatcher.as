@@ -827,5 +827,10 @@ package molehill.core.render
 				"\tcameraOwner: " + _cameraOwner + "\n" +
 				"\tshader: " + _shader + "\n";
 		}
+		
+		public function getProgramConstantsData():Vector.<ProgramConstantsData>
+		{
+			return null;
+		}
 	}
 }

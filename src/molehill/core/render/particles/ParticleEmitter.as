@@ -20,6 +20,7 @@ package molehill.core.render.particles
 	import molehill.core.molehill_internal;
 	import molehill.core.render.IVertexBatcher;
 	import molehill.core.render.OrderedVertexBuffer;
+	import molehill.core.render.ProgramConstantsData;
 	import molehill.core.render.Scene3D;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.shader.Shader3DFactory;
@@ -161,8 +162,8 @@ package molehill.core.render.particles
 				particle.startScale = _startScale + (Math.random() - 0.5) * 2 * _startScaleDeviation;
 				particle.endScale = _endScale + (Math.random() - 0.5) * 2 * _endScaleDeviation;
 				
-				particle.startAlpha = _startAlpha + (Math.random() - 0.5) * 2 * _startAlphaDeviation;
-				particle.endAlpha = _endAlpha + (Math.random() - 0.5) * 2 * _endAlphaDeviation;
+				particle.startAlpha = _startAlpha;
+				particle.endAlpha = _endAlpha;
 				
 				_listParticles.enqueue(particle);
 				_numTotalParticles++;
@@ -411,17 +412,6 @@ package molehill.core.render.particles
 			_startAlpha = value;
 		}
 
-		private var _startAlphaDeviation:Number = 0;
-		public function get startAlphaDeviation():Number
-		{
-			return _startAlphaDeviation;
-		}
-
-		public function set startAlphaDeviation(value:Number):void
-		{
-			_startAlphaDeviation = value;
-		}
-
 		private var _endAlpha:Number = 1;
 		public function get endAlpha():Number
 		{
@@ -433,18 +423,6 @@ package molehill.core.render.particles
 			_endAlpha = value;
 		}
 
-		private var _endAlphaDeviation:Number = 0;
-		public function get endAlphaDeviation():Number
-		{
-			return _endAlphaDeviation;
-		}
-
-		public function set endAlphaDeviation(value:Number):void
-		{
-			_endAlphaDeviation = value;
-		}
-
-		
 		override public function setTexture(value:String):void
 		{
 			super.setTexture(value);
@@ -617,8 +595,8 @@ package molehill.core.render.particles
 			return _y0;
 		}
 		
-		private static const NUM_VERTEX_DATA_COMPONENTS:uint = 8;
-		private static const NUM_ADDITIONAL_DATA_COMPONENTS:uint = 11;
+		private static const NUM_VERTEX_DATA_COMPONENTS:uint = 4;
+		private static const NUM_ADDITIONAL_DATA_COMPONENTS:uint = 10;
 		
 		private var _additionalVertexBufferData:ByteArray;
 		private var _lastMainBufferSize:int = 0;
@@ -629,7 +607,8 @@ package molehill.core.render.particles
 		private var _additionalVertexBuffer:VertexBuffer3D;
 		private var _tempBuffer:ByteArray;
 		
-		private var _darkenColorData:Vector.<Number>;
+		private var _startDarkenColorData:Vector.<Number>;
+		private var _endDarkenColorData:Vector.<Number>;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
 			if (_additionalVertexBufferData == null)
@@ -641,7 +620,7 @@ package molehill.core.render.particles
 			if (_listAdditionalVertexBuffers == null)
 			{
 				_listAdditionalVertexBuffers = new Vector.<OrderedVertexBuffer>();
-				_listAdditionalVertexBuffers.length = 6;
+				_listAdditionalVertexBuffers.length = 5;
 				_listAdditionalVertexBuffers.fixed = true;
 			}
 			
@@ -695,59 +674,28 @@ package molehill.core.render.particles
 					var particle:ParticleData = cursor.data as ParticleData;
 					_vertexData.position = i * bytesPerParticle;
 					
-					var commonData:ByteArray;
-					if (commonData == null)
-					{
-						commonData = new ByteArray();
-						commonData.endian = Endian.LITTLE_ENDIAN;
-					}
-					else
-					{
-						commonData.position = 0;
-					}
-					
 					var particleScale:Number = particle.startScale;
 					var particleAlpha:Number = particle.startAlpha;
 					
-					commonData.writeFloat(centerX - width2 * particleScale);
-					commonData.writeFloat(centerY - height2 * particleScale);
-					commonData.writeFloat(_redMultiplier * _parentRed);
-					commonData.writeFloat(_greenMultiplier * _parentGreen);
-					commonData.writeFloat(_blueMultiplier * _parentBlue);
-					commonData.writeFloat(_alpha * _parentAlpha * particleAlpha);
-					commonData.writeFloat(_textureU0);
-					commonData.writeFloat(_textureW0);
+					_vertexData.writeFloat(centerX - width2 * particleScale);
+					_vertexData.writeFloat(centerY - height2 * particleScale);
+					_vertexData.writeFloat(_textureU0);
+					_vertexData.writeFloat(_textureW0);
 					
-					_vertexData.writeBytes(commonData, 0, 32);
+					_vertexData.writeFloat(centerX - width2 * particleScale);
+					_vertexData.writeFloat(centerY + height2 * particleScale);
+					_vertexData.writeFloat(_textureU1);
+					_vertexData.writeFloat(_textureW1);
 					
-					commonData.position = 0;
+					_vertexData.writeFloat(centerX + width2 * particleScale);
+					_vertexData.writeFloat(centerY + height2 * particleScale);
+					_vertexData.writeFloat(_textureU2);
+					_vertexData.writeFloat(_textureW2);
 					
-					commonData.position = 0;
-					commonData.writeFloat(centerX - width2 * particleScale);
-					commonData.writeFloat(centerY + height2 * particleScale);
-					commonData.position = 24;
-					commonData.writeFloat(_textureU1);
-					commonData.writeFloat(_textureW1);
-					
-					_vertexData.writeBytes(commonData, 0, 32);
-					
-					commonData.position = 0;
-					commonData.writeFloat(centerX + width2 * particleScale);
-					commonData.writeFloat(centerY + height2 * particleScale);
-					commonData.position = 24;
-					commonData.writeFloat(_textureU2);
-					commonData.writeFloat(_textureW2);
-					
-					_vertexData.writeBytes(commonData, 0, 32);
-					
-					commonData.position = 0;
-					commonData.writeFloat(centerX + width2 * particleScale);
-					commonData.writeFloat(centerY - height2 * particleScale);
-					commonData.position = 24;
-					commonData.writeFloat(_textureU3);
-					commonData.writeFloat(_textureW3);
-					
-					_vertexData.writeBytes(commonData, 0, 32);
+					_vertexData.writeFloat(centerX + width2 * particleScale);
+					_vertexData.writeFloat(centerY - height2 * particleScale);
+					_vertexData.writeFloat(_textureU3);
+					_vertexData.writeFloat(_textureW3);
 					
 					cursor = cursor.next;
 					i++;
@@ -806,6 +754,17 @@ package molehill.core.render.particles
 					var accX:Number = particle.accelerationX;
 					var accY:Number = particle.accelerationY;
 					
+					var commonData:ByteArray;
+					if (commonData == null)
+					{
+						commonData = new ByteArray();
+						commonData.endian = Endian.LITTLE_ENDIAN;
+					}
+					else
+					{
+						commonData.position = 0;
+					}
+					
 					if (commonData == null)
 					{
 						commonData = new ByteArray();
@@ -831,7 +790,7 @@ package molehill.core.render.particles
 					// va5
 					commonData.writeFloat(-deltaSizeX);
 					commonData.writeFloat(-deltaSizeY);
-					commonData.writeFloat(particleAlpha);
+					//commonData.writeFloat(particleAlpha);
 					
 					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
@@ -877,14 +836,14 @@ package molehill.core.render.particles
 						
 						//trace('creating main buffer for ' + numParticles + ' particles');
 						
-						orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, Sprite3D.VERTICES_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
+						orderedVertexBuffer = new OrderedVertexBuffer(0, _mainVertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_2);
 						_listAdditionalVertexBuffers[0] = orderedVertexBuffer;
 						
-						orderedVertexBuffer = new OrderedVertexBuffer(1, _mainVertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4);
-						_listAdditionalVertexBuffers[1] = orderedVertexBuffer;
+//						orderedVertexBuffer = new OrderedVertexBuffer(1, _mainVertexBuffer, Sprite3D.COLOR_OFFSET, Context3DVertexBufferFormat.FLOAT_4);
+//						_listAdditionalVertexBuffers[1] = orderedVertexBuffer;
 						
-						orderedVertexBuffer = new OrderedVertexBuffer(2, _mainVertexBuffer, Sprite3D.TEXTURE_OFFSET, Context3DVertexBufferFormat.FLOAT_2);
-						_listAdditionalVertexBuffers[2] = orderedVertexBuffer;
+						orderedVertexBuffer = new OrderedVertexBuffer(1, _mainVertexBuffer, 2, Context3DVertexBufferFormat.FLOAT_2);
+						_listAdditionalVertexBuffers[1] = orderedVertexBuffer;
 					}
 				}
 			}
@@ -904,20 +863,18 @@ package molehill.core.render.particles
 				trace('=========');
 				while (_additionalVertexBufferData.bytesAvailable)
 				{
-				trace(
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat(),
-				_additionalVertexBufferData.readFloat()
-				);
+					trace(
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat(),
+						_additionalVertexBufferData.readFloat()
+					);
 				}
 				*/
 				if (_additionalVertexBuffer != null && _lastAdditionalBufferSize < numParticles)
@@ -934,14 +891,14 @@ package molehill.core.render.particles
 					
 					//trace('creating additional buffer for ' + numParticles + ' particles');
 					
-					orderedVertexBuffer = new OrderedVertexBuffer(3, _additionalVertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_4);
+					orderedVertexBuffer = new OrderedVertexBuffer(2, _additionalVertexBuffer, 0, Context3DVertexBufferFormat.FLOAT_4);
+					_listAdditionalVertexBuffers[2] = orderedVertexBuffer;
+					
+					orderedVertexBuffer = new OrderedVertexBuffer(3, _additionalVertexBuffer, 4, Context3DVertexBufferFormat.FLOAT_4);
 					_listAdditionalVertexBuffers[3] = orderedVertexBuffer;
 					
-					orderedVertexBuffer = new OrderedVertexBuffer(4, _additionalVertexBuffer, 4, Context3DVertexBufferFormat.FLOAT_4);
+					orderedVertexBuffer = new OrderedVertexBuffer(4, _additionalVertexBuffer, 8, Context3DVertexBufferFormat.FLOAT_2);
 					_listAdditionalVertexBuffers[4] = orderedVertexBuffer;
-					
-					orderedVertexBuffer = new OrderedVertexBuffer(5, _additionalVertexBuffer, 8, Context3DVertexBufferFormat.FLOAT_3);
-					_listAdditionalVertexBuffers[5] = orderedVertexBuffer;
 				}
 			}
 			
@@ -952,21 +909,29 @@ package molehill.core.render.particles
 			
 			_verticesDataChanged = false;
 			
-			if (_darkenColorData == null)
+			if (_endDarkenColorData == null)
 			{
-				_darkenColorData = new Vector.<Number>();
-				_darkenColorData.length = 4;
-				_darkenColorData.fixed = true;
-				_darkenColorData[3] = 0;
+				_endDarkenColorData = new Vector.<Number>();
+				_endDarkenColorData.length = 4;
+				_endDarkenColorData.fixed = true;
 			}
 			
-			_darkenColorData[0] = _endRedMultiplier - redMultiplier;
-			_darkenColorData[1] = _endGreenMultiplier - greenMultiplier;
-			_darkenColorData[2] = _endBlueMultiplier - blueMultiplier;
+			if (_startDarkenColorData == null)
+			{
+				_startDarkenColorData = new Vector.<Number>();
+				_startDarkenColorData.length = 4;
+				_startDarkenColorData.fixed = true;
+			}
 			
-			//trace(_darkenColorData);
+			_startDarkenColorData[0] = _parentRed * redMultiplier;
+			_startDarkenColorData[1] = _parentGreen * greenMultiplier;
+			_startDarkenColorData[2] = _parentBlue * blueMultiplier;
+			_startDarkenColorData[3] = _parentAlpha * startAlpha;
 			
-			context.setProgramConstantsFromVector(Context3DProgramType.FRAGMENT, 3, _darkenColorData);
+			_endDarkenColorData[0] = _parentRed * (_endRedMultiplier - redMultiplier);
+			_endDarkenColorData[1] = _parentGreen * (_endGreenMultiplier - greenMultiplier);
+			_endDarkenColorData[2] = _parentBlue * (_endBlueMultiplier - blueMultiplier);
+			_endDarkenColorData[3] = _parentAlpha * (_endAlpha - startAlpha);
 			
 			return _listAdditionalVertexBuffers;
 		}
@@ -1058,6 +1023,35 @@ package molehill.core.render.particles
 				_indexBuffer = null;
 				_indexBufferSize = 0;
 			}
+		}
+		
+		private var _listFragmentProgramConstants:Vector.<ProgramConstantsData>; 
+		public function getProgramConstantsData():Vector.<ProgramConstantsData>
+		{
+			if (_listFragmentProgramConstants == null)
+			{
+				_listFragmentProgramConstants = new Vector.<ProgramConstantsData>();
+				_listFragmentProgramConstants.length = 2;
+				_listFragmentProgramConstants .fixed = true;
+				
+				if (_startDarkenColorData == null)
+				{
+					_startDarkenColorData = new Vector.<Number>();
+					_startDarkenColorData.length = 4;
+					_startDarkenColorData.fixed = true;
+				}
+				_listFragmentProgramConstants[0] = new ProgramConstantsData(3, Context3DProgramType.FRAGMENT, _startDarkenColorData);
+				
+				if (_endDarkenColorData == null)
+				{
+					_endDarkenColorData = new Vector.<Number>();
+					_endDarkenColorData.length = 4;
+					_endDarkenColorData.fixed = true;
+				}
+				_listFragmentProgramConstants[1] = new ProgramConstantsData(4, Context3DProgramType.FRAGMENT, _endDarkenColorData);
+			}
+			
+			return _listFragmentProgramConstants;
 		}
 	}
 }
