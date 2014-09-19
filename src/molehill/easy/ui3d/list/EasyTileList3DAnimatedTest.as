@@ -166,7 +166,7 @@ package molehill.easy.ui3d.list
 			_itemsContainerBack.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			super.onAddedToScene();
 			
-			_stage = Application.getInstance().stage;
+			_stage = ApplicationBase.getInstance().stage;
 			var currentFPS:Number = _stage.frameRate;
 			
 			FRICTION = FRICTION_BASE + FRICTION_FPS_COEFF * ((currentFPS - FRICTION_DEFAULT_FPS) / FRICTION_DEFAULT_FPS);
