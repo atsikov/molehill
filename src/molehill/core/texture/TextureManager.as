@@ -531,7 +531,7 @@ package molehill.core.texture
 			if (_hashARFDataByTextureID[textureId] != null)
 			{
 				var arfData:ARFTextureData = _hashARFDataByTextureID[textureId];
-				texture = _context3D.createTexture(arfData.width, arfData.height, Context3DTextureFormat.BGRA, false, Math.min(arfData.numTextures, 7));
+				texture = _context3D.createTexture(arfData.width, arfData.height, Context3DTextureFormat.BGRA, false/*, Math.min(arfData.numTextures, 7)*/);
 				texture.uploadCompressedTextureFromByteArray(arfData.rawATFData, 0, asyncTexturesLoading);
 				
 				_hashCompressedTexturesByARFData[arfData] = texture;
@@ -552,7 +552,7 @@ package molehill.core.texture
 			{
 				var atlas:TextureAtlasBitmapData = _hashAtlasBitmapByTextureID[textureId];
 				var needMipmaps:Boolean = atlas is FontBRFTextureData;
-				texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false, needMipmaps ? 7 : 0);
+				texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false/*, needMipmaps ? 7 : 0*/);
 				texture.uploadFromBitmapData(atlas, 0);
 				
 				_hashTexturesByAtlasBitmap[atlas] = texture;
