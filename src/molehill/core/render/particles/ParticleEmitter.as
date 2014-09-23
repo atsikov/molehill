@@ -491,7 +491,11 @@ package molehill.core.render.particles
 		
 		public function get numTriangles():uint
 		{
-			//trace(_listParticles.length * 2);
+			if (!visible)
+			{
+				return 0;
+			}
+			
 			return _numTotalParticles * 2;
 		}
 		
@@ -662,8 +666,8 @@ package molehill.core.render.particles
 				
 				var firstAddedParticle:LinkedListElement = cursor;
 				
-				var centerX:Number = _x0 + (_x2 - _x0) / 2;
-				var centerY:Number = _y0 + (_y2 - _y0) / 2;
+				var centerX:Number = _parentShiftX + _shiftX;
+				var centerY:Number = _parentShiftY + _shiftY;
 				var width2:Number = Math.abs((_x2 - _x0) / 2);
 				var height2:Number = Math.abs((_y2 - _y0) / 2);
 				
