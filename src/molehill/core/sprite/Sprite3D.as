@@ -300,6 +300,8 @@ package molehill.core.sprite
 			_redMultiplier = value;
 			_colorChanged = true;
 			
+			_darkenColor = (uint(0xFF * _redMultiplier) << 16) + (uint(0xFF * _greenMultiplier) << 8) + uint(0xFF * _blueMultiplier);
+			
 			markChanged(true);
 		}
 		
@@ -324,6 +326,8 @@ package molehill.core.sprite
 			_greenMultiplier = value;
 			_colorChanged = true;
 			
+			_darkenColor = (uint(0xFF * _redMultiplier) << 16) + (uint(0xFF * _greenMultiplier) << 8) + uint(0xFF * _blueMultiplier);
+			
 			markChanged(true);
 		}
 		
@@ -347,6 +351,8 @@ package molehill.core.sprite
 			
 			_blueMultiplier = value;
 			_colorChanged = true;
+			
+			_darkenColor = (uint(0xFF * _redMultiplier) << 16) + (uint(0xFF * _greenMultiplier) << 8) + uint(0xFF * _blueMultiplier);
 			
 			markChanged(true);
 		}

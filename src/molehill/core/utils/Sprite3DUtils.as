@@ -113,6 +113,7 @@ package molehill.core.utils
 			
 			delete rawData['class_name'];
 			delete rawData['textureID'];
+			delete rawData['textureAtlasID'];
 			delete rawData['shader'];
 			delete rawData['custom_animation'];
 			
