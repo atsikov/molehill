@@ -121,6 +121,12 @@ package molehill.easy.ui3d.list
 		
 		/* ANIMATION */
 		
+		private var _lockAnimation:Boolean = false;
+		public function set lockAnimation(value:Boolean):void
+		{
+			_lockAnimation = value;
+		}
+		
 		private var _isAnimated:Boolean = false;
 		private var _lockUpdate:Boolean = false;
 		
@@ -514,7 +520,7 @@ package molehill.easy.ui3d.list
 			if (value < 0)
 				value = 0;
 			
-			if (_stage != null)
+			if (_stage != null && !_lockAnimation)
 			{
 				animatePage(value);
 			}
@@ -699,7 +705,7 @@ package molehill.easy.ui3d.list
 				value = 0;
 			}
 			
-			if (_stage != null)
+			if (_stage != null && !_lockAnimation)
 			{
 				animateItem(value);
 			}
@@ -845,6 +851,11 @@ package molehill.easy.ui3d.list
 		public function set numAdditionalDrawingLines(value:uint):void
 		{
 			_numAdditionalDrawingLines = value;
+		}
+		
+		override public function getItemRendererByIndex(index:int):IEasyItemRenderer
+		{
+			return _listItemRenderers[int(numItemsPerLine + index)];
 		}
 
 		
