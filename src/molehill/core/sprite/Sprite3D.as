@@ -205,9 +205,15 @@ package molehill.core.sprite
 			return _shiftZ;
 		}
 		
+		private var _layerIndex:int = 0;
 		public function get layerIndex():int
 		{
-			return 0;
+			return _layerIndex;
+		}
+		
+		public function set layerIndex(value:int):void
+		{
+			_layerIndex = value;
 		}
 		
 		private var _snapToPixels:Boolean = false;

@@ -1,12 +1,15 @@
 package molehill.core.utils
 {
+	import flash.net.registerClassAlias;
 	import flash.utils.ByteArray;
 	import flash.utils.getDefinitionByName;
 	
 	import molehill.core.animation.CustomAnimationData;
 	import molehill.core.animation.CustomAnimationManager;
+	import molehill.core.render.particles.ParticleEmitter;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
+	import molehill.core.sprite.AnimatedSprite3D;
 	import molehill.core.sprite.CustomAnimatedSprite3D;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
@@ -16,8 +19,20 @@ package molehill.core.utils
 
 	public class Sprite3DUtils
 	{
+		private static var _isInited:Boolean = false;
 		public static function createFromPrefabBytes(rawData:ByteArray):Sprite3DContainer
 		{
+			if (!_isInited)
+			{
+				registerClassAlias("molehill.core.sprite::Sprite3D", Sprite3D);
+				registerClassAlias("molehill.core.sprite::Sprite3DContainer", Sprite3DContainer);
+				registerClassAlias("molehill.core.sprite::AnimatedSprite3D", AnimatedSprite3D);
+				registerClassAlias("molehill.core.sprite::CustomAnimatedSprite3D", CustomAnimatedSprite3D);
+				registerClassAlias("molehill.core.render.particles::ParticleEmitter", ParticleEmitter);
+				
+				_isInited = true;
+			}
+			
 			rawData.position = 0;
 			while (rawData.bytesAvailable)
 			{
