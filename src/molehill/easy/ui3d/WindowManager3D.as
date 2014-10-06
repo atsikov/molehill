@@ -284,7 +284,7 @@ package molehill.easy.ui3d
 		
 		public function alignToRight(popUp:Sprite3D):void
 		{
-			popUp.x = contentRegion.x + contentRegion.width + popUp.width;
+			popUp.x = contentRegion.x + contentRegion.width - popUp.width;
 		}
 		
 		private var _openedWindows:Vector.<Sprite3D> = new Vector.<Sprite3D>();
