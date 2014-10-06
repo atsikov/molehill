@@ -8,10 +8,10 @@ package molehill.easy.ui3d
 	{
 		protected var _label:TextField3D;
 		
-		protected var _normalTextureName:String;
-		protected var _overTextureName:String;
-		protected var _downTextureName:String;
-		protected var _disabledTextureName:String;
+		protected var _normalTextureID:String;
+		protected var _overTextureID:String;
+		protected var _downTextureID:String;
+		protected var _disabledTextureID:String;
 		protected var _rect9Scale:Rectangle;
 		protected var _fillMethod:String = Sprite3D9ScaleFillMethod.STRETCH;
 		
@@ -20,12 +20,12 @@ package molehill.easy.ui3d
 			setButtonTextures();
 			
 			super(
-				_normalTextureName,
+				_normalTextureID,
 				_rect9Scale,
 				_fillMethod,
-				_overTextureName,
-				_downTextureName,
-				_disabledTextureName
+				_overTextureID,
+				_downTextureID,
+				_disabledTextureID
 			);
 			
 			createLabel(label);

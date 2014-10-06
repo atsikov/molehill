@@ -20,7 +20,7 @@ package molehill.core.render.shader.species.mask
 			move(FT2, fragmentDataRegister);
 			setIfEqual(FT2.x, fragmentDataRegister.w, FC0.x);
 			subtract(FT2.z, fragmentDataRegister.w, FT2.x);
-			kill(FT2.x);
+			kill(FT2.z);
 			move(fragmentDataRegister.w, FC0.x);
 			
 			super.writeFragmentOutput(fragmentDataRegister);
