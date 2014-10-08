@@ -1537,26 +1537,49 @@ package molehill.core.sprite
 		 **/
 		public function localToGlobal(point:Point):void
 		{
-			point.x *= _scaleX;
-			point.y *= _scaleY;
+			var localX:Number = point.x;
+			var localY:Number = point.y;
 			
-			point.offset(
-				_parentShiftX + _shiftX * _parentScaleX,
-				_parentShiftY + _shiftY * _parentScaleY
-			);
+			var rad:Number;
 			
-			var cameraOwner:Sprite3D = this;
-			while (cameraOwner != null)
+			var cos:Number;
+			var sin:Number;
+			var dx0:Number;
+			var dy0:Number;
+			var dx:Number;
+			var dy:Number;
+			
+			var spriteParent:Sprite3D = this;
+			while (spriteParent.parent != null)
 			{
-				if (cameraOwner.camera != null)
+				rad = spriteParent._rotation / 180 * Math.PI;
+				
+				cos = rad == 0 ? 1 : Math.cos(rad);
+				sin = rad == 0 ? 0 : Math.sin(rad);
+				
+				dx0 = localX * spriteParent._scaleX;
+				dy0 = localY * spriteParent._scaleY;
+				
+				localX = dx0 * cos - dy0 * sin;
+				localY = dx0 * sin + dy0 * cos;
+				
+				localX += spriteParent._shiftX;
+				localY += spriteParent._shiftY;
+				
+				var currentCamera:CustomCamera = spriteParent.camera;
+				if (currentCamera != null)
 				{
-					point.x *= cameraOwner.camera.scale;
-					point.y *= cameraOwner.camera.scale;
+					localX -= currentCamera.scrollX;
+					localY -= currentCamera.scrollY;
 					
-					point.offset(-cameraOwner.camera.scrollX, -cameraOwner.camera.scrollY);
+					localX *= currentCamera.scale;
+					localY *= currentCamera.scale;
 				}
-				cameraOwner = cameraOwner.parent;
+				
+				spriteParent = spriteParent.parent;
 			}
+			
+			point.setTo(localX, localY);
 		}
 		
 		/**
