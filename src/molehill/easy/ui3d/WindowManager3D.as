@@ -298,6 +298,11 @@ package molehill.easy.ui3d
 			return numWindows > 0;
 		}
 		
+		public function hasWindowOpened(popup:Sprite3D):Boolean
+		{
+			return _openedWindows.indexOf(popup) != -1;
+		}
+		
 		public function hasWindowOpenedByClass(popupClass:Class):Boolean
 		{
 			for (var i:int = 0; i < _openedWindows.length; i++)
