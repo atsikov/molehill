@@ -11,6 +11,8 @@ package molehill.core.text
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
+	import utils.CachingFactory;
+	
 	use namespace molehill_internal;
 	
 	public class TextField3D extends Sprite3DContainer
@@ -25,7 +27,10 @@ package molehill.core.text
 			_width = int.MAX_VALUE;
 			_height = int.MAX_VALUE;
 			
-			_cacheSprites = new Vector.<TextField3DCharacter>();
+			if (_cacheSprites == null)
+			{
+				_cacheSprites = new CachingFactory(TextField3DCharacter, 1000);
+			}
 
 			shader = Shader3DFactory.getInstance().getShaderInstance(
 				Shader3D,
@@ -104,16 +109,7 @@ package molehill.core.text
 		}
 
 		
-		private var _cacheSprites:Vector.<TextField3DCharacter>;
-		private function getCharacterSprite():TextField3DCharacter
-		{
-			if (_cacheSprites.length > 0)
-			{
-				return _cacheSprites.pop();
-			}
-			
-			return new TextField3DCharacter();
-		}
+		protected static var _cacheSprites:CachingFactory;
 		
 		protected var _hashSymbolsByLine:Object;
 		protected var _numLines:uint = 0;
@@ -123,7 +119,7 @@ package molehill.core.text
 		private var _lineHeight:int = 0;
 		private var _numSpaces:int = 0;
 
-		private function updateLayout():void
+		protected function updateLayout():void
 		{
 			var tm:TextureManager = TextureManager.getInstance();
 			
@@ -258,7 +254,7 @@ package molehill.core.text
 				}
 				else
 				{
-					child = getCharacterSprite();
+					child = _cacheSprites.newInstance();
 					super.addChild(child);
 				}
 				
@@ -316,9 +312,8 @@ package molehill.core.text
 			
 			while (numChildren > childIndex)
 			{
-				_cacheSprites.push(
-					super.removeChildAt(numChildren - 1)
-				);
+				var character:TextField3DCharacter = super.removeChildAt(numChildren - 1) as TextField3DCharacter;
+				_cacheSprites.storeInstance(character);
 				
 				treeStructureChanged = true;
 			}
@@ -517,9 +512,19 @@ package molehill.core.text
 			return null;
 		}
 		
+		protected function addChildImplicit(child:Sprite3D):Sprite3D
+		{
+			return super.addChild(child);
+		}
+		
 		override public function addChildAt(child:Sprite3D, index:int):Sprite3D
 		{
 			return null;
+		}
+		
+		protected function addChildAtImplicit(child:Sprite3D, index:int):Sprite3D
+		{
+			return super.addChildAt(child, index);
 		}
 		
 		override public function removeChild(child:Sprite3D):Sprite3D
@@ -527,9 +532,19 @@ package molehill.core.text
 			return null;
 		}
 		
+		protected function removeChildImplicit(child:Sprite3D):Sprite3D
+		{
+			return super.removeChild(child);
+		}
+		
 		override public function removeChildAt(index:int):Sprite3D
 		{
 			return null;
+		}
+		
+		protected function removeChildAtImplicit(index:int):Sprite3D
+		{
+			return super.removeChildAt(index);
 		}
 		
 		override public function getChildAt(index:int):Sprite3D
@@ -537,9 +552,19 @@ package molehill.core.text
 			return null;
 		}
 		
+		protected function getChildAtImplicit(index:int):Sprite3D
+		{
+			return super.getChildAt(index);
+		}
+		
 		override public function getChildByName(childName:String):Sprite3D
 		{
 			return null;
+		}
+		
+		protected function getChildByNameImplicit(childName:String):Sprite3D
+		{
+			return super.getChildByName(childName);
 		}
 		
 		override public function getChildIndex(child:Sprite3D):int
@@ -547,9 +572,19 @@ package molehill.core.text
 			return -1;
 		}
 		
+		protected function getChildIndexImplicit(child:Sprite3D):int
+		{
+			return super.getChildIndex(child);
+		}
+		
 		override public function contains(child:Sprite3D):Boolean
 		{
 			return false;
+		}
+		
+		protected function containsImplicit(child:Sprite3D):Boolean
+		{
+			return super.contains(child);
 		}
 		
 		override public function getObjectsUnderPoint(point:Point, list:Vector.<Sprite3D>=null):Vector.<Sprite3D>
