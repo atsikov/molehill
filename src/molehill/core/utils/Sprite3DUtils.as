@@ -1,5 +1,6 @@
 package molehill.core.utils
 {
+	import flash.geom.Rectangle;
 	import flash.net.registerClassAlias;
 	import flash.utils.ByteArray;
 	import flash.utils.getDefinitionByName;
@@ -15,6 +16,7 @@ package molehill.core.utils
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.ARFTextureData;
 	import molehill.core.texture.BRFTextureData;
+	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 
 	public class Sprite3DUtils
@@ -138,6 +140,29 @@ package molehill.core.utils
 			}
 			
 			return sprite;
+		}
+		
+		/**
+		 * Deflates sprite texture region by dX and dY in pixels
+		 * Use after setTexture()
+		 * width -= 2 * dX;
+		 * height -= 2 * dY;
+		 * x += dX;
+		 * y += dY;
+		 */
+		public static function deflateSpriteTextureRegion(targetSprite:Sprite3D, dX:int, dY:int):void
+		{
+			var tm:TextureManager = TextureManager.getInstance();
+			
+			var textureAtlas:TextureAtlasData = tm.getAtlasDataByTextureID(targetSprite.textureID);
+			
+			var dW:Number = dX / textureAtlas.width;
+			var dH:Number = dY / textureAtlas.height;
+			
+			var deflatedRect:Rectangle = textureAtlas.getTextureRegion(targetSprite.textureID).clone();
+			deflatedRect.inflate(-dW, -dH);
+			
+			targetSprite.textureRegion = deflatedRect;
 		}
 	}
 }
