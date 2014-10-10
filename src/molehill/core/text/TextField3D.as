@@ -29,7 +29,7 @@ package molehill.core.text
 			
 			if (_cacheSprites == null)
 			{
-				_cacheSprites = new CachingFactory(TextField3DCharacter, 1000);
+				_cacheSprites = new CachingFactory(TextField3DCharacter, 10000);
 			}
 
 			shader = Shader3DFactory.getInstance().getShaderInstance(
@@ -352,7 +352,7 @@ package molehill.core.text
 				
 				for (var j:int = lastPlacedChildIndex; j < lastChildIndex; j++)
 				{
-					if (_text.charCodeAt(j + numLineBreaks + _numSpaces) == SPACE_CHARCODE)
+					while (_text.charCodeAt(j + numLineBreaks + _numSpaces) == SPACE_CHARCODE)
 					{
 						if (lastLineWidth > 0)
 						{
