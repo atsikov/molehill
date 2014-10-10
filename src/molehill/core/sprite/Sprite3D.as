@@ -1550,7 +1550,7 @@ package molehill.core.sprite
 			var dy:Number;
 			
 			var spriteParent:Sprite3D = this;
-			while (spriteParent.parent != null)
+			while (spriteParent != null)
 			{
 				rad = spriteParent._rotation / 180 * Math.PI;
 				
@@ -1569,11 +1569,11 @@ package molehill.core.sprite
 				var currentCamera:CustomCamera = spriteParent.camera;
 				if (currentCamera != null)
 				{
-					localX -= currentCamera.scrollX;
-					localY -= currentCamera.scrollY;
-					
 					localX *= currentCamera.scale;
 					localY *= currentCamera.scale;
+					
+					localX -= currentCamera.scrollX;
+					localY -= currentCamera.scrollY;
 				}
 				
 				spriteParent = spriteParent.parent;
