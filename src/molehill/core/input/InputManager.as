@@ -169,6 +169,11 @@ package molehill.core.input
 		}
 		
 		private var _objectsUnderMouse:Dictionary;
+		molehill_input_internal function isObjectUnderMouse(object:InteractiveSprite3D):Boolean
+		{
+			return _objectsUnderMouse[object] != null && _objectsUnderMouse[object];
+		}
+		
 		private function onMouseMove(event:MouseEvent):void
 		{
 			if (_stage.stage == null)
@@ -179,6 +184,16 @@ package molehill.core.input
 			_mouseStageX = event.stageX;
 			_mouseStageY = event.stageY;
 			_mouseCoordsChanged = true;
+		}
+		
+		public function get mouseStageX():int
+		{
+			return _mouseStageX;
+		}
+		
+		public function get mouseStageY():int
+		{
+			return _mouseStageY;
 		}
 		
 		private function onKeyUp(event:KeyboardEvent):void

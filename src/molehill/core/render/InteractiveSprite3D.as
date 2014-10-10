@@ -1,6 +1,7 @@
 package molehill.core.render
 {
 	import flash.events.Event;
+	import flash.geom.Point;
 	import flash.ui.MouseCursor;
 	
 	import molehill.core.events.Input3DMouseEvent;
@@ -219,6 +220,22 @@ package molehill.core.render
 			);
 			
 			return true;
+		}
+		
+		override protected function onRemovedFromScene():void
+		{
+			if (hasEventListener(Input3DMouseEvent.MOUSE_OUT))
+			{
+				var mouseStageX:int = InputManager.getInstance().mouseStageX;
+				var mouseStageY:int = InputManager.getInstance().mouseStageX;
+				
+				var mousePoint:Point = new Point(mouseStageX, mouseStageY);
+				globalToLocal(mousePoint);
+				
+				dispatchEvent(
+					new Input3DMouseEvent(Input3DMouseEvent.MOUSE_OUT, mouseStageX, mouseStageX, mousePoint.x, mousePoint.y, this)
+				);
+			}
 		}
 		
 		override public function addEventListener(type:String, listener:Function, useCapture:Boolean=false, priority:int=0, useWeakReference:Boolean=false):void
