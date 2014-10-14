@@ -1421,6 +1421,7 @@ package molehill.core.sprite
 			return _mask;
 		}
 		
+		private var _unmaskedShader:Shader3D = null;
 		public function set mask(value:Sprite3D):void
 		{
 			if (_scene != null)
@@ -1433,6 +1434,7 @@ package molehill.core.sprite
 				if (value != null)
 				{
 					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
+					_unmaskedShader = shader;
 					shader = Shader3DFactory.getInstance().getShaderInstance(MaskedObjectShader);
 				}
 			}
@@ -1440,7 +1442,7 @@ package molehill.core.sprite
 			if (value == null && _mask != null)
 			{
 				_mask.shader = null;
-				shader = null;
+				shader = _unmaskedShader;
 			}
 			
 			_mask = value;
@@ -1467,6 +1469,7 @@ package molehill.core.sprite
 				if (value != null && Scene3DManager.getInstance().renderEngine != null)
 				{
 					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
+					_unmaskedShader = shader;
 					shader = Shader3DFactory.getInstance().getShaderInstance(CutoutObjectShader);
 				}
 			}
@@ -1474,7 +1477,7 @@ package molehill.core.sprite
 			if (value == null && _cutout != null)
 			{
 				_cutout.shader = null;
-				shader = null;
+				shader = _unmaskedShader;
 			}
 			
 			_cutout = value;

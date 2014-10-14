@@ -576,19 +576,22 @@ package molehill.core.texture
 					scaleTransform.scale(0.5, 0.5);
 					
 					var mipLevel:int = 1;
-					var mipImage:BitmapData = new BitmapData(mipWidth, mipHeight, true, 0x00000000);
 					
 					while (mipWidth > 0 && mipHeight > 0)
 					{
+						var mipImage:BitmapData = new BitmapData(mipWidth, mipHeight, true, 0x00000000);
+						
 						mipImage.draw(atlas, scaleTransform, null, null, null, true);
 						texture.uploadFromBitmapData(mipImage, mipLevel);
+						trace(mipLevel + " mip level uploaded; texture size: " + mipWidth + " x " + mipHeight);
+						
 						scaleTransform.scale(0.5, 0.5);
 						mipLevel++;
 						mipWidth >>= 1;
 						mipHeight >>= 1;
+						
+						mipImage.dispose();
 					}
-					
-					mipImage.dispose();
 				}
 				
 				return true;

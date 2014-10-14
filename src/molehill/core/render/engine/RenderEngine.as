@@ -15,6 +15,8 @@ package molehill.core.render.engine
 	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
+	import flash.utils.getDefinitionByName;
+	import flash.utils.getQualifiedClassName;
 	
 	import molehill.core.molehill_internal;
 	import molehill.core.render.BlendMode;
@@ -448,12 +450,17 @@ package molehill.core.render.engine
 					}
 				}
 				
+				var premultAlpha:Boolean = !isCompressed && !toBitmapData
 				var currentShader:Shader3D = chunkData.shader;
 				if (currentShader == null)
 				{
 					var isCompressed:Boolean = tm.textureIsCompressed(chunkData.texture);
-					var premultAlpha:Boolean = !isCompressed && !toBitmapData
 					currentShader = shaderFactory.getShaderInstance(Shader3D, premultAlpha);
+				}
+				else
+				{
+					var shaderClass:Class = getDefinitionByName(getQualifiedClassName(currentShader)) as Class;
+					currentShader = shaderFactory.getShaderInstance(shaderClass, premultAlpha, currentShader.textureReadParams);
 				}
 				
 				var additionalVertexBuffers:Vector.<OrderedVertexBuffer> = chunkData.additionalVertexBuffers;
