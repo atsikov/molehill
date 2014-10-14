@@ -583,7 +583,6 @@ package molehill.core.texture
 						
 						mipImage.draw(atlas, scaleTransform, null, null, null, true);
 						texture.uploadFromBitmapData(mipImage, mipLevel);
-						trace(mipLevel + " mip level uploaded; texture size: " + mipWidth + " x " + mipHeight);
 						
 						scaleTransform.scale(0.5, 0.5);
 						mipLevel++;
