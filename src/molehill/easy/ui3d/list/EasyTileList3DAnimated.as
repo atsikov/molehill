@@ -35,6 +35,7 @@ package molehill.easy.ui3d.list
 			mouseEnabled = false;
 			
 			_scrollingMask = new Sprite3D();
+			_scrollingMask.mouseEnabled = true;
 			_scrollingMask.setTexture(FormsTextures.bg_blue_plate);
 			addChild(_scrollingMask);
 			
