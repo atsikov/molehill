@@ -450,11 +450,12 @@ package molehill.core.render.engine
 					}
 				}
 				
-				var premultAlpha:Boolean = !isCompressed && !toBitmapData
+				var isCompressed:Boolean = tm.textureIsCompressed(chunkData.texture);
+				var premultAlpha:Boolean = !isCompressed && !toBitmapData;
+				
 				var currentShader:Shader3D = chunkData.shader;
 				if (currentShader == null)
 				{
-					var isCompressed:Boolean = tm.textureIsCompressed(chunkData.texture);
 					currentShader = shaderFactory.getShaderInstance(Shader3D, premultAlpha);
 				}
 				else
