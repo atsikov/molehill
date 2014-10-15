@@ -27,16 +27,15 @@ package molehill.easy.ui3d.list
 	{
 		private var _itemsContainer:UIComponent3D;
 		private var _itemsContainerCamera:CustomCamera;
-		private var _scrollingMask:InteractiveSprite3D;
+		private var _scrollingMask:Sprite3D;
 		public function EasyTileList3DAnimated()
 		{
 			super();
 			
-			mouseEnabled = true;
+			mouseEnabled = false;
 			
-			_scrollingMask = new InteractiveSprite3D();
+			_scrollingMask = new Sprite3D();
 			_scrollingMask.setTexture(FormsTextures.bg_blue_plate);
-			_scrollingMask.mouseEnabled = true;
 			addChild(_scrollingMask);
 			
 			_itemsContainerCamera = new CustomCamera();
@@ -48,6 +47,11 @@ package molehill.easy.ui3d.list
 			_maskRect = new Rectangle();
 			
 			_itemsContainer.mask = _scrollingMask;
+		}
+		
+		public function set backgroundMouseEnabled(value:Boolean):void
+		{
+			_scrollingMask.mouseEnabled = value;
 		}
 		
 		private var _maskRect:Rectangle;
@@ -948,32 +952,6 @@ package molehill.easy.ui3d.list
 				
 			}
 			
-			/*
-			while (_listFreeItemRenderers.length > 0)
-			{
-			itemRenderer = _listFreeItemRenderers.shift();
-			if (itemRenderer == null)
-			continue;
-			
-			freeItemRenderer(itemRenderer);
-			}
-			
-			freeAllEmptyItemRenderers();
-			
-			if (_showEmptyCells)
-			{
-			viewColumn++;
-			for (; viewRow < rowCount; viewRow++, viewColumn = 0)
-			{
-			for (; viewColumn < columnCount; viewColumn++)
-			{
-			itemRenderer = getEmptyItemRenderer();
-			(itemRenderer as Sprite3D).moveTo(viewColumn * (_columnWidth + _columnsGap), viewRow * (_rowHeight + _rowsGap));
-			}
-			}
-			}
-			*/
-			
 			_scrollingMask.visible = numItems > 0;
 			
 			if (_updateCallback != null)
@@ -981,43 +959,6 @@ package molehill.easy.ui3d.list
 				_updateCallback();
 			}
 		}
-		
-		private var _gradientBorderEnabled:Boolean = false;
-		
-		
-		/** Enables gradient mask on borders of list;
-		 * It would move list on gradientBorderSize, which is equals to columnsGap/rowsGap by default
-		 */
-		/*
-		public function set gradientBorderEnabled(value:Boolean):void
-		{
-			_gradientBorderEnabled = value;
-			
-			blendMode = _gradientBorderEnabled ? BlendMode.LAYER : BlendMode.NORMAL;
-			
-			if (_gradientBorderEnabled)
-			{
-				
-			}
-			else
-			{
-				_itemsContainer.graphics.clear();
-			}
-			
-			updateMaskRect();
-		}
-		
-		
-		private var _gradientBorderSize:Number = 0;
-
-		/** size of gradient borders, if set to zero - columnsGap/rowsGap would be used (default 0) *
-		public function set gradientBorderSize(value:Number):void
-		{
-			_gradientBorderSize = Math.max(0, value);
-			
-			updateMaskRect();
-		}
-		*/
 		
 		/* scroll rect update */
 		
