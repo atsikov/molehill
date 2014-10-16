@@ -34,7 +34,6 @@ package molehill.core.render.shader.species
 			
 			// time.xyz = life time, life progress, life time ^ 2
 			var time:ShaderRegister = VT1;
-			//move(time, VC4);
 			
 			subtract(time.x, currentTimer, appearTime);
 			divide(time.y, time.x, lifeTime);
@@ -63,36 +62,11 @@ package molehill.core.render.shader.species
 			
 			multiplyVectorMatrix(position, position, VC0);
 			move(V0, VA1);
-			///move(V1, VA2);
 			
 			multiply(time.w, time.y, time.y);
 			move(V2, time);
-			//move(V3, VA4);
 			
 			move(OP, position);
-//			
-//			var code:String =
-//				// traveled distance = speed + accel
-//				"add vt2.xy, vt2.xy, vt2.zw\n" +
-//				
-//				"mov vt0, va0\n" +
-//				// position + initial offset
-//				"add vt0.xy, vt0.xy, va3.xy\n" +
-//				
-//				// position + traveled distance
-//				"add vt0.xy, vt0.xy, vt2.xy\n" +
-//				
-//				"m44 vt0, vt0, vc0\n" +
-//				"mov v0, va1\n" +
-//				"mov v1, va2\n" +
-//				
-//				"mul vt1.w, vt1.y, vt1.y\n" +
-//				// x - lived for (secs), y - life progress, z - time^2 (secs), w - life progress^2
-//				"mov v2, vt1\n" +
-//				
-//				"mov op, vt0\n";
-//			
-//			return code;
 		}
 		
 		override protected function prepareFragmentShader():void
@@ -104,15 +78,9 @@ package molehill.core.render.shader.species
 			// x - lived for (secs), y - life progress, z - time^2 (secs), w - life progress^2
 			var time:ShaderRegister = V2;
 			
-			//move(fragmentColor, FC3);
-			//add(fragmentColor, fragmentColor, FC4);
-			//move(fragmentColor.w, V3.z);
 			multiply(fragmentColor, FC4, time.yyyy);
 			add(fragmentColor, fragmentColor, FC3);
 			
-			//writeFragmentOutput(FC3);
-			
-			//multiply(fragmentColor, fragmentColor, V0);
 			if ((_textureReadParams & TEXTURE_DONT_USE_TEXTURE) > 0)
 			{
 				writeFragmentOutput(fragmentColor);
@@ -123,17 +91,7 @@ package molehill.core.render.shader.species
 				writeFragmentOutput(outputColor);
 			}
 		}
-		/*
-		override protected function writeFragmentOutput(fragmentDataRegister:ShaderRegister):void
-		{
-			move(FT2, V3);
-			multiply(FT2.z, FT2.z, V2.y);
-			multiply(FT2.z, FT2.z, fragmentDataRegister.w);
-			add(fragmentDataRegister.w, fragmentDataRegister.w, FT2.z);
-			
-			super.writeFragmentOutput(fragmentDataRegister);
-		}
-		*/
+		
 		private var _vc4:Vector.<Number>;
 		override public function prepareContext(context3D:Context3D):void
 		{
