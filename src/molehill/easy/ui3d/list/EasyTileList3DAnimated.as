@@ -27,14 +27,14 @@ package molehill.easy.ui3d.list
 	{
 		private var _itemsContainer:UIComponent3D;
 		private var _itemsContainerCamera:CustomCamera;
-		private var _scrollingMask:Sprite3D;
+		private var _scrollingMask:InteractiveSprite3D;
 		public function EasyTileList3DAnimated()
 		{
 			super();
 			
 			mouseEnabled = false;
 			
-			_scrollingMask = new Sprite3D();
+			_scrollingMask = new InteractiveSprite3D();
 			_scrollingMask.mouseEnabled = true;
 			_scrollingMask.setTexture(FormsTextures.bg_blue_plate);
 			addChild(_scrollingMask);
