@@ -495,6 +495,8 @@ package molehill.core.render
 						
 						var topCandidate:Number;
 						var bottomCandidate:Number;
+						var leftCandidate:Number;
+						var rightCandidate:Number;
 						if (sprite._vertexY0 > sprite._vertexY1)
 						{
 							topCandidate = sprite._vertexY1;
@@ -504,6 +506,16 @@ package molehill.core.render
 						{
 							topCandidate = sprite._vertexY0;
 							bottomCandidate = sprite._vertexY1;
+						}
+						if (sprite._vertexX0 < sprite._vertexX2)
+						{
+							leftCandidate = sprite._vertexX0;
+							rightCandidate = sprite._vertexX2;
+						}
+						else
+						{
+							leftCandidate = sprite._vertexX2;
+							rightCandidate = sprite._vertexX0;
 						}
 						
 						if (_top > topCandidate)
@@ -515,13 +527,13 @@ package molehill.core.render
 							_bottom = bottomCandidate;
 						}
 						
-						if (_left > sprite._vertexX0)
+						if (_left > leftCandidate)
 						{
-							_left = sprite._vertexX0;
+							_left = leftCandidate;
 						}
-						if (_right < sprite._vertexX2)
+						if (_right < rightCandidate)
 						{
-							_right = sprite._vertexX2;
+							_right = rightCandidate;
 						}
 						
 						sprite.markChanged(false);
