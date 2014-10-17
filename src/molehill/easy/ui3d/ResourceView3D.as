@@ -197,6 +197,16 @@ package molehill.easy.ui3d
 			_content.scaleX = value;
 		}
 		
+		override public function get scaleX():Number
+		{
+			if (_content == null)
+			{
+				return 1;
+			}
+			
+			return _content.scaleX;
+		}
+		
 		override public function set scaleY(value:Number):void
 		{
 			if (_content == null)
@@ -205,6 +215,16 @@ package molehill.easy.ui3d
 			}
 			
 			_content.scaleY = value;
+		}
+		
+		override public function get scaleY():Number
+		{
+			if (_content == null)
+			{
+				return 1;
+			}
+			
+			return _content.scaleY;
 		}
 	}
 }
