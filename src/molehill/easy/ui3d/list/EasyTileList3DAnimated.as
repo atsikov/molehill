@@ -53,6 +53,14 @@ package molehill.easy.ui3d.list
 		public function set backgroundMouseEnabled(value:Boolean):void
 		{
 			_scrollingMask.mouseEnabled = value;
+			if (value)
+			{
+				_scrollingMask.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			}
+			else
+			{
+				_scrollingMask.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			}
 		}
 		
 		private var _maskRect:Rectangle;
