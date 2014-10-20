@@ -19,6 +19,7 @@ package molehill.easy.ui3d.list
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.sprite.Sprite3D;
 	
+	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
 	
 	import tempire.model.types.textures.FormsTextures;
@@ -116,7 +117,7 @@ package molehill.easy.ui3d.list
 		private var _mouseScrollShortListLock:Boolean = false;
 		
 		/** set to true to disable mouse scrolling, when numItems < numItemsPerPage */
-		public function set mouseScrollShortListLock(value:Boolean):void
+		public function set lockMouseScrollShortList(value:Boolean):void
 		{
 			_mouseScrollShortListLock = value;
 		}
@@ -533,6 +534,19 @@ package molehill.easy.ui3d.list
 			if (value < 0)
 				value = 0;
 			
+			if (_isAnimated)
+			{
+				_lockUpdate = false;
+				onAnimationCompleted();
+				if (_pageAnimation != null)
+				{
+					_pageAnimation.stop();
+				}
+				_itemsContainerCamera.scrollX = 0;
+				_itemsContainerCamera.scrollY = 0;
+				update();
+			}
+			
 			if (_stage != null && !_lockAnimation)
 			{
 				animatePage(value);
@@ -554,7 +568,7 @@ package molehill.easy.ui3d.list
 			_lockMoreThanOnePageAnimation = value;
 		}
 
-		
+		private var _pageAnimation:IPlayable;
 		private function animatePage(value:int):void
 		{
 			if (_velocity != 0)
@@ -594,7 +608,7 @@ package molehill.easy.ui3d.list
 				
 				update();
 				
-				OpenTween.go(
+				_pageAnimation = OpenTween.go(
 					_itemsContainerCamera,
 					{
 						scrollX : 0,
@@ -649,7 +663,7 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			OpenTween.go(
+			_pageAnimation = OpenTween.go(
 				_itemsContainerCamera,
 				props,
 				PAGE_ANIMATION_DURATION / 2,
@@ -692,7 +706,7 @@ package molehill.easy.ui3d.list
 				}
 			}
 			
-			OpenTween.go(
+			_pageAnimation = OpenTween.go(
 				_itemsContainerCamera,
 				{
 					scrollX : 0,
@@ -716,6 +730,19 @@ package molehill.easy.ui3d.list
 			if (value < 0)
 			{
 				value = 0;
+			}
+			
+			if (_isAnimated)
+			{
+				_lockUpdate = false;
+				onAnimationCompleted();
+				if (_pageAnimation != null)
+				{
+					_pageAnimation.stop();
+				}
+				_itemsContainerCamera.scrollX = 0;
+				_itemsContainerCamera.scrollY = 0;
+				update();
 			}
 			
 			if (_stage != null && !_lockAnimation)
@@ -786,7 +813,7 @@ package molehill.easy.ui3d.list
 			_scrollPosition = _direction == Direction.HORIZONTAL ? value * columnCount : value * rowCount;
 			_scrollPosition = Math.min(scrollPositionMax, _scrollPosition);
 			
-			OpenTween.go(
+			_pageAnimation = OpenTween.go(
 				_itemsContainerCamera,
 				props,
 				PAGE_ANIMATION_DURATION,
