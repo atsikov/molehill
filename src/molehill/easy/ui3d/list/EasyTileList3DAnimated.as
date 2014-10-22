@@ -886,11 +886,18 @@ package molehill.easy.ui3d.list
 			_updateCallback = value;
 		}
 		
-		private var _numAdditionalDrawingLines:uint = 0;
+		private var _numAdditionalLinesAfter:uint = 0;
 
-		public function set numAdditionalDrawingLines(value:uint):void
+		public function set numAdditionalLinesAfter(value:uint):void
 		{
-			_numAdditionalDrawingLines = value;
+			_numAdditionalLinesAfter = value;
+		}
+		
+		private var _numAdditionalLinesBefore:uint = 0;
+
+		public function set numAdditionalLinesBefore(value:uint):void
+		{
+			_numAdditionalLinesBefore = value;
 		}
 		
 		override public function getItemRendererByIndex(index:int):IEasyItemRenderer
@@ -916,8 +923,11 @@ package molehill.easy.ui3d.list
 				_scrollPosition = maxScrollPosition;
 			}
 			
-			var dataBeginIdx:int = _scrollPosition - numItemsPerLine;
-			var numAdditionalLinesCoeff:uint = 2 + _numAdditionalDrawingLines;
+			var dataBeginIdx:int = _scrollPosition - (numItemsPerLine + _numAdditionalLinesBefore);
+			
+			//2 for default lines before and after list
+			var numAdditionalLinesCoeff:uint = 2 + _numAdditionalLinesBefore + _numAdditionalLinesAfter;
+			
 			var dataEndIdx:int = dataBeginIdx + numItemsPerPage + numItemsPerLine * numAdditionalLinesCoeff;
 			
 			var numItems:int = this.numItems;
@@ -942,13 +952,13 @@ package molehill.easy.ui3d.list
 				switch (_direction)
 				{
 					case Direction.HORIZONTAL:
-						viewRow		= Math.floor((i - dataBeginIdx) / columnCount) - 1;
+						viewRow		= Math.floor((i - dataBeginIdx) / columnCount) - (1 + _numAdditionalLinesBefore);
 						viewColumn	= (i - dataBeginIdx) % columnCount;
 						break;
 					
 					case Direction.VERTICAL:
 						viewRow		= (i - dataBeginIdx) % rowCount;
-						viewColumn	= Math.floor((i - dataBeginIdx) / rowCount) - 1;
+						viewColumn	= Math.floor((i - dataBeginIdx) / rowCount) - (1 + _numAdditionalLinesBefore);
 						break;
 				}
 				
