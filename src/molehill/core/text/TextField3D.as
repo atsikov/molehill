@@ -54,6 +54,15 @@ package molehill.core.text
 		private var _spaceWidth:int = 5;
 		public function set defaultTextFormat(value:TextField3DFormat):void
 		{
+			if (_fontName == value.font &&
+				darkenColor == value.color &&
+				_align == value.align &&
+				_fontSize == value.size &&
+				_leading == value.leading)
+			{
+				return;
+			}
+			
 			_fontName = value.font;
 			darkenColor = value.color;
 			_align = value.align;
