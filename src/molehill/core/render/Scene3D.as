@@ -138,7 +138,16 @@ package molehill.core.render
 			globalTraceString += '\n-----------------\n';
 			globalTraceString += ObjectUtils.traceTree(_bacthingTree);
 			globalTraceString += '\n-----------------\n';
-			globalTraceString += ObjectUtils.traceObject(_listSpriteBatchers);
+			
+			for (var i:int = 0; i < _listSpriteBatchers.length; i++)
+			{
+				globalTraceString += "[" + i + "]  " + _listSpriteBatchers[i] + "\n";
+				if (_listSpriteBatchers[i] is SpriteBatcher)
+				{
+					globalTraceString += (_listSpriteBatchers[i] as SpriteBatcher).traceChildren() + "\n\n";
+				}
+			}
+			
 			globalTraceString += '\n================================\n\n';
 			
 			DebugLogger.writeExternalLog(globalTraceString);
@@ -648,7 +657,7 @@ package molehill.core.render
 					batchingInfo.child.addedToScene = false;
 					if (batcher != null)
 					{
-						batcher.removeChild(batchingInfo.child);
+						batcher.removeChild(batchingInfo.child, _lastBatchedChild);
 						if (batcher.numSprites <= 0)
 						{
 							var index:int = _listSpriteBatchers.indexOf(batcher);

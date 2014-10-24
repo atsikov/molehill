@@ -189,12 +189,25 @@ package molehill.core.render
 			return _listSprites.tail == null ? (_listSprites.head == null ? null : _listSprites.head.data as Sprite3D) : _listSprites.tail.data as Sprite3D;
 		}
 		
-		internal function removeChild(sprite:Sprite3D):void
+		internal function removeChild(sprite:Sprite3D, searchAfter:Sprite3D = null):void
 		{
 			var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(sprite.textureID);
 			//trace(StringUtils.getObjectAddress(this) + ' | ' + _textureAtlasID + ' - -> ' + StringUtils.getObjectAddress(sprite) + ' | ' + sprite.textureID + ' | ' + (atlas == null ? 'null' : atlas.atlasID));
 			
 			var cursor:LinkedListElement = _listSprites.head;
+			if (searchAfter != null)
+			{
+				while (cursor != null && cursor.data !== searchAfter)
+				{
+					cursor = cursor.next;
+				}
+				
+				if (cursor == null)
+				{
+					cursor = _listSprites.head;
+				}
+			}
+			
 			while (cursor != null && cursor.data != sprite)
 			{
 				cursor = cursor.next;
@@ -838,6 +851,19 @@ package molehill.core.render
 				"\tlastChild: " + (_listSprites.tail != null ? _listSprites.tail.data : "null") + "\n" +
 				"\tcameraOwner: " + _cameraOwner + "\n" +
 				"\tshader: " + _shader + "\n";
+		}
+		
+		public function traceChildren():String
+		{
+			var result:String = "";
+			var cursor:LinkedListElement = _listSprites.head; 
+			while (cursor != null)
+			{
+				result += cursor.data.toString() + "\n";
+				cursor = cursor.next;
+			}
+			
+			return result;
 		}
 		
 		public function getProgramConstantsData():Vector.<ProgramConstantsData>
