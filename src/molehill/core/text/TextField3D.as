@@ -323,6 +323,7 @@ package molehill.core.text
 			while (numChildren > childIndex)
 			{
 				var character:TextField3DCharacter = super.removeChildAt(numChildren - 1) as TextField3DCharacter;
+				character.resetSpriteProperties();
 				_cacheSprites.storeInstance(character);
 				
 				treeStructureChanged = true;

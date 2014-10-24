@@ -13,6 +13,7 @@ package molehill.core.sprite
 	import molehill.core.molehill_internal;
 	import molehill.core.render.BlendMode;
 	import molehill.core.render.Scene3D;
+	import molehill.core.render.UIComponent3D;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3D;
@@ -884,6 +885,13 @@ package molehill.core.sprite
 		 **/
 		public function resetSprite():void
 		{
+			resetSpriteProperties();
+			
+			markChanged(true);
+		}
+		
+		molehill_internal function resetSpriteProperties():void
+		{
 			_shiftX = 0;
 			_shiftY = 0;
 			_croppedWidth = 1;
@@ -929,8 +937,9 @@ package molehill.core.sprite
 			_width = 0;
 			_height = 0;
 			
-			_visibilityChanged = !_visible;
+			_visibilityChanged = true;
 			_visible = true;
+			_parentVisible = true;
 			
 			_mask = null;
 			_cutout = null;
@@ -946,8 +955,6 @@ package molehill.core.sprite
 			
 			_textureRegion = null;
 			currentAtlasData = null;
-			
-			markChanged(true);
 		}
 		
 		/**
@@ -1296,7 +1303,7 @@ package molehill.core.sprite
 		
 		molehill_internal var _textureChanged:Boolean = false;
 		
-		molehill_internal var _visibilityChanged:Boolean = false;
+		molehill_internal var _visibilityChanged:Boolean = true;
 		molehill_internal function resetVisibilityChanged():void
 		{
 			_visibilityChanged = false;
@@ -1529,7 +1536,7 @@ package molehill.core.sprite
 		override public function toString():String
 		{
 			var className:String = getQualifiedClassName(this);
-			return className + " @ " + StringUtils.getObjectAddress(this) + " texture: " + textureID + "; shader: " + shader;
+			return className + " @ " + StringUtils.getObjectAddress(this) + (this is UIComponent3D ? "[UI]" : "")  + " texture: " + textureID + "; shader: " + shader;
 		}
 		
 		/**

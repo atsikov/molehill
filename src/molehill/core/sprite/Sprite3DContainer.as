@@ -667,33 +667,27 @@ package molehill.core.sprite
 		
 		override public function set visible(value:Boolean):void
 		{
-			if (_visible == value)
-			{
-				return;
-			}
-			
 			super.visible = value;
+			
+			var currentVisibility:Boolean = visible;
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
-				child._visibilityChanged ||= _visibilityChanged;
+				//child._visibilityChanged ||= _visibilityChanged;
 				
-				child.parentVisible = value;
+				child.parentVisible = currentVisibility;
 			}
 		}
 		
 		override molehill_internal function set parentVisible(value:Boolean):void
 		{
-			if (_parentVisible == value)
-			{
-				return;
-			}
-			
 			super.parentVisible = value;
+			
+			var currentVisibility:Boolean = visible;
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
-				child.parentVisible = visible && value;
+				child.parentVisible = currentVisibility;
 			}
 		}
 		
