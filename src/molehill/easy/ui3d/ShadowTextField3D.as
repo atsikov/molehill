@@ -74,6 +74,12 @@ package molehill.easy.ui3d
 			_shadow.height = value;
 		}
 		
+		override public function set convertLineBreaks(value:Boolean):void
+		{
+			super.convertLineBreaks = value;
+			_shadow.convertLineBreaks = value;
+		}
+		
 		override public function set wordWrap(value:Boolean):void
 		{
 			super.wordWrap = value;
