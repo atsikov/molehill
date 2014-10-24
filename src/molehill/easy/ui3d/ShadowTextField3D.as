@@ -62,6 +62,24 @@ package molehill.easy.ui3d
 			_shadow.text = value;
 		}
 		
+		override public function set width(value:Number):void
+		{
+			super.width = value;
+			_shadow.width = value;
+		}
+		
+		override public function set height(value:Number):void
+		{
+			super.height = value;
+			_shadow.height = value;
+		}
+		
+		override public function set wordWrap(value:Boolean):void
+		{
+			super.wordWrap = value;
+			_shadow.wordWrap = value;
+		}
+		
 		override protected function updateLayout():void
 		{
 			removeChildImplicit(_shadow);
