@@ -1095,6 +1095,21 @@ package molehill.core.sprite
 			_mouseEnabled = value;
 		}
 		
+		private var _mouseTransparent:Boolean = false;
+		/**
+		 * Determines if object is checked against mouse point.<br>
+		 * If set to container children won't be tested against mouse too. 
+		 **/
+		public function get mouseTransparent():Boolean
+		{
+			return _mouseTransparent;
+		}
+		
+		public function set mouseTransparent(value:Boolean):void
+		{
+			_mouseTransparent = value;
+		}
+		
 		/**
 		 * Basic function to check if point is inside sprite rect.
 		 **/

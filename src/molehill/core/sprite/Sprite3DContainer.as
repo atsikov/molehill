@@ -144,10 +144,6 @@ package molehill.core.sprite
 			_hashNodesByChild[child] = node;
 			_listChildren.push(child);
 			_numChildren++;
-			if (!(child is Sprite3DContainer)) 
-			{
-				_numSimpleChildren++;
-			}
 			treeStructureChanged = true;
 			
 			if (_scene != null)
@@ -214,10 +210,6 @@ package molehill.core.sprite
 			}
 			_hashNodesByChild[child] = node;
 			_numChildren++;
-			if (!(child is Sprite3DContainer)) 
-			{
-				_numSimpleChildren++;
-			}
 			treeStructureChanged = true;
 			
 			if (_scene != null)
@@ -552,10 +544,6 @@ package molehill.core.sprite
 			
 			delete _hashNodesByChild[child];
 			_numChildren--;
-			if (!(child is Sprite3DContainer)) 
-			{
-				_numSimpleChildren--;
-			}
 			treeStructureChanged = true;
 			
 			if (child.parentMinXNode != null)
@@ -623,10 +611,6 @@ package molehill.core.sprite
 			
 			delete _hashNodesByChild[child];
 			_numChildren--;
-			if (!(child is Sprite3DContainer)) 
-			{
-				_numSimpleChildren--;
-			}
 			treeStructureChanged = true;
 			
 			if (child.parentMinXNode != null)
@@ -653,8 +637,6 @@ package molehill.core.sprite
 		}
 		
 		private var _numChildren:uint = 0;
-		private var _numSimpleChildren:uint = 0;
-		// number of all child instances, both Sprites and Containers
 		public function get children():Vector.<Sprite3D>
 		{
 			return _listChildren;
@@ -794,6 +776,12 @@ package molehill.core.sprite
 			return false;
 		}
 		
+		/**
+		 * Returns list of children that intersect with specified point
+		 * 
+		 * @param point Point which children need to be tested against
+		 * @param list List to be filled with suitable children. New vector will be created if null was passed.
+		 **/
 		public function getObjectsUnderPoint(point:Point, list:Vector.<Sprite3D> = null):Vector.<Sprite3D>
 		{
 			var childrenUnderPoint:Vector.<Sprite3D> = list == null ? new Vector.<Sprite3D>() : list;
@@ -810,7 +798,12 @@ package molehill.core.sprite
 			{
 				var child:Sprite3D = _listChildren[i];
 				
-				if (child is Sprite3DContainer && (child.scene == null || !child.scene.isActive))
+				if (child.scene == null || !child.scene.isActive)
+				{
+					continue;
+				}
+				
+				if (child.mouseTransparent)
 				{
 					continue;
 				}
