@@ -3,6 +3,7 @@ package molehill.easy.ui3d
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Loader;
+	import flash.display.LoaderInfo;
 	import flash.display.Shape;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
@@ -16,7 +17,13 @@ package molehill.easy.ui3d
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureAtlasData;
-	import molehill.core.texture.TextureManager;	
+	import molehill.core.texture.TextureManager;
+	
+	import resources.Resource;
+	import resources.ResourceFactory;
+	import resources.ResourceTypes;
+	import resources.events.ResourceEvent;
+	import resources.species.BitmapResource;
 	
 	public class Photo3D extends Sprite3DContainer
 	{
@@ -38,7 +45,7 @@ package molehill.easy.ui3d
 		
 		private var _photo:Sprite3D;
 		private var _photoTextureId:String;
-		private var _photoLoader:Loader;
+		private var _photoLoader:BitmapResource;
 		
 		private var _border:Shape;
 		
@@ -63,6 +70,8 @@ package molehill.easy.ui3d
 			_pictureHeight = pictureHeight;
 			_noSpace = noSpace;
 			
+			uiHasDynamicTexture = true;
+			
 			loadPhoto(url);
 		}
 		
@@ -78,9 +87,9 @@ package molehill.easy.ui3d
 				return;
 			
 			_photoURL = url;
-			_photoTextureId = "photo_" + _photoURL.replace(/[\/\:\.\?\&]/g, '_');
+			_photoTextureId = _photoURL != null ? "photo_" + _photoURL.replace(/[\/\:\.\?\&]/g, '_') : null;
 			
-			if (TextureManager.getInstance().isTextureCreated(_photoTextureId))
+			if (_photoTextureId != null && TextureManager.getInstance().isTextureCreated(_photoTextureId))
 			{
 				if (_photo == null)
 				{
@@ -89,6 +98,7 @@ package molehill.easy.ui3d
 				}
 				_photo.setTexture(_photoTextureId);
 				
+				_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
 				sizePhoto();
 				return;
 			}
@@ -99,30 +109,18 @@ package molehill.easy.ui3d
 				return;
 			}
 			
-			if (_photoLoader == null)
+			if (_photoLoader != null)
 			{
-				_photoLoader = new Loader();
+				_photoLoader.removeEventListener(ResourceEvent.READY, onPhotoLoadSuccess);
+				_photoLoader.removeEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
 			}
 			
-			_photoLoader.scaleX = 1.0;
-			_photoLoader.scaleY = 1.0;
-			_photoLoader.contentLoaderInfo.addEventListener(Event.COMPLETE, onPhotoLoadSuccess);
-			_photoLoader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, onPhotoLoadError);
-			_photoLoader.contentLoaderInfo.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onPhotoLoadError);
+			_photoLoader = ResourceFactory.getInstance().getResource(_photoURL, 0, false, ResourceTypes.BITMAP) as BitmapResource;
 			
-			try
-			{
-				_photoLoader.load(
-					new URLRequest(url),
-					new LoaderContext(
-						true
-					)
-				);
-			}
-			catch (e:Error)
-			{
-				useNoPhotoStub();
-			}
+			_photoLoader.addEventListener(ResourceEvent.READY, onPhotoLoadSuccess);
+			_photoLoader.addEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
+			
+			_photoLoader.load();
 		}
 		
 		private function useNoPhotoStub():void
@@ -139,6 +137,17 @@ package molehill.easy.ui3d
 					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 				addChild(_photo);
+			}
+			else
+			{
+				if (_emptyPhotoTextureID != null)
+				{
+					_photo.setTexture(_emptyPhotoTextureID);
+				}
+				else
+				{
+					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+				}
 			}
 			sizePhoto();
 		}
@@ -225,16 +234,20 @@ package molehill.easy.ui3d
 			}
 		}
 
-		private function onPhotoLoadSuccess(e:Event):void
-		{	
-			_photoLoader.contentLoaderInfo.removeEventListener(Event.COMPLETE, onPhotoLoadSuccess);
-			_photoLoader.contentLoaderInfo.removeEventListener(IOErrorEvent.IO_ERROR, onPhotoLoadError);
-			_photoLoader.contentLoaderInfo.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onPhotoLoadError);
+		private function onPhotoLoadSuccess(event:Event):void
+		{
+			if ((event.currentTarget as Resource).url != _photoURL)
+			{
+				return;
+			}
+			
+			_photoLoader.removeEventListener(ResourceEvent.READY, onPhotoLoadSuccess);
+			_photoLoader.removeEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
 
 			var originalBitmapData:BitmapData;
 			try
 			{
-				originalBitmapData = (_photoLoader.contentLoaderInfo.content as Bitmap).bitmapData;
+				originalBitmapData = (_photoLoader.getContentInstance() as Bitmap).bitmapData;
 			}
 			catch (e:Error)
 			{
@@ -249,11 +262,11 @@ package molehill.easy.ui3d
 	
 			if (_pictureWidth == 0)
 			{
-				_pictureWidth = _photoLoader.width;
+				_pictureWidth = originalBitmapData.width;
 			}
 			if (_pictureHeight == 0)
 			{
-				_pictureHeight = _photoLoader.height;
+				_pictureHeight = originalBitmapData.height;
 			}
 				
 			if (_photoWidth == 0)
@@ -267,27 +280,42 @@ package molehill.easy.ui3d
 				
 			var pointX:int = 0;
 			var pointY:int = 0;
-			if (_photoLoader.width < _photoWidth)
+			if (originalBitmapData.width < _photoWidth)
 			{
-				pointX = (_photoWidth - _photoLoader.width) / 2;
+				pointX = (_photoWidth - originalBitmapData.width) / 2;
 			}
 				
-			if (_photoLoader.height < _photoHeight)
+			if (originalBitmapData.height < _photoHeight)
 			{
-				pointY = (_photoHeight - _photoLoader.height) / 2;
+				pointY = (_photoHeight - originalBitmapData.height) / 2;
 			}
 			
-			_photoLoader.x = pointX;
-			_photoLoader.y = pointY;
-			
-			TextureManager.getInstance().createTextureFromBitmapData(originalBitmapData, _photoTextureId);
+			if (!TextureManager.getInstance().isTextureCreated(_photoTextureId))
+			{
+				// event may be triggered in more than one photo
+				TextureManager.getInstance().createTextureFromBitmapData(originalBitmapData, _photoTextureId);
+			}
 
 			if (_photo == null)
 			{
 				_photo = Sprite3D.createFromTexture(_photoTextureId);
 				addChild(_photo);
 			}
+			
+			_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
 			_photo.setTexture(_photoTextureId);
+			
+			if (originalBitmapData.width < _photoWidth)
+			{
+				pointX = (_photoWidth - originalBitmapData.width) / 2;
+			}
+			
+			if (originalBitmapData.height < _photoHeight)
+			{
+				pointY = (_photoHeight - originalBitmapData.height) / 2;
+			}
+			
+			_photo.moveTo(pointX, pointY);
 			
 			sizePhoto();	
 				
@@ -296,11 +324,15 @@ package molehill.easy.ui3d
 			);
 		}
 		
-		private function onPhotoLoadError(e:Event):void
+		private function onPhotoLoadError(event:Event):void
 		{
-			_photoLoader.contentLoaderInfo.removeEventListener(Event.COMPLETE, onPhotoLoadSuccess);
-			_photoLoader.contentLoaderInfo.removeEventListener(IOErrorEvent.IO_ERROR, onPhotoLoadError);
-			_photoLoader.contentLoaderInfo.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, onPhotoLoadError);
+			if ((event.currentTarget as LoaderInfo).url != _photoURL)
+			{
+				return;
+			}
+			
+			_photoLoader.removeEventListener(ResourceEvent.READY, onPhotoLoadSuccess);
+			_photoLoader.removeEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
 					
 			_photoLoader = null;
 			
