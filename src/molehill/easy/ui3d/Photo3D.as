@@ -11,12 +11,12 @@ package molehill.easy.ui3d
 	import flash.net.URLRequest;
 	import flash.system.LoaderContext;
 	
+	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
-	import molehill.core.render.shader.species.base.ColorFillShader;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureAtlasData;
-	import molehill.core.texture.TextureManager;
+	import molehill.core.texture.TextureManager;	
 	
 	public class Photo3D extends Sprite3DContainer
 	{
@@ -87,7 +87,7 @@ package molehill.easy.ui3d
 					_photo = Sprite3D.createFromTexture(_photoTextureId);
 					addChild(_photo);
 				}
-				_photo.textureID = _photoTextureId;
+				_photo.setTexture(_photoTextureId);
 				
 				sizePhoto();
 				return;
@@ -136,7 +136,7 @@ package molehill.easy.ui3d
 				else
 				{
 					_photo = new Sprite3D();
-					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(ColorFillShader);
+					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 				addChild(_photo);
 			}
@@ -287,7 +287,7 @@ package molehill.easy.ui3d
 				_photo = Sprite3D.createFromTexture(_photoTextureId);
 				addChild(_photo);
 			}
-			_photo.textureID = _photoTextureId;
+			_photo.setTexture(_photoTextureId);
 			
 			sizePhoto();	
 				

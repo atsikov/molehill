@@ -208,7 +208,7 @@ package molehill.core.render
 				}
 			}
 			
-			while (cursor != null && cursor.data != sprite)
+			while (cursor != null && cursor.data !== sprite)
 			{
 				cursor = cursor.next;
 			}
