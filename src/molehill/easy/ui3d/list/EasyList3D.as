@@ -127,7 +127,7 @@ package molehill.easy.ui3d.list
 		//private var _selectedIndex:int;
 		private var _selectedItem:*;
 		
-		private var _dictSelectedItems:Dictionary;
+		private var _dictSelectedItems:Array;
 		
 		public function get allowMultipleSelection():Boolean
 		{
@@ -138,7 +138,7 @@ package molehill.easy.ui3d.list
 			_allowMultipleSelection = value;
 			
 			if (_allowMultipleSelection && _dictSelectedItems == null)
-				_dictSelectedItems = new Dictionary();
+				_dictSelectedItems = new Array();
 		}
 
 		private var _allowHighlight:Boolean = true;
@@ -151,7 +151,7 @@ package molehill.easy.ui3d.list
 			_allowHighlight = value;
 		}
 		
-		private var _numMaxSelectedItems:int = 1;
+		private var _numMaxSelectedItems:int = int.MAX_VALUE;
 		public function get numMaxSelectedItems():int
 		{
 			return _numMaxSelectedItems;
@@ -162,18 +162,9 @@ package molehill.easy.ui3d.list
 			_numMaxSelectedItems = value;
 		}
 		
-		private function get numSelectedItems():int
+		public function get numSelectedItems():int
 		{
-			var num:int = 0;
-			for each (var value:Boolean in _dictSelectedItems)
-			{
-				if (value)
-				{
-					num++;
-				}
-			}
-			
-			return num;
+			return _dictSelectedItems.length;
 		}
 		
 		public function get allowSelection():Boolean
@@ -218,8 +209,8 @@ package molehill.easy.ui3d.list
 			}
 			if (_allowMultipleSelection)
 			{
-				_dictSelectedItems = new Dictionary();
-				_dictSelectedItems[_selectedItem] = true;
+				_dictSelectedItems = new Array();
+				_dictSelectedItems.push(_selectedItem);
 			}
 			else
 			{
@@ -235,11 +226,7 @@ package molehill.easy.ui3d.list
 			var items:Array;
 			if (_allowMultipleSelection)
 			{
-				items = new Array();
-				for (var element:* in _dictSelectedItems)
-				{
-					items.push(element);
-				}
+				items = _dictSelectedItems.concat();
 			}
 			else
 			{
@@ -264,13 +251,22 @@ package molehill.easy.ui3d.list
 			}
 			if (_allowMultipleSelection)
 			{
-				_dictSelectedItems = new Dictionary();
+				_dictSelectedItems = new Array();
+				
 				if (value != null && value.length > 0)
 				{
 					_selectedItem = value[0];
 					for each(var element:* in value)
 					{
-						_dictSelectedItems[element] = true;
+						if (_dictSelectedItems.indexOf(element) == -1)
+						{
+							_dictSelectedItems.push(element);
+						}
+						
+						if (_dictSelectedItems.length >= _numMaxSelectedItems)
+						{
+							break;
+						}
 					}
 				}
 				
@@ -303,7 +299,7 @@ package molehill.easy.ui3d.list
 			selectedItems = null;
 		}
 		
-		protected function selectItem(itemData:*):void
+		public function selectItem(itemData:*):void
 		{
 			if(!_allowSelection)
 			{
@@ -311,7 +307,15 @@ package molehill.easy.ui3d.list
 			}
 			if (_allowMultipleSelection)
 			{
-				_dictSelectedItems[itemData] = true;
+				if (numSelectedItems >= _numMaxSelectedItems) 
+				{
+					return;
+				}
+				
+				if (_dictSelectedItems.indexOf(itemData) == -1)
+				{
+					_dictSelectedItems.push(itemData);
+				}
 				
 				if (_selectedItem == null)
 					_selectedItem = itemData;
@@ -329,7 +333,11 @@ package molehill.easy.ui3d.list
 		{
 			if (_allowMultipleSelection)
 			{
-				delete _dictSelectedItems[itemData]
+				var index:int = _dictSelectedItems.indexOf(itemData);
+				if (index != -1)
+				{
+					_dictSelectedItems.splice(index, 1);
+				}
 			}
 			else
 			{
@@ -350,7 +358,7 @@ package molehill.easy.ui3d.list
 			var itemSelected:Boolean = false;
 			if (_allowMultipleSelection)
 			{
-				itemSelected = Boolean( _dictSelectedItems[itemData] );
+				itemSelected = _dictSelectedItems.indexOf(itemData) != -1;
 			}
 			else
 			{

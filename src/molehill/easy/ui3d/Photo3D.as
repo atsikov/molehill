@@ -28,14 +28,25 @@ package molehill.easy.ui3d
 	public class Photo3D extends Sprite3DContainer
 	{
 		static private var _emptyPhotoTextureID:String;
-		static private function set emptyPhotoTextureId(value:String):void
+		static public function set emptyPhotoTextureId(value:String):void
 		{
 			_emptyPhotoTextureID = value;
 		}
 		
-		static private function get emptyPhotoTextureId():String
+		static public function get emptyPhotoTextureId():String
 		{
 			return _emptyPhotoTextureID;
+		}
+		
+		static private var _emptyPhotoFillColor:uint;
+		static public function set emptyPhotoFillColor(value:uint):void
+		{
+			_emptyPhotoFillColor = value;
+		}
+		
+		static public function get emptyPhotoFillColor():uint
+		{
+			return _emptyPhotoFillColor;
 		}
 		
 		private static var _waitAnimationClass:Class;
@@ -96,6 +107,7 @@ package molehill.easy.ui3d
 					_photo = Sprite3D.createFromTexture(_photoTextureId);
 					addChild(_photo);
 				}
+				_photo.darkenColor = 0xFFFFFF
 				_photo.setTexture(_photoTextureId);
 				
 				_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
@@ -134,6 +146,7 @@ package molehill.easy.ui3d
 				else
 				{
 					_photo = new Sprite3D();
+					_photo.darkenColor = _emptyPhotoFillColor;
 					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 				addChild(_photo);
@@ -142,11 +155,13 @@ package molehill.easy.ui3d
 			{
 				if (_emptyPhotoTextureID != null)
 				{
+					_photo.darkenColor = 0xFFFFFF;
 					_photo.setTexture(_emptyPhotoTextureID);
 				}
 				else
 				{
 					_photo.setTexture(null);
+					_photo.darkenColor = _emptyPhotoFillColor;
 					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 			}
@@ -158,6 +173,11 @@ package molehill.easy.ui3d
 			var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(_photoTextureId);
 			if (textureAtlasData == null)
 			{
+				if (_pictureWidth != 0 && _pictureHeight != 0)
+				{
+					_photo.setSize(_pictureWidth, _pictureHeight);
+				}
+				
 				return;
 			}
 			
@@ -304,6 +324,7 @@ package molehill.easy.ui3d
 			}
 			
 			_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
+			_photo.darkenColor = 0xFFFFFF
 			_photo.setTexture(_photoTextureId);
 			
 			if (originalBitmapData.width < _photoWidth)
