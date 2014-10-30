@@ -146,6 +146,7 @@ package molehill.easy.ui3d
 				}
 				else
 				{
+					_photo.setTexture(null);
 					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 			}
