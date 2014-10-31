@@ -318,7 +318,7 @@ package molehill.core.text
 			{
 				_textWidth = lineWidth;
 			}
-			_textHeight = _lineY + _lineHeight + _leading;
+			_textHeight = _lineY + _lineHeight;
 			
 			while (numChildren > childIndex)
 			{
