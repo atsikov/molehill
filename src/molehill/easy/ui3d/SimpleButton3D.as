@@ -10,6 +10,7 @@ package molehill.easy.ui3d
 	import flash.utils.setInterval;
 	
 	import molehill.core.events.Input3DMouseEvent;
+	import molehill.core.input.InputManager;
 	import molehill.core.input.MouseCursorManager;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.sprite.Sprite3D;
@@ -193,6 +194,23 @@ package molehill.easy.ui3d
 			}
 			else
 			{
+				var stagePoint:Point = new Point(
+					InputManager.getInstance().mouseStageX,
+					InputManager.getInstance().mouseStageY
+				);
+				
+				var localPoint:Point = stagePoint.clone();
+				globalToLocal(localPoint);
+				
+				dispatchEvent(
+					new Input3DMouseEvent(
+						Input3DMouseEvent.MOUSE_OUT,
+						stagePoint.x, stagePoint.y,
+						localPoint.x, localPoint.y,
+						this
+					)
+				);
+				
 				removeEventListener(Input3DMouseEvent.MOUSE_OVER, onSpriteMouseOver);
 				removeEventListener(Input3DMouseEvent.MOUSE_OUT, onSpriteMouseOut);
 				removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onSpriteMouseDown);
