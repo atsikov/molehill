@@ -2,15 +2,9 @@ package molehill.easy.ui3d
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.Loader;
 	import flash.display.LoaderInfo;
-	import flash.display.Shape;
 	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.SecurityErrorEvent;
 	import flash.geom.Rectangle;
-	import flash.net.URLRequest;
-	import flash.system.LoaderContext;
 	
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
@@ -58,27 +52,18 @@ package molehill.easy.ui3d
 		private var _photoTextureId:String;
 		private var _photoLoader:BitmapResource;
 		
-		private var _border:Shape;
-		
-		private var _pictureWidth:int = 0;
-		private var _pictureHeight:int = 0;
-		
 		private var _noSpace:Boolean;
 		
 		public function Photo3D(
 			url:String = null,
-			photoWidth:int = 50,
+			photoWidth:int = 0,
 			photoHeight:int = 0,
-			pictureWidth:int = 0,
-			pictureHeight:int = 0,
 			noSpace:Boolean = false
 		)
 		{
 			super();
 			_photoWidth = photoWidth;
 			_photoHeight = photoHeight;
-			_pictureWidth = pictureWidth;
-			_pictureHeight = pictureHeight;
 			_noSpace = noSpace;
 			
 			uiHasDynamicTexture = true;
@@ -173,9 +158,9 @@ package molehill.easy.ui3d
 			var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(_photoTextureId);
 			if (textureAtlasData == null)
 			{
-				if (_pictureWidth != 0 && _pictureHeight != 0)
+				if (_photoWidth != 0 && _photoHeight != 0)
 				{
-					_photo.setSize(_pictureWidth, _pictureHeight);
+					_photo.setSize(_photoWidth, _photoHeight);
 				}
 				
 				return;
@@ -223,36 +208,31 @@ package molehill.easy.ui3d
 			var photoWidth:int = unscaledPhotoWidth * scaleCoeff;
 			var photoHeight:int = unscaledPhotoHeight * scaleCoeff;
 			
-			if (_pictureWidth != 0 && _pictureHeight != 0)
+			textureRegion = textureRegion.clone();
+			
+			var scrollRectX:Number = 0;
+			var scrollRectY:Number = 0;
+			if (photoWidth > _photoWidth)
 			{
-				textureRegion = textureRegion.clone();
-				
-				var scrollRectX:Number = 0;
-				var scrollRectY:Number = 0;
-				if (photoWidth > _pictureWidth)
-				{
-					scrollRectX = ((photoWidth - _pictureWidth) / scaleCoeff) / 2;
-				}
-				if (photoHeight > _pictureHeight)
-				{
-					scrollRectY = ((photoHeight - _pictureHeight) / scaleCoeff) / 2;
-				}
-				
-				_photo.x = int((_pictureWidth - Math.min(newPhotoWidth, _pictureWidth)) / 2);
-				_photo.y = int((_pictureHeight - Math.min(newPhotoHeight, _pictureHeight)) / 2);
-				_photo.setSize(_pictureWidth, _pictureHeight);
-				
-				textureRegion.x += scrollRectX / textureAtlasData.width;
-				textureRegion.y += scrollRectY / textureAtlasData.height;
-				textureRegion.width -= 2 * scrollRectX / textureAtlasData.width;
-				textureRegion.height -= 2 * scrollRectY / textureAtlasData.height;
-				_photo.textureRegion = textureRegion;
+				scrollRectX = ((photoWidth - _photoWidth) / scaleCoeff) / 2;
 			}
-			else
+			if (photoHeight > _photoHeight)
 			{
-				_photo.width = photoWidth;
-				_photo.height = photoHeight;
+				scrollRectY = ((photoHeight - _photoHeight) / scaleCoeff) / 2;
 			}
+			
+			photoWidth = Math.min(photoWidth, _photoWidth);
+			photoHeight = Math.min(photoHeight, _photoHeight);
+			
+			_photo.x = int((_photoWidth - photoWidth) / 2);
+			_photo.y = int((_photoHeight - photoHeight) / 2);
+			_photo.setSize(photoWidth, photoHeight);
+			
+			textureRegion.x += scrollRectX / textureAtlasData.width;
+			textureRegion.y += scrollRectY / textureAtlasData.height;
+			textureRegion.width -= 2 * scrollRectX / textureAtlasData.width;
+			textureRegion.height -= 2 * scrollRectY / textureAtlasData.height;
+			_photo.textureRegion = textureRegion;
 		}
 
 		private function onPhotoLoadSuccess(event:Event):void
@@ -281,36 +261,6 @@ package molehill.easy.ui3d
 				return;
 			}
 	
-			if (_pictureWidth == 0)
-			{
-				_pictureWidth = originalBitmapData.width;
-			}
-			if (_pictureHeight == 0)
-			{
-				_pictureHeight = originalBitmapData.height;
-			}
-				
-			if (_photoWidth == 0)
-			{
-				_photoWidth = _pictureWidth;
-			}
-			if (_photoHeight == 0)
-			{
-				_photoHeight = _pictureHeight;
-			}
-				
-			var pointX:int = 0;
-			var pointY:int = 0;
-			if (originalBitmapData.width < _photoWidth)
-			{
-				pointX = (_photoWidth - originalBitmapData.width) / 2;
-			}
-				
-			if (originalBitmapData.height < _photoHeight)
-			{
-				pointY = (_photoHeight - originalBitmapData.height) / 2;
-			}
-			
 			if (!TextureManager.getInstance().isTextureCreated(_photoTextureId))
 			{
 				// event may be triggered in more than one photo
@@ -326,18 +276,6 @@ package molehill.easy.ui3d
 			_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
 			_photo.darkenColor = 0xFFFFFF
 			_photo.setTexture(_photoTextureId);
-			
-			if (originalBitmapData.width < _photoWidth)
-			{
-				pointX = (_photoWidth - originalBitmapData.width) / 2;
-			}
-			
-			if (originalBitmapData.height < _photoHeight)
-			{
-				pointY = (_photoHeight - originalBitmapData.height) / 2;
-			}
-			
-			_photo.moveTo(pointX, pointY);
 			
 			sizePhoto();	
 				
