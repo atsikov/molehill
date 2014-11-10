@@ -286,15 +286,13 @@ package molehill.easy.ui3d
 		
 		private function onPhotoLoadError(event:Event):void
 		{
-			if ((event.currentTarget as LoaderInfo).url != _photoURL)
+			if ((event.currentTarget as Resource).url != _photoURL)
 			{
 				return;
 			}
 			
 			_photoLoader.removeEventListener(ResourceEvent.READY, onPhotoLoadSuccess);
 			_photoLoader.removeEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
-					
-			_photoLoader = null;
 			
 			useNoPhotoStub();
 			
