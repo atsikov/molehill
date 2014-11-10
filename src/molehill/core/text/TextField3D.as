@@ -410,7 +410,19 @@ package molehill.core.text
 				return;
 			}
 			
-			_containerX = _shiftX * _parentScaleX + _parentShiftX;
+			var alignmentShift:int = 0;
+			switch (_align)
+			{
+				case TextField3DAlign.CENTER:
+					alignmentShift = -_textWidth / 2 * _scaleX;
+					break;
+				
+				case TextField3DAlign.RIGHT:
+					alignmentShift = -_textWidth * scaleX;
+					break;
+			}
+			
+			_containerX = _shiftX * _parentScaleX + _parentShiftX + alignmentShift;
 			_containerRight = _containerX + _textWidth * _scaleX * _parentScaleX;
 			
 			_x0 = _containerX;
