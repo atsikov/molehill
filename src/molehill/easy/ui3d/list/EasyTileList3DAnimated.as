@@ -756,6 +756,11 @@ package molehill.easy.ui3d.list
 				value = 0;
 			}
 			
+			if (value == currentItem)
+			{
+				return;
+			}
+			
 			if (_isAnimated)
 			{
 				_lockUpdate = false;
