@@ -56,6 +56,7 @@ package molehill.easy.ui3d.list
 		public function set backgroundMouseEnabled(value:Boolean):void
 		{
 			_scrollingMask.mouseEnabled = value;
+			_scrollingMask.mouseTransparent = !value;
 			if (value)
 			{
 				_scrollingMask.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
