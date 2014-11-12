@@ -1,5 +1,7 @@
 package molehill.easy.ui3d
 {
+	import appbase.model.AppConfig;
+	
 	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -26,6 +28,12 @@ package molehill.easy.ui3d
 		protected var _overState:Sprite3D9Scale;
 		protected var _downState:Sprite3D9Scale;
 		protected var _disabledState:Sprite3D9Scale;
+		
+		private static var _soundClick:String;
+		public static function set soundClick(value:String):void
+		{
+			_soundClick = value;
+		}
 		
 		public function Button9Scale3D(
 			normalTextureID:String,
@@ -81,6 +89,13 @@ package molehill.easy.ui3d
 			if (!_enabled)
 			{
 				event.stopImmediatePropagation();
+			}
+			
+			if (_soundClick != null && _soundClick != "")
+			{
+				AppConfig.eventSoundManager.playOnce(
+					_soundClick
+				);
 			}
 		}
 		

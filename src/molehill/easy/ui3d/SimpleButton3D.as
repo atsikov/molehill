@@ -1,5 +1,7 @@
 package molehill.easy.ui3d
 {
+	import appbase.model.AppConfig;
+	
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -31,6 +33,13 @@ package molehill.easy.ui3d
 		protected var _overTextureData:TextureData;
 		protected var _downTextureData:TextureData;
 		protected var _disabledTextureData:TextureData;
+		
+		private static var _soundClick:String;
+		public static function set soundClick(value:String):void
+		{
+			_soundClick = value;
+		}
+
 		
 		public function SimpleButton3D(
 			normalTextureID:String,
@@ -65,6 +74,13 @@ package molehill.easy.ui3d
 			if (!_enabled)
 			{
 				event.stopImmediatePropagation();
+			}
+			
+			if (_soundClick != null && _soundClick != "")
+			{
+				AppConfig.eventSoundManager.playOnce(
+					_soundClick
+				);
 			}
 		}
 		
