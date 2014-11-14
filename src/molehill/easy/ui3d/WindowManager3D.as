@@ -5,6 +5,7 @@ package molehill.easy.ui3d
 	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	
+	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.shader.Shader3D;
 	import molehill.core.render.shader.Shader3DFactory;
@@ -96,6 +97,18 @@ package molehill.easy.ui3d
 		public function set modalBGAlpha(value:Number):void
 		{
 			_modalBGAlpha = value;
+		}
+		
+		public function addModalBGClickCallback(popUp:Sprite3D, callback:Function):void
+		{
+			var executor:PopUpExecutor = PopUpExecutor.getByPopUp(popUp);
+			
+			if (executor == null)
+			{
+				return;
+			}
+			
+			executor.modalBGClickCallback = callback;
 		}
 		
 		public function addPopUp(popUp:Sprite3D, modal:Boolean = false, effectsSet:WindowEffectsSet = null):void
@@ -334,6 +347,8 @@ import easy.ui.ISnapshotable;
 
 import flash.utils.Dictionary;
 
+import molehill.core.events.Input3DMouseEvent;
+import molehill.core.render.InteractiveSprite3D;
 import molehill.core.sprite.Sprite3D;
 import molehill.core.sprite.Sprite3DContainer;
 import molehill.easy.ui3d.effects.WindowEffectsSet;
@@ -374,6 +389,18 @@ class PopUpExecutor
 	public function get modalBG():Sprite3D
 	{
 		return _modalBG;
+	}
+	
+	private var _modalBGClickCallback:Function;
+	public function set modalBGClickCallback(callback:Function):void
+	{
+		if (!(modalBG is InteractiveSprite3D) || callback == null)
+		{
+			return;
+		}
+		
+		_modalBGClickCallback = callback;
+		(modalBG as InteractiveSprite3D).addEventListener(Input3DMouseEvent.CLICK, _modalBGClickCallback);
 	}
 	
 	private var _effectsSet:WindowEffectsSet;
@@ -429,6 +456,11 @@ class PopUpExecutor
 		else
 		{
 			_isCloseModalBGComplete = true;
+		}
+		
+		if (_modalBGClickCallback != null)
+		{
+			(modalBG as InteractiveSprite3D).removeEventListener(Input3DMouseEvent.CLICK, _modalBGClickCallback);
 		}
 		
 		check();
