@@ -185,7 +185,9 @@ package molehill.core.render
 					log('checking sprite ' + sprite);
 				}
 				
-				if ((batchingTree.value as BatchingInfo).batcher != null &&
+				if (((batchingTree.value as BatchingInfo).batcher == null &&
+					sprite.currentAtlasData != null) ||
+					(batchingTree.value as BatchingInfo).batcher != null &&
 					((sprite.currentAtlasData != null &&
 					sprite.currentAtlasData.atlasID !== (batchingTree.value as BatchingInfo).batcher.textureAtlasID) ||
 					(sprite.currentAtlasData == null &&
