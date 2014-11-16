@@ -158,6 +158,7 @@ package molehill.core.render
 		
 		private var _currentBatcher:IVertexBatcher;
 		private var _lastBatchedChild:Sprite3D;
+		private var _lastBatchedChildBatcher:IVertexBatcher;
 		private var _batcherInsertPosition:uint;
 		
 		private var _hashBatchersOldToNew:Dictionary;
@@ -182,35 +183,18 @@ package molehill.core.render
 				
 				if (_debug)
 				{
-					log('checking sprite ' + sprite);
+					log('checking sprite ' + sprite + ';\n_lastBatched: ' + _lastBatchedChild);
 				}
 				
-				if (((batchingTree.value as BatchingInfo).batcher == null &&
-					sprite.currentAtlasData != null) ||
-					(batchingTree.value as BatchingInfo).batcher != null &&
-					((sprite.currentAtlasData != null &&
-					sprite.currentAtlasData.atlasID !== (batchingTree.value as BatchingInfo).batcher.textureAtlasID) ||
-					(sprite.currentAtlasData == null &&
-					(batchingTree.value as BatchingInfo).batcher.textureAtlasID != null)))
+				var currentTreeNodeBatcher:IVertexBatcher = (batchingTree.value as BatchingInfo).batcher;
+				var currentSpriteAtlasData:TextureAtlasData = sprite.currentAtlasData;
+				if (currentTreeNodeBatcher != null &&
+					((currentSpriteAtlasData != null &&
+					 currentSpriteAtlasData.atlasID !== currentTreeNodeBatcher.textureAtlasID) ||
+					(currentSpriteAtlasData == null &&
+					 currentTreeNodeBatcher.textureAtlasID != null))
+				)
 				{
-					/*
-					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
-					
-					if (_hashWaitForSprite[sprite] != null)
-					{
-						delete _hashChangeBatchersLater[_hashWaitForSprite[sprite]];
-						delete _hashWaitForSprite[sprite];
-					}
-					
-					if (_hashBatchersOldToNew[currentBatcher] != null && 
-						_hashChangeBatchersLater[currentBatcher] == null)
-					{
-						while (_hashBatchersOldToNew[currentBatcher] != null)
-						{
-							currentBatcher = _hashBatchersOldToNew[currentBatcher];
-						}
-					}
-					*/
 					prevNode = batchingTree.prevSibling;
 					nextNode = batchingTree.nextSibling;
 					
@@ -333,132 +317,6 @@ package molehill.core.render
 						}
 					}
 				}
-				/*else if (
-					sprite.currentAtlasData == null &&
-					(batchingTree.value as BatchingInfo).batcher != null &&
-					(batchingTree.value as BatchingInfo).batcher.textureAtlasID !== null
-					||
-					sprite.currentAtlasData != null &&
-					sprite.currentAtlasData.atlasID !== (batchingTree.value as BatchingInfo).batcher.textureAtlasID)
-				{
-					// child's texture atlas changed
-					// need to remove child from current batcher and push to suitable one
-					if (_debug)
-					{
-						log('child texture changed');
-					}
-					var currentBatcher:SpriteBatcher = (batchingTree.value as BatchingInfo).batcher as SpriteBatcher;
-					var insertHead:Boolean = false;
-					while (_hashBatchersOldToNew[currentBatcher] != null)
-					{
-						currentBatcher = _hashBatchersOldToNew[currentBatcher];
-						insertHead = true;
-					}
-					if (_debug)
-					{
-						log('insertHead = ' + insertHead + '; currentBatcher:\n' + currentBatcher);
-					}
-					if (currentBatcher != null)
-					{
-						var newBatcher:SpriteBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, sprite.currentAtlasData.atlasID, cameraOwner, false);
-						if (newBatcher == null)
-						{
-							newBatcher = pushToSuitableSpriteBacther(_currentBatcher as SpriteBatcher, sprite, sprite.currentAtlasData.atlasID, cameraOwner);
-						}
-						
-						if (newBatcher === _currentBatcher)
-						{
-							if (_debug)
-							{
-								log('added to last _currentBatcher\n' + _currentBatcher);
-							}
-							currentBatcher.removeChild(sprite);
-							if (currentBatcher.numSprites == 0)
-							{
-								_listSpriteBatchers.splice(
-									_listSpriteBatchers.indexOf(currentBatcher),
-									1
-								);
-								currentBatcher.onContextRestored();
-							}
-						}
-						else if (newBatcher !== currentBatcher)
-						{
-							if (sprite !== currentBatcher.getFirstChild() && currentBatcher.numSprites > 1)
-							{
-								var tailBatcher:SpriteBatcher = currentBatcher.splitAfterChild(sprite);
-								if (tailBatcher != null)
-								{
-									if (_debug)
-									{
-										log('splitting current batcher. tail batcher\n' + tailBatcher);
-									}
-									if (!insertHead)
-									{
-										_listSpriteBatchers.splice(
-											_batcherInsertPosition,
-											0,
-											tailBatcher
-										);
-										if (_debug)
-										{
-											log('adding tail batcher to ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length);
-										}
-									}
-									else
-									{
-										_listSpriteBatchers.splice(
-											_batcherInsertPosition,
-											0,
-											currentBatcher
-										);
-										if (_debug)
-										{
-											log('relocating current batcher to ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length);
-										}
-										_batcherInsertPosition++;
-									}
-									
-									_hashBatchersNewToOld[tailBatcher] = currentBatcher;
-									while (_hashBatchersNewToOld[currentBatcher] != null)
-									{
-										currentBatcher = _hashBatchersNewToOld[currentBatcher];
-									}
-									_hashBatchersOldToNew[currentBatcher] = tailBatcher;
-								}
-							}
-							
-							currentBatcher.removeChild(sprite);
-							
-							if (currentBatcher !== newBatcher)
-							{
-								if (currentBatcher.numSprites > 0)
-								{
-									_listSpriteBatchers.splice(
-										_batcherInsertPosition,
-										0,
-										newBatcher
-									);
-								}
-								else
-								{
-									_listSpriteBatchers[_batcherInsertPosition] = newBatcher;
-								}
-							}
-							else
-							{
-								if (currentBatcher.numSprites == 0)
-								{
-									_listSpriteBatchers.splice(
-										_listSpriteBatchers.indexOf(currentBatcher),
-										0
-									);
-								}
-							}
-						}
-						(batchingTree.value as BatchingInfo).batcher = newBatcher;
-					}
-				}*/
 				
 				// saving current batcher to use for insertion if got new suitable unbatched sprite
 				if ((batchingTree.value as BatchingInfo).batcher != null)
@@ -484,6 +342,7 @@ package molehill.core.render
 						_batcherInsertPosition = _currentBatcher == null ? 0 : _listSpriteBatchers.indexOf(_currentBatcher) + 1;
 					}
 					_lastBatchedChild = (batchingTree.value as BatchingInfo).child;
+					_lastBatchedChildBatcher = (batchingTree.value as BatchingInfo).batcher;
 				}
 				
 				// UIComnponent3D inside another UIComponent3D won't have children in parent's flattened tree
@@ -614,6 +473,7 @@ package molehill.core.render
 					{
 						lastBatcher = batcher;
 						_lastBatchedChild = batchingInfo.child;
+						_lastBatchedChildBatcher = lastBatcher;
 					}
 				}
 				
@@ -638,40 +498,54 @@ package molehill.core.render
 				else
 				{
 					var batchingInfo:BatchingInfo = node.value as BatchingInfo;
+					var sprite:Sprite3D = batchingInfo.child;
 					if (_debug)
 					{
 						log('removing ' + batchingInfo.child + ' from batching, batcher ' + StringUtils.getObjectAddress(batchingInfo.batcher));
 					}
-					var batcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
+					var spriteBatcher:SpriteBatcher = batchingInfo.batcher as SpriteBatcher;
 					
-					if (_hashWaitForSprite[batchingInfo.child] != null)
+					if (_hashWaitForSprite[sprite] != null)
 					{
-						delete _hashChangeBatchersLater[_hashWaitForSprite[batchingInfo.child]];
-						delete _hashWaitForSprite[batchingInfo.child];
+						delete _hashChangeBatchersLater[_hashWaitForSprite[sprite]];
+						delete _hashWaitForSprite[sprite];
 					}
 					
-					while (_hashBatchersOldToNew[batcher] != null &&
-						_hashChangeBatchersLater[batcher] == null)
+					while (_hashBatchersOldToNew[spriteBatcher] != null &&
+						_hashChangeBatchersLater[spriteBatcher] == null)
 					{
-						batcher = _hashBatchersOldToNew[batcher];
-					}
-					
-					batchingInfo.child.addedToScene = false;
-					if (batcher != null)
-					{
-						batcher.removeChild(batchingInfo.child, _lastBatchedChild);
-						if (batcher.numSprites <= 0)
+						spriteBatcher = _hashBatchersOldToNew[spriteBatcher];
+						if (_debug)
 						{
-							var index:int = _listSpriteBatchers.indexOf(batcher);
-							_listSpriteBatchers.splice(index, 1);
-							batcher.onContextRestored();
+							log('>> children moved to bacther ' + StringUtils.getObjectAddress(spriteBatcher));
+						}
+					}
+					
+					sprite.addedToScene = false;
+					if (spriteBatcher != null)
+					{
+						var removeAfter:Sprite3D = _lastBatchedChildBatcher === spriteBatcher ? _lastBatchedChild : null;
+						var result:Boolean = spriteBatcher.removeChild(sprite, removeAfter);
+						if (!result)
+						{
+							//trace('! child wasn\'t found in bacther');
 							if (_debug)
 							{
-								log('removing batcher from ' + index + ' position\n' + batcher);
+								log('! child was NOT removed in bacther');
+							}
+						}
+						if (spriteBatcher.numSprites <= 0)
+						{
+							var index:int = _listSpriteBatchers.indexOf(spriteBatcher);
+							_listSpriteBatchers.splice(index, 1);
+							spriteBatcher.onContextRestored();
+							if (_debug)
+							{
+								log('removing batcher from ' + index + ' position\n' + spriteBatcher);
 							}
 						}
 					}
-					else if (batchingInfo.batcher === batchingInfo.child)
+					else if (batchingInfo.batcher === sprite)
 					{
 						index = _listSpriteBatchers.indexOf(batchingInfo.batcher)
 						_listSpriteBatchers.splice(index, 1);
@@ -769,6 +643,7 @@ package molehill.core.render
 						(sprite as IVertexBatcher).cameraOwner = cameraOwner;
 						(batcherTree.value as BatchingInfo).batcher = sprite as IVertexBatcher;
 						_lastBatchedChild = sprite;
+						_lastBatchedChildBatcher = (batcherTree.value as BatchingInfo).batcher;
 						_currentBatcher = null;
 					}
 					else if (!(sprite is Sprite3DContainer))
@@ -858,6 +733,7 @@ package molehill.core.render
 							
 						}
 						_lastBatchedChild = sprite;
+						_lastBatchedChildBatcher = _currentBatcher;
 						(batcherTree.value as BatchingInfo).batcher = _currentBatcher;
 					}
 				}
@@ -983,6 +859,7 @@ package molehill.core.render
 			if (_needUpdateBatchers)
 			{
 				_lastBatchedChild = null;
+				_lastBatchedChildBatcher = null;
 				_currentBatcher = null;
 				_batcherInsertPosition = 0;
 				
