@@ -60,6 +60,11 @@ package molehill.core.render
 			
 			while (_focusInitiator != null)
 			{
+				if (_focusInitiator === newFocusInitiator)
+				{
+					break;
+				}
+				
 				if (_focusInitiator is IFocusable)
 				{
 					(_focusInitiator as IFocusable).onFocusLost();
