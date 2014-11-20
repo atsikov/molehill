@@ -121,6 +121,13 @@ package molehill.core.text
 			var char:String = String.fromCharCode(event.charCode);
 			_currentChar = event.charCode;
 			
+			if (_currentChar == 0)
+			{
+				clearTimeout(_autoRepeatStartTimeout);
+				clearInterval(_autoRepeatNextInterval);
+				return;
+			}
+			
 			var upperCaseChar:String = char.toLocaleUpperCase()
 			if (char == upperCaseChar)
 			{
@@ -209,6 +216,7 @@ package molehill.core.text
 					}
 					
 					appendText(newChar);
+					trace(newChar);
 					
 					if (_currentKeyCode == Keyboard.ENTER)
 					{
