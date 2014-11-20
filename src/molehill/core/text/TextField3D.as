@@ -384,6 +384,7 @@ package molehill.core.text
 					}
 					
 					child.moveTo(lineStart + lastLineWidth, _lineY);
+					child.snapToPixels = snapToPixels;
 					lastLineWidth += Math.ceil(child.width);
 				}
 				
