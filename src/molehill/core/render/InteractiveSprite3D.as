@@ -195,6 +195,11 @@ package molehill.core.render
 		}
 		
 		private var _mouseIsOver:Boolean = false;
+		public function get hasMouseOver():Boolean
+		{
+			return _mouseIsOver;
+		}
+
 		molehill_input_internal function onMouseOver(stageX:int, stageY:int, localX:int, localY:int, eventInitiator:Sprite3D):Boolean
 		{
 			/*
