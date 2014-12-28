@@ -4,6 +4,18 @@ package molehill.easy.ui3d
 	
 	public class GridBox extends VBox
 	{
+		private var _align:String = GridBoxAlign.ALIGN_LEFT;
+		public function get align():String
+		{
+			return _align;
+		}
+
+		public function set align(value:String):void
+		{
+			_align = value;
+		}
+
+		
 		private var _numElementsPerRow:int = 4;
 		public function get numElementsPerRow():int
 		{
@@ -103,7 +115,19 @@ package molehill.easy.ui3d
 						maxBoundsWidth = boundsWidth;
 					}
 					
-					currentX = isCenter ? int(maxBoundsWidth - boundsWidth) / 2 : 0;
+					switch (_align)
+					{
+						case GridBoxAlign.ALIGN_CENTER:
+							currentX = int((maxBoundsWidth - boundsWidth) / 2);
+							break;
+						
+						case GridBoxAlign.ALIGN_RIGHT:
+							currentX = maxBoundsWidth - boundsWidth;
+							break;
+						
+						default:
+							currentX 0;
+					}
 					
 					_boxWidth = maxBoundsWidth;
 					_boxHeight = currentY + _vSpace + boundsHeight;
