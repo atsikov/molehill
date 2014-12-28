@@ -240,6 +240,11 @@ package molehill.easy.ui3d.hint
 				target.addEventListener(Input3DMouseEvent.MOUSE_OVER, onHintableRollOver);
 			}
 			
+			if ((target as InteractiveSprite3D).hasMouseOver)
+			{
+				showHint(target as InteractiveSprite3D);
+			}
+			
 			_classByTarget[target] = hintRendererClass;
 		}
 		
@@ -247,6 +252,8 @@ package molehill.easy.ui3d.hint
 		{
 			target.removeEventListener(Input3DMouseEvent.MOUSE_OVER, onHintableRollOver);
 			target.removeEventListener(Input3DMouseEvent.MOUSE_OUT, onHintableRollOut);
+			
+			hideHint(target as InteractiveSprite3D);
 			
 			delete _classByTarget[target];
 		}
@@ -357,10 +364,16 @@ package molehill.easy.ui3d.hint
 			target.addEventListener(Input3DMouseEvent.MOUSE_OVER, onHintableRollOver);
 			_classByTarget[target] = hintRendererClass;
 			_staticHintDataByTarget[target] = hintData;
+			
+			if (target.hasMouseOver)
+			{
+				showHint(target);
+			}
 		}
 		
 		public function unregisterStaticCustomHint(target:InteractiveSprite3D):void
 		{
+			hideHint(target);
 			delete _classByTarget[target];
 			delete _staticHintDataByTarget[target];
 			target.removeEventListener(Input3DMouseEvent.MOUSE_OVER, onHintableRollOver);

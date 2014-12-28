@@ -568,7 +568,7 @@ package molehill.easy.ui3d.list
 					_pageAnimation.stop();
 				}
 				_itemsContainerCamera.scrollX = scrollZeroPositionX;
-				_itemsContainerCamera.scrollX = scrollZeroPositionX;
+				_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				update();
 			}
 			
@@ -580,7 +580,7 @@ package molehill.easy.ui3d.list
 			{
 				_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
 				_itemsContainerCamera.scrollX = scrollZeroPositionX;
-				_itemsContainerCamera.scrollX = scrollZeroPositionX;
+				_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				update();
 			}
 		}
@@ -600,7 +600,7 @@ package molehill.easy.ui3d.list
 			{
 				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 				_itemsContainerCamera.scrollX = scrollZeroPositionX;
-				_itemsContainerCamera.scrollX = scrollZeroPositionX;
+				_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				onAnimationCompleted();
 			}
 			
@@ -657,7 +657,7 @@ package molehill.easy.ui3d.list
 				if (immediate)
 				{
 					_itemsContainerCamera.scrollX = scrollZeroPositionX;
-					_itemsContainerCamera.scrollX = scrollZeroPositionX;
+					_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				}
 				update();
 				return;
@@ -771,7 +771,7 @@ package molehill.easy.ui3d.list
 					_pageAnimation.stop();
 				}
 				_itemsContainerCamera.scrollX = scrollZeroPositionX;
-				_itemsContainerCamera.scrollX = scrollZeroPositionX;
+				_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				update();
 			}
 			
@@ -784,7 +784,7 @@ package molehill.easy.ui3d.list
 				_scrollPosition = _direction == Direction.HORIZONTAL ? value * columnCount : value * rowCount;
 				_scrollPosition = Math.min(scrollPositionMax, _scrollPosition);
 				_itemsContainerCamera.scrollX = scrollZeroPositionX;
-				_itemsContainerCamera.scrollX = scrollZeroPositionX;
+				_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				update();
 			}
 		}
@@ -798,7 +798,7 @@ package molehill.easy.ui3d.list
 			{
 				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 				_itemsContainerCamera.scrollX = scrollZeroPositionX;
-				_itemsContainerCamera.scrollX = scrollZeroPositionX;
+				_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				onAnimationCompleted();
 			}
 			
@@ -810,7 +810,7 @@ package molehill.easy.ui3d.list
 				if (immediate)
 				{
 					_itemsContainerCamera.scrollX = scrollZeroPositionX;
-					_itemsContainerCamera.scrollX = scrollZeroPositionX;
+					_itemsContainerCamera.scrollY = scrollZeroPositionY;
 				}
 				
 				update();

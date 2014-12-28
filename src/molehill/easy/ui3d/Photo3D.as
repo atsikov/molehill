@@ -71,6 +71,17 @@ package molehill.easy.ui3d
 			loadPhoto(url);
 		}
 		
+		private var _photoLoadingPriority:int = -100;
+		public function get photoLoadingPriority():int
+		{
+			return _photoLoadingPriority;
+		}
+		
+		public function set photoLoadingPriority(value:int):void
+		{
+			_photoLoadingPriority = value;
+		}
+		
 		private var _photoURL:String = null;
 		public function get photoURL():String
 		{
@@ -112,7 +123,7 @@ package molehill.easy.ui3d
 				_photoLoader.removeEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
 			}
 			
-			_photoLoader = ResourceFactory.getInstance().getResource(_photoURL, 0, false, ResourceTypes.BITMAP) as BitmapResource;
+			_photoLoader = ResourceFactory.getInstance().getResource(_photoURL, _photoLoadingPriority, false, ResourceTypes.BITMAP) as BitmapResource;
 			
 			_photoLoader.addEventListener(ResourceEvent.READY, onPhotoLoadSuccess);
 			_photoLoader.addEventListener(ResourceEvent.INACCESSIBLE, onPhotoLoadError);
