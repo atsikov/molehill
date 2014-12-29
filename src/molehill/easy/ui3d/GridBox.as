@@ -94,7 +94,7 @@ package molehill.easy.ui3d
 					boundsWidth += _hSpace * (_numElementsPerRow - 1);
 					listBoundWidths.push(boundsWidth);
 					
-					if (isCenter && maxBoundsWidth < boundsWidth)
+					if (_align != GridBoxAlign.ALIGN_LEFT && maxBoundsWidth < boundsWidth)
 					{
 						for (i = 0; i < numChildrenPlaced; i++)
 						{
@@ -104,7 +104,12 @@ package molehill.easy.ui3d
 								continue;
 							}
 							
-							child.x += int((maxBoundsWidth - listBoundWidths[int(i / _numElementsPerRow)]) / 2);
+							var shift:int = maxBoundsWidth - listBoundWidths[int(i / _numElementsPerRow)];
+							if (_align == GridBoxAlign.ALIGN_CENTER)
+							{
+								shift = int(shift / 2);
+							}
+							child.x += shift;
 							
 							if ((i % _numElementsPerRow) == _numElementsPerRow - 1)
 							{
