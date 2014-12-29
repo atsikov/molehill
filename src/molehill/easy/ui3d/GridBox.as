@@ -131,7 +131,7 @@ package molehill.easy.ui3d
 							break;
 						
 						default:
-							currentX 0;
+							currentX = 0;
 					}
 					
 					_boxWidth = maxBoundsWidth;
