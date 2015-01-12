@@ -220,6 +220,41 @@ package molehill.core.text
 					lastSpaceChildIndex = 0;
 				}
 				
+				if (charCode != 32)
+				{
+					var charScale:Number = 1;
+					var textureName:String = getTextureForChar(_fontName, _fontTextureSize, charCode);
+					if (charAtlasData == null)
+					{
+						charAtlasData = tm.getAtlasDataByTextureID(textureName);
+					}
+					
+					if (charAtlasData == null)
+					{
+						var lowerSize:int = _fontTextureSize - 1;
+						lowerSize = Font3DManager.getInstance().getSuitableFontSize(_fontName, lowerSize);
+						while (lowerSize != -1 && charAtlasData == null)
+						{
+							textureName = getTextureForChar(_fontName, lowerSize, charCode);
+							charAtlasData = tm.getAtlasDataByTextureID(textureName);
+							
+							if (charAtlasData == null)
+							{
+								lowerSize--;
+							}
+						}
+						
+						if (charAtlasData == null)
+						{
+							charCode = 32;
+						}
+						else
+						{
+							charScale = _fontTextureSize / lowerSize;
+						}
+					}
+				}
+				
 				if (charCode == 32)
 				{
 					lastSpaceIndex = i;
@@ -233,19 +268,6 @@ package molehill.core.text
 					continue;
 				}
 				
-				var textureName:String = getTextureForChar(_fontName, _fontTextureSize, charCode);
-				if (charAtlasData == null)
-				{
-					charAtlasData = tm.getAtlasDataByTextureID(textureName);
-				}
-				
-				if (charAtlasData == null)
-				{
-					charCode = 32;
-					textureName = getTextureForChar(_fontName, _fontTextureSize, charCode);
-					
-					charAtlasData = tm.getAtlasDataByTextureID(textureName);
-				}
 				
 				var charTextureData:TextureData = charAtlasData.getTextureData(textureName);
 				
@@ -269,7 +291,7 @@ package molehill.core.text
 				}
 				
 				child.setTexture(textureName);
-				child.setSize(charTextureData.width * scale, charTextureData.height * scale);
+				child.setSize(charTextureData.width * scale * charScale, charTextureData.height * scale * charScale);
 				
 				lastLineWidth = lineWidth;
 				lineWidth += Math.ceil(child.width);

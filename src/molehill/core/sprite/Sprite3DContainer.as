@@ -808,6 +808,11 @@ package molehill.core.sprite
 					continue;
 				}
 				
+				if (!child.visible)
+				{
+					continue;
+				}
+				
 				var childMask:Sprite3D = child.mask;
 				if (childMask != null)
 				{
