@@ -173,7 +173,10 @@ package molehill.easy.ui3d.list
 		private const MIN_VELOCITY:Number = 2;
 		private const MIN_DETECTED_VELOCITY:Number = 0.2;
 		
-		private const PAGE_ANIMATION_DURATION:Number = 0.1;
+		public var PAGE_ANIMATION_DURATION:Number = 0.1;
+		public var MANY_PAGES_ANIMATION_DURATION:Number = 0.1;
+		public var LINE_ANIMATION_DURATION:Number = 0.1;
+		public var ITEM_ANIMATION_DURATION:Number = 0.1;
 		
 		private const MIN_DIFF_TO_SCROLL:uint = 5;
 		
@@ -254,7 +257,7 @@ package molehill.easy.ui3d.list
 							scrollX : scrollZeroPositionX,
 							scrollY : scrollZeroPositionY
 						},
-						PAGE_ANIMATION_DURATION / 2,
+						LINE_ANIMATION_DURATION / 2,
 						0,
 						Linear.easeNone,
 						onAnimationCompleted
@@ -317,7 +320,7 @@ package molehill.easy.ui3d.list
 					scrollX : scrollZeroPositionX,
 					scrollY : scrollZeroPositionY
 				},
-				PAGE_ANIMATION_DURATION / 2,
+				LINE_ANIMATION_DURATION / 2,
 				0,
 				Linear.easeNone,
 				onAnimationCompleted
@@ -648,13 +651,13 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			var immediate:Boolean = Math.abs(value - currentPage) > 1;
+			var manyPages:Boolean = Math.abs(value - currentPage) > 1;
 			
 			_scrollPosition = Math.min(scrollPositionMax, value * numItemsPerPage);
 			
-			if (_isAnimated || (_lockMoreThanOnePageAnimation && immediate))
+			if (_isAnimated || (_lockMoreThanOnePageAnimation && manyPages))
 			{
-				if (immediate)
+				if (manyPages)
 				{
 					_itemsContainerCamera.scrollX = scrollZeroPositionX;
 					_itemsContainerCamera.scrollY = scrollZeroPositionY;
@@ -684,24 +687,24 @@ package molehill.easy.ui3d.list
 			
 			if (isHalf)
 			{
-				onAnimationPageHalfCompleted(nextPage, false);
+				onAnimationPageHalfCompleted(nextPage, false, manyPages);
 				return;
 			}
 			
 			_pageAnimation = OpenTween.go(
 				_itemsContainerCamera,
 				props,
-				PAGE_ANIMATION_DURATION / 2,
+				(manyPages ? MANY_PAGES_ANIMATION_DURATION : PAGE_ANIMATION_DURATION) / 2,
 				0,
 				Linear.easeNone,
 				onAnimationPageHalfCompleted,
 				null,
-				[nextPage]
+				[nextPage, true, manyPages]
 			);
 				
 		}
 		
-		private function onAnimationPageHalfCompleted(nextPage:Boolean, fromTween:Boolean = true):void
+		private function onAnimationPageHalfCompleted(nextPage:Boolean, fromTween:Boolean = true, manyPages:Boolean = false):void
 		{
 			_lockUpdate = false;
 			update();
@@ -737,7 +740,7 @@ package molehill.easy.ui3d.list
 					scrollX : scrollZeroPositionX,
 					scrollY : scrollZeroPositionY
 				},
-				PAGE_ANIMATION_DURATION / 2,
+				(manyPages ? MANY_PAGES_ANIMATION_DURATION : PAGE_ANIMATION_DURATION) / 2,
 				0,
 				Linear.easeNone,
 				onAnimationCompleted
@@ -846,7 +849,7 @@ package molehill.easy.ui3d.list
 			_pageAnimation = OpenTween.go(
 				_itemsContainerCamera,
 				props,
-				PAGE_ANIMATION_DURATION,
+				ITEM_ANIMATION_DURATION,
 				0,
 				Linear.easeNone,
 				onItemAnimationCompleted
