@@ -160,7 +160,6 @@ package molehill.core.texture
 			}
 			
 			super(imageWidth, imageHeight);
-			trace(imageWidth, imageHeight);
 			
 			_atlasData = _textureAtlasData;
 			
