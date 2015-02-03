@@ -6,13 +6,12 @@ package molehill.easy.ui3d.list
 	
 	import fl.motion.easing.Linear;
 	
+	import flash.display.BitmapData;
 	import flash.display.Stage;
 	import flash.events.Event;
-	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.ui.Keyboard;
 	import flash.utils.getTimer;
 	
 	import molehill.core.events.Input3DMouseEvent;
@@ -20,11 +19,10 @@ package molehill.easy.ui3d.list
 	import molehill.core.render.UIComponent3D;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.sprite.Sprite3D;
+	import molehill.core.texture.TextureManager;
 	
 	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
-	
-	import tempire.model.types.textures.FormsTextures;
 
 	public class EasyTileList3DAnimated extends EasyTileList3D
 	{
@@ -39,7 +37,16 @@ package molehill.easy.ui3d.list
 			
 			_scrollingMask = new InteractiveSprite3D();
 			_scrollingMask.mouseEnabled = true;
-			_scrollingMask.setTexture(FormsTextures.bg_blue_plate);
+			
+			if (!TextureManager.getInstance().isTextureCreated("core_easy_scrolling_mask_texture"))
+			{
+				TextureManager.createTexture(
+					new BitmapData(1, 1, false, 0),
+					"core_easy_scrolling_mask_texture"
+				);
+			}
+				
+			_scrollingMask.setTexture("core_easy_scrolling_mask_texture");
 			addChild(_scrollingMask);
 			
 			_itemsContainerCamera = new CustomCamera();
