@@ -18,6 +18,7 @@ package molehill.easy.ui3d.scroll
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
 	
+	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
 	
 	public class KineticScrollContainer extends Sprite3DContainer
@@ -105,6 +106,7 @@ package molehill.easy.ui3d.scroll
 		private const FRICTION_DEFAULT_FPS:Number = 24;
 		
 		private const LIST_VELOCITY_LENGTH:uint = 4;
+		private const MAX_VELOCITY:Number = 100;
 		private const MIN_VELOCITY:Number = 2;
 		private const MIN_DETECTED_VELOCITY:Number = 0.2;
 		
@@ -113,6 +115,8 @@ package molehill.easy.ui3d.scroll
 		private const SPEED_COEFF:Number = 24;
 		
 		protected var ELASCTIC_SIZE:int = 60;
+		
+		protected var COMPLETE_SCROLLING_ANIMATION_TIME:Number = 0.3;
 		// =========================== //
 		
 		private var _diff:Point = new Point();
@@ -126,6 +130,8 @@ package molehill.easy.ui3d.scroll
 		private var _listVelocityY:Array = new Array();
 		
 		private var _startPoint:Point = new Point();
+		
+		protected var _animation:IPlayable;
 		
 		private var _stage:Stage;
 		
@@ -173,9 +179,18 @@ package molehill.easy.ui3d.scroll
 			
 		}
 		
-		private function onItemsContainerMouseDown(event:Input3DMouseEvent):void
+		public function stopScrolling():void
 		{
-			_isAnimated = true;
+			_velocityX = 0;
+			_velocityY = 0;
+		}
+		
+		protected function onItemsContainerMouseDown(event:Input3DMouseEvent):void
+		{
+			if (_animation != null)
+			{
+				_animation.stop();
+			}
 			
 			_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 			
@@ -299,14 +314,14 @@ package molehill.easy.ui3d.scroll
 				onScrollEnterFrame(null);
 			}
 			
-			if (_listVelocityX.length == 0)
-			{
-				moveToClosestLine();
-				return;
-			}
-			
 			_velocityX = 0;
 			_velocityY = 0;
+			
+			if (_listVelocityX.length == 0)
+			{
+				onKineticEnterFrame(null);
+				return;
+			}
 			
 			for (var i:int = 0; i < LIST_VELOCITY_LENGTH; i++) 
 			{
@@ -335,7 +350,7 @@ package molehill.easy.ui3d.scroll
 			
 			if (_velocityX == 0 && _velocityY == 0)
 			{
-				moveToClosestLine();
+				onKineticEnterFrame(null);
 				return;
 			}
 			
@@ -349,8 +364,8 @@ package molehill.easy.ui3d.scroll
 				_velocityY = _velocityY < 0 ? -MIN_VELOCITY : MIN_VELOCITY;
 			}
 			
-			_velocityX = _velocityX * SPEED_COEFF;
-			_velocityY = _velocityY * SPEED_COEFF;
+			_velocityX = Math.min(_velocityX, MAX_VELOCITY) * SPEED_COEFF;
+			_velocityY = Math.min(_velocityY, MAX_VELOCITY) * SPEED_COEFF;
 			
 			_stage.addEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 		}
@@ -365,7 +380,7 @@ package molehill.easy.ui3d.scroll
 			if (borderReached || (Math.abs(_velocityX) < 1 && Math.abs(_velocityY) < 1))
 			{
 				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
-				moveToClosestLine();
+				completeScrolling();
 			}
 		}
 		
@@ -374,6 +389,11 @@ package molehill.easy.ui3d.scroll
 			_itemsContainerCamera.scrollX -= diffX;
 			_itemsContainerCamera.scrollY -= diffY;
 			
+			return checkBorders();
+		}
+		
+		protected function checkBorders():Boolean
+		{
 			var borderReached:Boolean = false;
 			
 			if (checkLeftBorder())
@@ -398,10 +418,14 @@ package molehill.easy.ui3d.scroll
 		}
 		
 		
-		private var _isAnimated:Boolean;
 		private var _scrollStarted:Boolean;
-		private function moveToClosestLine():void
+		protected function completeScrolling():void
 		{
+			if (_animation != null)
+			{
+				_animation.stop();
+			}
+			
 			_endHelperPoint.setTo(
 				_itemsContainerCamera.scrollX,
 				_itemsContainerCamera.scrollY
@@ -425,20 +449,20 @@ package molehill.easy.ui3d.scroll
 				_endHelperPoint.y = bottomBorder;
 			}
 			
-			OpenTween.go(
+			_animation = OpenTween.go(
 				_itemsContainerCamera,
 				{
 					scrollX : _endHelperPoint.x,
 					scrollY : _endHelperPoint.y
 				},
-				0.3,
+				COMPLETE_SCROLLING_ANIMATION_TIME,
 				0,
 				Linear.easeOut,
 				onAnimationCompleted
 			);
 		}
 		
-		private function onAnimationCompleted():void
+		protected function onAnimationCompleted():void
 		{
 			if (_snapCameraToPixels)
 			{
