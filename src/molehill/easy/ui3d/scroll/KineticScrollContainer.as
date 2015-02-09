@@ -35,7 +35,7 @@ package molehill.easy.ui3d.scroll
 
 		protected var _itemsContainerCamera:CustomCamera;
 		protected var _viewPort:Rectangle;
-		private var _scrollingMask:InteractiveSprite3D;
+		protected var _scrollingMask:InteractiveSprite3D;
 		
 		public function KineticScrollContainer()
 		{
@@ -133,7 +133,7 @@ package molehill.easy.ui3d.scroll
 		
 		protected var _animation:IPlayable;
 		
-		private var _stage:Stage;
+		protected var _stage:Stage;
 		
 		override protected function onAddedToScene():void
 		{
@@ -384,7 +384,7 @@ package molehill.easy.ui3d.scroll
 			}
 		}
 		
-		private function scrollOn(diffX:Number, diffY:Number):Boolean
+		protected function scrollOn(diffX:Number, diffY:Number):Boolean
 		{
 			_itemsContainerCamera.scrollX -= diffX;
 			_itemsContainerCamera.scrollY -= diffY;
@@ -417,49 +417,74 @@ package molehill.easy.ui3d.scroll
 			return borderReached;
 		}
 		
+		protected function get itemsContainerWidth():Number
+		{
+			return _itemsContainer.width;
+		}
+		
+		protected function get itemsContainerHeight():Number
+		{
+			return _itemsContainer.height;
+		}
 		
 		private var _scrollStarted:Boolean;
-		protected function completeScrolling():void
+		protected function completeScrolling(animate:Boolean = true):void
 		{
 			if (_animation != null)
 			{
 				_animation.stop();
 			}
 			
+			var borderReached:Boolean = false;
+			
 			_endHelperPoint.setTo(
 				_itemsContainerCamera.scrollX,
 				_itemsContainerCamera.scrollY
 			);
 			
-			if (_itemsContainerCamera.scrollX < leftBorder || _itemsContainer.width <= _scrollingMask.width)
+			if (_itemsContainerCamera.scrollX < leftBorder || itemsContainerWidth <= _scrollingMask.width)
 			{
 				_endHelperPoint.x = leftBorder;
+				borderReached = true;
 			}
 			else if (_itemsContainerCamera.scrollX > rightBorder)
 			{
 				_endHelperPoint.x = rightBorder;
+				borderReached = true;
 			}
 			
-			if (_itemsContainerCamera.scrollY < topBorder || _itemsContainer.height <= _scrollingMask.height)
+			if (_itemsContainerCamera.scrollY < topBorder || itemsContainerHeight <= _scrollingMask.height)
 			{
 				_endHelperPoint.y = topBorder;
+				borderReached = true;
 			}
 			else if (_itemsContainerCamera.scrollY > bottomBorder)
 			{
 				_endHelperPoint.y = bottomBorder;
+				borderReached = true;
 			}
 			
-			_animation = OpenTween.go(
-				_itemsContainerCamera,
-				{
-					scrollX : _endHelperPoint.x,
-					scrollY : _endHelperPoint.y
-				},
-				COMPLETE_SCROLLING_ANIMATION_TIME,
-				0,
-				Linear.easeOut,
-				onAnimationCompleted
-			);
+			if (animate && borderReached)
+			{
+				_animation = OpenTween.go(
+					_itemsContainerCamera,
+					{
+						scrollX : _endHelperPoint.x,
+						scrollY : _endHelperPoint.y
+					},
+					COMPLETE_SCROLLING_ANIMATION_TIME,
+					0,
+					Linear.easeOut,
+					onAnimationCompleted
+				);
+			}
+			else
+			{
+				_itemsContainerCamera.scrollX = _endHelperPoint.x;
+				_itemsContainerCamera.scrollY = _endHelperPoint.y;
+				
+				onAnimationCompleted();
+			}
 		}
 		
 		protected function onAnimationCompleted():void
