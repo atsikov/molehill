@@ -21,6 +21,8 @@ package molehill.easy.ui3d.scroll
 	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
 	
+	import utils.DebugLogger;
+	
 	public class KineticScrollContainer extends Sprite3DContainer
 	{
 		public static const FREE:String = "free";
@@ -106,7 +108,6 @@ package molehill.easy.ui3d.scroll
 		private const FRICTION_DEFAULT_FPS:Number = 24;
 		
 		private const LIST_VELOCITY_LENGTH:uint = 4;
-		private const MAX_VELOCITY:Number = 100;
 		private const MIN_VELOCITY:Number = 2;
 		private const MIN_DETECTED_VELOCITY:Number = 0.2;
 		
@@ -167,6 +168,8 @@ package molehill.easy.ui3d.scroll
 			_velocityY = 0;
 			
 			onAnimationCompleted();
+			
+			stopAnimation();
 		}
 		
 		protected function onScrollStarted():void
@@ -187,10 +190,7 @@ package molehill.easy.ui3d.scroll
 		
 		protected function onItemsContainerMouseDown(event:Input3DMouseEvent):void
 		{
-			if (_animation != null)
-			{
-				_animation.stop();
-			}
+			stopAnimation();
 			
 			_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 			
@@ -268,6 +268,12 @@ package molehill.easy.ui3d.scroll
 			}
 			
 			_newTime = getTimer();
+			
+			if (_newTime == _lastTime)
+			{
+				return;
+			}
+			
 			_newPosition.setTo(
 				_scrollDirection == VERTICAL ? 0 : _stage.mouseX,
 				_scrollDirection == HORIZONTAL ? 0 : _stage.mouseY
@@ -364,8 +370,8 @@ package molehill.easy.ui3d.scroll
 				_velocityY = _velocityY < 0 ? -MIN_VELOCITY : MIN_VELOCITY;
 			}
 			
-			_velocityX = Math.min(_velocityX, MAX_VELOCITY) * SPEED_COEFF;
-			_velocityY = Math.min(_velocityY, MAX_VELOCITY) * SPEED_COEFF;
+			_velocityX = _velocityX * SPEED_COEFF;
+			_velocityY = _velocityY * SPEED_COEFF;
 			
 			_stage.addEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
 		}
@@ -430,10 +436,7 @@ package molehill.easy.ui3d.scroll
 		private var _scrollStarted:Boolean;
 		protected function completeScrolling(animate:Boolean = true):void
 		{
-			if (_animation != null)
-			{
-				_animation.stop();
-			}
+			stopAnimation();
 			
 			var borderReached:Boolean = false;
 			
@@ -484,6 +487,14 @@ package molehill.easy.ui3d.scroll
 				_itemsContainerCamera.scrollY = _endHelperPoint.y;
 				
 				onAnimationCompleted();
+			}
+		}
+		
+		protected function stopAnimation():void
+		{
+			if (_animation != null)
+			{
+				_animation.stop();
 			}
 		}
 		
