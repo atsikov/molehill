@@ -395,29 +395,34 @@ package molehill.easy.ui3d.scroll
 			_itemsContainerCamera.scrollX -= diffX;
 			_itemsContainerCamera.scrollY -= diffY;
 			
-			return checkBorders();
+			return validateBorders();
 		}
 		
-		protected function checkBorders():Boolean
+		protected function validateBorders(scrollingCompleted:Boolean = false):Boolean
 		{
 			var borderReached:Boolean = false;
 			
-			if (checkLeftBorder())
+			if (validateLeftBorder())
 			{
 				borderReached = true;
 			}
-			else if (checkRightBorder())
+			else if (validateRightBorder())
 			{
 				borderReached = true;
 			}
 			
-			if (checkTopBorder())
+			if (validateTopBorder())
 			{
 				borderReached = true;
 			}
-			else if (checkBottomBorder())
+			else if (validateBottomBorder())
 			{
 				borderReached = true;
+			}
+			
+			if (scrollingCompleted)
+			{
+				onAnimationCompleted();
 			}
 			
 			return borderReached;
@@ -438,34 +443,12 @@ package molehill.easy.ui3d.scroll
 		{
 			stopAnimation();
 			
-			var borderReached:Boolean = false;
-			
 			_endHelperPoint.setTo(
 				_itemsContainerCamera.scrollX,
 				_itemsContainerCamera.scrollY
 			);
 			
-			if (_itemsContainerCamera.scrollX < leftBorder || itemsContainerWidth <= _scrollingMask.width)
-			{
-				_endHelperPoint.x = leftBorder;
-				borderReached = true;
-			}
-			else if (_itemsContainerCamera.scrollX > rightBorder)
-			{
-				_endHelperPoint.x = rightBorder;
-				borderReached = true;
-			}
-			
-			if (_itemsContainerCamera.scrollY < topBorder || itemsContainerHeight <= _scrollingMask.height)
-			{
-				_endHelperPoint.y = topBorder;
-				borderReached = true;
-			}
-			else if (_itemsContainerCamera.scrollY > bottomBorder)
-			{
-				_endHelperPoint.y = bottomBorder;
-				borderReached = true;
-			}
+			var borderReached:Boolean = checkCompleteScrollingPosition(_endHelperPoint);
 			
 			if (animate && borderReached)
 			{
@@ -478,7 +461,9 @@ package molehill.easy.ui3d.scroll
 					COMPLETE_SCROLLING_ANIMATION_TIME,
 					0,
 					Linear.easeOut,
-					onAnimationCompleted
+					validateBorders,
+					null,
+					[true]
 				);
 			}
 			else
@@ -486,8 +471,41 @@ package molehill.easy.ui3d.scroll
 				_itemsContainerCamera.scrollX = _endHelperPoint.x;
 				_itemsContainerCamera.scrollY = _endHelperPoint.y;
 				
-				onAnimationCompleted();
+				validateBorders(true);
 			}
+		}
+		
+		/**
+		 * Check borders on scrolling completed. Returns true if border reached
+		 * param @targetPoint target container mask scroll position point, would be modified if border reached
+		 */
+		protected function checkCompleteScrollingPosition(targetPoint:Point):Boolean
+		{
+			var borderReached:Boolean = false;
+			
+			if (_itemsContainerCamera.scrollX < leftBorder || itemsContainerWidth <= _scrollingMask.width)
+			{
+				targetPoint.x = leftBorder;
+				borderReached = true;
+			}
+			else if (_itemsContainerCamera.scrollX > rightBorder)
+			{
+				targetPoint.x = rightBorder;
+				borderReached = true;
+			}
+			
+			if (_itemsContainerCamera.scrollY < topBorder || itemsContainerHeight <= _scrollingMask.height)
+			{
+				targetPoint.y = topBorder;
+				borderReached = true;
+			}
+			else if (_itemsContainerCamera.scrollY > bottomBorder)
+			{
+				targetPoint.y = bottomBorder;
+				borderReached = true;
+			}
+			
+			return borderReached;
 		}
 		
 		protected function stopAnimation():void
@@ -514,7 +532,7 @@ package molehill.easy.ui3d.scroll
 		/* ===== BORDERS ===== */
 		
 		// ---- LEFT ---- //
-		protected function checkLeftBorder():Boolean
+		protected function validateLeftBorder():Boolean
 		{
 			if (_itemsContainerCamera.scrollX < leftBorder - ELASCTIC_SIZE)
 			{
@@ -531,7 +549,7 @@ package molehill.easy.ui3d.scroll
 		}
 		
 		// ---- RIGHT ---- //
-		protected function checkRightBorder():Boolean
+		protected function validateRightBorder():Boolean
 		{
 			if (_itemsContainerCamera.scrollX > rightBorder + ELASCTIC_SIZE)
 			{
@@ -566,7 +584,7 @@ package molehill.easy.ui3d.scroll
 		}
 		
 		// ---- TOP ---- //
-		protected function checkTopBorder():Boolean
+		protected function validateTopBorder():Boolean
 		{
 			if (_itemsContainerCamera.scrollY < topBorder - ELASCTIC_SIZE)
 			{
@@ -583,7 +601,7 @@ package molehill.easy.ui3d.scroll
 		}
 		
 		// ---- BOTTOM ---- //
-		protected function checkBottomBorder():Boolean
+		protected function validateBottomBorder():Boolean
 		{
 			if (_itemsContainerCamera.scrollY > bottomBorder + ELASCTIC_SIZE)
 			{

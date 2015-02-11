@@ -168,7 +168,9 @@ package molehill.easy.ui3d.list
 		
 		private var _snapToEnd:Boolean = false;
 		
-		/** set to true to disable mouse scrolling, when numItems < numItemsPerPage */
+		/** set to true to snap end of list to the bottom of view port
+		 * Disabled by default. 
+		 */
 		public function set snapToEnd(value:Boolean):void
 		{
 			_snapToEnd = value;
@@ -184,7 +186,7 @@ package molehill.easy.ui3d.list
 		
 		private var _snapToClosestItem:Boolean = false;
 		
-		/** Enables snapping to closest item in the end of kinetic scroll.
+		/** Enables snapping to closest item in the end of kinetic or mouse scroll.
 		 * Disabled by default.
 		 */
 		public function set snapToClosestItem(value:Boolean):void
@@ -193,9 +195,21 @@ package molehill.easy.ui3d.list
 		}
 		
 		private var _lockAnimation:Boolean = false;
+		/** 
+		 * lock paging and item scrolling animation 
+		 */ 
 		public function set lockAnimation(value:Boolean):void
 		{
 			_lockAnimation = value;
+		}
+		
+		private var _numAdditionalLinesBefore:uint = 0;
+		/** 
+		 * Set num additional drawn lines before current item 
+		 */
+		public function set numAdditionalLinesBefore(value:uint):void
+		{
+			_numAdditionalLinesBefore = value;
 		}
 		
 		override protected function onItemsContainerMouseDown(event:Input3DMouseEvent):void
@@ -391,13 +405,13 @@ package molehill.easy.ui3d.list
 			_numLinesToScroll--;
 			
 			var nextPosition:Number = _scrollForward ? 
-				_secondLinePosition + 1 : 
-				(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition) - 1;
+				_secondLinePosition : 
+				(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition);
 			
 			_itemsContainerCamera.scrollX = Direction.VERTICAL ? nextPosition : 0;
 			_itemsContainerCamera.scrollY =  Direction.VERTICAL ? 0 : nextPosition;
 			
-			checkBorders();
+			validateBorders();
 		}		
 		
 		private function scrollNextLine(numLinesToScroll:int, duration:Number, forward:Boolean):void
@@ -410,8 +424,8 @@ package molehill.easy.ui3d.list
 			numLinesToScroll--;
 			
 			var nextPosition:Number = forward ? 
-				_secondLinePosition + 1 : 
-				(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition) - 1;
+				_secondLinePosition : 
+				(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition);
 			
 			_animation = OpenTween.go(
 				_itemsContainerCamera,
@@ -423,7 +437,7 @@ package molehill.easy.ui3d.list
 				0,
 				Linear.easeNone,
 				numLinesToScroll <= 0 ? completeScrolling : scrollNextLine,
-				checkBorders,
+				validateBorders,
 				numLinesToScroll <= 0 ? null : [numLinesToScroll, duration, forward]
 			);
 		}
@@ -647,13 +661,28 @@ package molehill.easy.ui3d.list
 		private var _itemsContainerSize:Number = 0;
 
 		
-		override protected function checkBottomBorder():Boolean
+		override protected function validateBorders(scrollingCompleted:Boolean=false):Boolean
+		{
+			var result:Boolean = super.validateBorders(scrollingCompleted);
+			
+			if (scrollingCompleted)
+			{
+				if (_updateCallback != null)
+				{
+					_updateCallback();
+				}
+			}
+			
+			return result;
+		}
+		
+		override protected function validateBottomBorder():Boolean
 		{
 			if (_snapToEnd)
 			{
 				if (_lastVisibleIndex < (_dataSource.length - 1))
 				{
-					while (_itemsContainerCamera.scrollY > _secondLinePosition && _lastVisibleIndex < (_dataSource.length - 1))
+					while (_itemsContainerCamera.scrollY >= _secondLinePosition && _lastVisibleIndex < (_dataSource.length - 1))
 					{
 						_itemsContainerCamera.scrollY -= _secondLinePosition;
 						_firstVisibleIndex += _numItemsPerLine;
@@ -672,7 +701,7 @@ package molehill.easy.ui3d.list
 			}
 			else
 			{
-				while (_itemsContainerCamera.scrollY > _secondLinePosition && _firstVisibleIndex < currentItemMax)
+				while (_itemsContainerCamera.scrollY >= _secondLinePosition && _firstVisibleIndex < currentItemMax)
 				{
 					_itemsContainerCamera.scrollY -= _secondLinePosition;
 					_firstVisibleIndex += _numItemsPerLine;
@@ -704,11 +733,11 @@ package molehill.easy.ui3d.list
 			}
 		}
 		
-		override protected function checkTopBorder():Boolean
+		override protected function validateTopBorder():Boolean
 		{
 			if (_firstVisibleIndex != 0)
 			{
-				while (_itemsContainerCamera.scrollY < _previousLinePosition && _firstVisibleIndex != 0)
+				while (_itemsContainerCamera.scrollY <= _previousLinePosition && _firstVisibleIndex != 0)
 				{
 					_itemsContainerCamera.scrollY -= _previousLinePosition;
 					_firstVisibleIndex = Math.max(0, _firstVisibleIndex - _numItemsPerLine);
@@ -729,13 +758,13 @@ package molehill.easy.ui3d.list
 		}
 		
 		
-		override protected function checkRightBorder():Boolean
+		override protected function validateRightBorder():Boolean
 		{
 			if (_snapToEnd)
 			{
 				if (_lastVisibleIndex < (_dataSource.length - 1))
 				{
-					while (_itemsContainerCamera.scrollX > _secondLinePosition && _lastVisibleIndex < (_dataSource.length - 1))
+					while (_itemsContainerCamera.scrollX >= _secondLinePosition && _lastVisibleIndex < (_dataSource.length - 1))
 					{
 						_itemsContainerCamera.scrollX -= _secondLinePosition;
 						_firstVisibleIndex += _numItemsPerLine;
@@ -754,7 +783,7 @@ package molehill.easy.ui3d.list
 			}
 			else
 			{
-				while (_itemsContainerCamera.scrollX > _secondLinePosition && _firstVisibleIndex < currentItemMax)
+				while (_itemsContainerCamera.scrollX >= _secondLinePosition && _firstVisibleIndex < currentItemMax)
 				{
 					_itemsContainerCamera.scrollX -= _secondLinePosition;
 					_firstVisibleIndex += _numItemsPerLine;
@@ -786,11 +815,11 @@ package molehill.easy.ui3d.list
 			}
 		}
 		
-		override protected function checkLeftBorder():Boolean
+		override protected function validateLeftBorder():Boolean
 		{
 			if (_firstVisibleIndex != 0)
 			{
-				while (_itemsContainerCamera.scrollX < _previousLinePosition && _firstVisibleIndex != 0)
+				while (_itemsContainerCamera.scrollX <= _previousLinePosition && _firstVisibleIndex != 0)
 				{
 					_itemsContainerCamera.scrollX -= _previousLinePosition;
 					_firstVisibleIndex = Math.max(0, _firstVisibleIndex - _numItemsPerLine);
@@ -820,6 +849,85 @@ package molehill.easy.ui3d.list
 			return _itemsContainerSize;
 		}
 		
+		override protected function checkCompleteScrollingPosition(targetPoint:Point):Boolean
+		{
+			var borderReached:Boolean = false;
+			
+			if (itemsContainerWidth <= _scrollingMask.width ||
+				(_itemsContainerCamera.scrollX < leftBorder && _firstVisibleIndex == 0)
+			)
+			{
+				targetPoint.x = leftBorder;
+				borderReached = true;
+			}
+			else if (_itemsContainerCamera.scrollX > rightBorder && _lastVisibleIndex == (_dataSource.length - 1))
+			{
+				targetPoint.x = rightBorder;
+				borderReached = true;
+			}
+			
+			if (itemsContainerHeight <= _scrollingMask.height ||
+				(_itemsContainerCamera.scrollY < topBorder && _firstVisibleIndex == 0)
+			)
+			{
+				targetPoint.y = topBorder;
+				borderReached = true;
+			}
+			else if (_itemsContainerCamera.scrollY > bottomBorder && _lastVisibleIndex == (_dataSource.length - 1))
+			{
+				targetPoint.y = bottomBorder;
+				borderReached = true;
+			}
+			
+			if (!borderReached && _snapToClosestItem)
+			{
+				var cameraScrollPosition:Number = _direction == Direction.HORIZONTAL ? _itemsContainerCamera.scrollY : _itemsContainerCamera.scrollX;
+				var gap:Number = _direction == Direction.HORIZONTAL ? _rowsGap : _columnsGap;
+				
+				if (cameraScrollPosition < (_previousLinePosition + gap) / 2)
+				{
+					if (_direction == Direction.HORIZONTAL)
+					{
+						targetPoint.y = _previousLinePosition;
+					}
+					else
+					{
+						targetPoint.x = _previousLinePosition;
+					}
+					
+					borderReached = true;
+				}
+				else if (cameraScrollPosition > (_secondLinePosition - gap) / 2)
+				{
+					if (_direction == Direction.HORIZONTAL)
+					{
+						targetPoint.y = _secondLinePosition;
+					}
+					else
+					{
+						targetPoint.x = _secondLinePosition;
+					}
+					
+					borderReached = true;
+				}
+				else
+				{
+					if (_direction == Direction.HORIZONTAL)
+					{
+						targetPoint.y = topBorder;
+					}
+					else
+					{
+						targetPoint.x = leftBorder;
+					}
+					
+					borderReached = true;
+				}
+			}
+			
+			return borderReached;
+		}
+		
 		
 		//==================
 		// update everything
@@ -837,7 +945,7 @@ package molehill.easy.ui3d.list
 		
 		private function get dataBeginIndex():int
 		{
-			return Math.max(_firstVisibleIndex - _numItemsPerLine, 0);
+			return Math.max(_firstVisibleIndex - (_numAdditionalLinesBefore + 1) * numItemsPerLine, 0);
 		}
 		
 		private var _helperCache:Object = new Object();
@@ -960,14 +1068,17 @@ package molehill.easy.ui3d.list
 						
 						currentX = 0;
 						
-						if (_secondLinePosition == 0 && currentY > 0)
+						if (i >= _firstVisibleIndex)
 						{
-							_secondLinePosition = currentY;
-						}
-						
-						if (currentY > _viewPort.height + _viewPort.y)
-						{
-							breakOnNextLine = true;
+							if (_secondLinePosition == 0 && currentY > 0)
+							{
+								_secondLinePosition = currentY;
+							}
+							
+							if (currentY > _viewPort.height + _viewPort.y)
+							{
+								breakOnNextLine = true;
+							}
 						}
 					}
 					else
@@ -1028,14 +1139,17 @@ package molehill.easy.ui3d.list
 						
 						currentY = 0;
 						
-						if (_secondLinePosition == 0 && currentX > 0)
+						if (i >= _firstVisibleIndex)
 						{
-							_secondLinePosition = currentX;
-						}
-						
-						if (currentX > _viewPort.width + _viewPort.x)
-						{
-							breakOnNextLine = true;
+							if (_secondLinePosition == 0 && currentX > 0)
+							{
+								_secondLinePosition = currentX;
+							}
+							
+							if (currentX > _viewPort.width + _viewPort.x)
+							{
+								breakOnNextLine = true;
+							}
 						}
 					}
 					else
