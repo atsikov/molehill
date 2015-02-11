@@ -38,6 +38,7 @@ package molehill.easy.ui3d.list
 			super();
 		}
 		
+		private var _delayedUpdate:Boolean = false;
 		override protected function onAddedToScene():void
 		{
 			super.onAddedToScene();
@@ -52,6 +53,12 @@ package molehill.easy.ui3d.list
 				{
 					_stage.removeEventListener(MouseEvent.MOUSE_WHEEL, onMouseWheel);
 				}
+			}
+			
+			if (_delayedUpdate)
+			{
+				_delayedUpdate = false;
+				update();
 			}
 		}
 		
@@ -121,6 +128,33 @@ package molehill.easy.ui3d.list
 			}
 		}
 		
+		private var _useCustomViewPort:Boolean = false;
+		override public function set viewPort(value:Rectangle):void
+		{
+			super.viewPort = value;
+			_useCustomViewPort = true;
+		}
+		
+		private function updateAutoViewPort():void
+		{
+			if (_useCustomViewPort ||
+				_rowHeight == 0 || 
+				_columnWidth == 0)
+			{
+				return;
+			}
+			
+			_viewPort.x = 0;
+			_viewPort.y = 0;
+			_viewPort.width = _direction == Direction.HORIZONTAL ?
+				_numItemsPerLine * (_columnWidth + _columnsGap) - _columnsGap :
+				_numLinesPerPage * (_columnWidth + _columnsGap) - _columnsGap;
+			
+			_viewPort.height = _direction == Direction.HORIZONTAL ?
+				_numLinesPerPage * (_rowHeight + _rowsGap) - _rowsGap :
+				_numItemsPerLine * (_rowHeight + _rowsGap) - _rowsGap;
+		}
+		
 		//==================
 		// list settings
 		//==================
@@ -136,6 +170,7 @@ package molehill.easy.ui3d.list
 		{
 			_updateCallback = value;
 		}
+		
 		
 		private var _mouseWheelEnabled:Boolean = false;
 		
@@ -157,6 +192,7 @@ package molehill.easy.ui3d.list
 			}
 		}
 		
+		
 		private var _mouseScrollingEnabled:Boolean = true;
 		
 		/** enable/disable mouse scrolling */
@@ -166,15 +202,32 @@ package molehill.easy.ui3d.list
 		}
 		
 		
+		public function set backgroundMouseEnabled(value:Boolean):void
+		{
+			_scrollingMask.mouseEnabled = value;
+			_scrollingMask.mouseTransparent = !value;
+			if (value)
+			{
+				_scrollingMask.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			}
+			else
+			{
+				_scrollingMask.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			}
+		}
+		
+		
 		private var _snapToEnd:Boolean = false;
 		
-		/** set to true to snap end of list to the bottom of view port
+		/** 
+		 * Set to true to snap end of list to the bottom of view port
 		 * Disabled by default. 
 		 */
 		public function set snapToEnd(value:Boolean):void
 		{
 			_snapToEnd = value;
 		}
+		
 		
 		private var _mouseScrollShortListLock:Boolean = false;
 		
@@ -184,15 +237,18 @@ package molehill.easy.ui3d.list
 			_mouseScrollShortListLock = value;
 		}
 		
+		
 		private var _snapToClosestItem:Boolean = false;
 		
-		/** Enables snapping to closest item in the end of kinetic or mouse scroll.
+		/** 
+		 * Enables snapping to closest item in the end of kinetic or mouse scroll.
 		 * Disabled by default.
 		 */
 		public function set snapToClosestItem(value:Boolean):void
 		{
 			_snapToClosestItem = value;
 		}
+		
 		
 		private var _lockAnimation:Boolean = false;
 		/** 
@@ -203,6 +259,7 @@ package molehill.easy.ui3d.list
 			_lockAnimation = value;
 		}
 		
+		
 		private var _numAdditionalLinesBefore:uint = 0;
 		/** 
 		 * Set num additional drawn lines before current item 
@@ -212,17 +269,17 @@ package molehill.easy.ui3d.list
 			_numAdditionalLinesBefore = value;
 		}
 		
+		
 		override protected function onItemsContainerMouseDown(event:Input3DMouseEvent):void
 		{
-			if (!_mouseScrollingEnabled)
+			if (!_mouseScrollingEnabled || _dataSource == null)
 			{
 				return;
 			}
 			
 			if (_mouseScrollShortListLock)
 			{
-				var viewPortSize:Number = _direction == Direction.HORIZONTAL ? _viewPort.height : _viewPort.width;
-				if (_itemsContainerSize <= viewPortSize)
+				if (_dataSource.length <= _numItemsPerLine * _numLinesPerPage)
 				{
 					return;
 				}
@@ -253,8 +310,9 @@ package molehill.easy.ui3d.list
 		public function set numLinesPerPage(value:uint):void
 		{
 			_numLinesPerPage = value;
+			
+			updateAutoViewPort();
 		}
-
 		
 		public function get canScrollToStart():Boolean
 		{
@@ -332,6 +390,21 @@ package molehill.easy.ui3d.list
 		{
 			if (index == _firstVisibleIndex)
 			{
+				if (_itemsContainerCamera.scrollX != leftBorder || _itemsContainerCamera.scrollY != rightBorder)
+				{
+					_animation = OpenTween.go(
+						_itemsContainerCamera,
+						{
+							scrollX : leftBorder,
+							scrollY : topBorder
+						},
+						LINE_ANIMATION_DURATION,
+						0,
+						Linear.easeNone,
+						_updateCallback
+					);
+				}
+				
 				return;
 			}
 			
@@ -481,6 +554,7 @@ package molehill.easy.ui3d.list
 			_rowsGap = value;
 		}
 		
+		
 		protected var _columnsGap:int;
 		public function get columnsGap():int
 		{
@@ -489,7 +563,42 @@ package molehill.easy.ui3d.list
 		public function set columnsGap(value:int):void
 		{
 			_columnsGap = value;
+			
+			updateAutoViewPort();
 		}
+		
+		protected var _rowHeight:int;
+		public function get rowHeight():int
+		{
+			return _rowHeight;
+		}
+		
+		/**
+		 * Use for autoSized viewPort
+		 */
+		public function set rowHeight(value:int):void
+		{
+			_rowHeight = value;
+			
+			updateAutoViewPort();
+		}
+		
+		
+		protected var _columnWidth:int;
+		public function get columnWidth():int
+		{
+			return _columnWidth;
+		}
+		/**
+		 * Use for autoSized viewPort
+		 */
+		public function set columnWidth(value:int):void
+		{
+			_columnWidth = value;
+			
+			updateAutoViewPort();
+		}
+		
 		
 		private var _numItemsPerLine:int = 1;
 		public function get numItemsPerLine():int
@@ -505,7 +614,10 @@ package molehill.easy.ui3d.list
 			}
 			
 			_numItemsPerLine = value;
+			
+			updateAutoViewPort();
 		}
+		
 		
 		protected var _direction:String = Direction.HORIZONTAL;
 		public function get direction():String
@@ -521,7 +633,9 @@ package molehill.easy.ui3d.list
 			
 			scrollDirection = _direction == Direction.HORIZONTAL ? VERTICAL : HORIZONTAL;
 			
-			updateItems();
+			updateAutoViewPort();
+			
+			update();
 		}
 		
 		
@@ -665,7 +779,7 @@ package molehill.easy.ui3d.list
 		{
 			var result:Boolean = super.validateBorders(scrollingCompleted);
 			
-			if (scrollingCompleted)
+			if (scrollingCompleted && (!canScrollToEnd || !canScrollToStart))
 			{
 				if (_updateCallback != null)
 				{
@@ -935,12 +1049,32 @@ package molehill.easy.ui3d.list
 		
 		public function update():void
 		{
-			if (_firstVisibleIndex > _dataSource.length - 1)
+			if (_dataSource == null)
 			{
-				_firstVisibleIndex = Math.max(_dataSource.length - _numItemsPerLine, 0);
+				return;
 			}
 			
-			updateItems();
+			if (scene == null || !scene.isActive)
+			{
+				_delayedUpdate = true;
+				return;
+			}	
+			
+			_firstVisibleIndex = Math.min(currentItemMax, _firstVisibleIndex);
+			
+			if (!validateBorders())
+			{
+				updateItems();
+			}
+			
+			if (_mouseScrollShortListLock)
+			{
+				if (_dataSource.length <= _numItemsPerLine * _numLinesPerPage)
+				{
+					_itemsContainerCamera.scrollX = leftBorder;
+					_itemsContainerCamera.scrollY = topBorder;
+				}
+			}
 		}
 		
 		private function get dataBeginIndex():int

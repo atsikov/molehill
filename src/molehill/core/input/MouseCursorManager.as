@@ -44,7 +44,14 @@ package molehill.core.input
 		
 		private function doSetCursor():void
 		{
-			Mouse.cursor = _cursorCandidate;
+			try
+			{
+				Mouse.cursor = _cursorCandidate;
+			}
+			catch (e:Error)
+			{
+				//nothing
+			}
 			_cursorCandidate = "";
 		}
 	}
