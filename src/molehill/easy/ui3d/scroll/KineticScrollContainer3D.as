@@ -23,7 +23,7 @@ package molehill.easy.ui3d.scroll
 	
 	import utils.DebugLogger;
 	
-	public class KineticScrollContainer extends Sprite3DContainer
+	public class KineticScrollContainer3D extends Sprite3DContainer
 	{
 		public static const FREE:String = "free";
 		public static const HORIZONTAL:String = "horizontal";
@@ -39,7 +39,7 @@ package molehill.easy.ui3d.scroll
 		protected var _viewPort:Rectangle;
 		protected var _scrollingMask:InteractiveSprite3D;
 		
-		public function KineticScrollContainer()
+		public function KineticScrollContainer3D()
 		{
 			super();
 			

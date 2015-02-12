@@ -4,6 +4,7 @@ package molehill.easy.ui3d.list
 	import easy.collections.events.CollectionEvent;
 	import easy.core.Direction;
 	import easy.core.IFactory;
+	import easy.core.events.ListEvent;
 	import easy.ui.IEasyItemRenderer;
 	import easy.ui.ILockableEasyItemRenderer;
 	
@@ -25,13 +26,13 @@ package molehill.easy.ui3d.list
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
 	import molehill.easy.ui3d.GridBox;
-	import molehill.easy.ui3d.scroll.KineticScrollContainer;
+	import molehill.easy.ui3d.scroll.KineticScrollContainer3D;
 	
 	import org.goasap.PlayStates;
 	import org.goasap.managers.LinearGoRepeater;
 	import org.opentween.OpenTween;
 
-	public class EasyScrollabelList3D extends KineticScrollContainer
+	public class EasyScrollabelList3D extends KineticScrollContainer3D
 	{
 		public function EasyScrollabelList3D()
 		{
@@ -153,6 +154,8 @@ package molehill.easy.ui3d.list
 			_viewPort.height = _direction == Direction.HORIZONTAL ?
 				_numLinesPerPage * (_rowHeight + _rowsGap) - _rowsGap :
 				_numItemsPerLine * (_rowHeight + _rowsGap) - _rowsGap;
+			
+			super.viewPort = _viewPort;
 		}
 		
 		//==================
@@ -364,7 +367,7 @@ package molehill.easy.ui3d.list
 		
 		public function get currentItemMax():uint
 		{
-			if (_dataSource == null)
+			if (_dataSource == null || _dataSource.length == 0)
 			{
 				return 0;
 			}
@@ -390,7 +393,7 @@ package molehill.easy.ui3d.list
 		{
 			if (index == _firstVisibleIndex)
 			{
-				if (_itemsContainerCamera.scrollX != leftBorder || _itemsContainerCamera.scrollY != rightBorder)
+				if (_itemsContainerCamera.scrollX != leftBorder || _itemsContainerCamera.scrollY != topBorder)
 				{
 					_animation = OpenTween.go(
 						_itemsContainerCamera,
@@ -442,7 +445,7 @@ package molehill.easy.ui3d.list
 				
 				var scrolledBack:Boolean = false;
 				
-				while (_lastVisibleIndex == _dataSource.length - 1)
+				while (_lastVisibleIndex == _dataSource.length - 1 && _firstVisibleIndex > 0)
 				{
 					_firstVisibleIndex -= _numItemsPerLine;
 					updateItems();
@@ -481,8 +484,8 @@ package molehill.easy.ui3d.list
 				_secondLinePosition : 
 				(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition);
 			
-			_itemsContainerCamera.scrollX = Direction.VERTICAL ? nextPosition : 0;
-			_itemsContainerCamera.scrollY =  Direction.VERTICAL ? 0 : nextPosition;
+			_itemsContainerCamera.scrollX = _direction == Direction.VERTICAL ? nextPosition : 0;
+			_itemsContainerCamera.scrollY =  _direction == Direction.VERTICAL ? 0 : nextPosition;
 			
 			validateBorders();
 		}		
@@ -552,6 +555,8 @@ package molehill.easy.ui3d.list
 		public function set rowsGap(value:int):void
 		{
 			_rowsGap = value;
+			
+			updateAutoViewPort();
 		}
 		
 		
@@ -708,6 +713,10 @@ package molehill.easy.ui3d.list
 		{
 			var itemRenderer:Sprite3D = _itemRendererFactory.newInstance() as Sprite3D;
 			
+			itemRenderer.addEventListener(Input3DMouseEvent.CLICK, onItemRendererClick);
+			itemRenderer.addEventListener(Input3DMouseEvent.MOUSE_OVER, onItemRendererRollOver);
+			itemRenderer.addEventListener(Input3DMouseEvent.MOUSE_OUT, onItemRendererRollOut);
+			
 			return itemRenderer as IEasyItemRenderer;
 		}
 		
@@ -764,6 +773,317 @@ package molehill.easy.ui3d.list
 			return _itemsContainer.getChildAt(childIndex) as IEasyItemRenderer;
 		}
 		
+		private var _itemClickEnabled:Boolean = false;
+		public function get itemClickEnabled():Boolean
+		{
+			return _itemClickEnabled;
+		}
+		public function set itemClickEnabled(value:Boolean):void
+		{
+			_itemClickEnabled = value;
+		}
+		
+		
+		/*** --------------------------------------------------------- ***/
+		/***                         Selection                         ***/
+		/*** --------------------------------------------------------- ***/
+		private var _allowSelection:Boolean = true;
+		private var _allowMultipleSelection:Boolean = false;
+		
+		private var _selectedItem:*;
+		
+		private var _dictSelectedItems:Array;
+		
+		public function get allowMultipleSelection():Boolean
+		{
+			return _allowMultipleSelection;
+		}
+		public function set allowMultipleSelection(value:Boolean):void
+		{
+			_allowMultipleSelection = value;
+			
+			if (_allowMultipleSelection && _dictSelectedItems == null)
+				_dictSelectedItems = new Array();
+		}
+		
+		private var _allowHighlight:Boolean = true;
+		public function get allowHighlight():Boolean
+		{
+			return _allowHighlight;
+		}
+		public function set allowHighlight(value:Boolean):void
+		{
+			_allowHighlight = value;
+		}
+		
+		private var _numMaxSelectedItems:int = int.MAX_VALUE;
+		public function get numMaxSelectedItems():int
+		{
+			return _numMaxSelectedItems;
+		}
+		
+		public function set numMaxSelectedItems(value:int):void
+		{
+			_numMaxSelectedItems = value;
+		}
+		
+		public function get numSelectedItems():int
+		{
+			return _dictSelectedItems.length;
+		}
+		
+		public function get allowSelection():Boolean
+		{
+			return _allowSelection;
+		}
+		public function set allowSelection(value:Boolean):void
+		{
+			_allowSelection = value;
+		}
+		
+		public function get selectedItem():*
+		{
+			return _selectedItem;
+		}
+		public function set selectedItem(value:*):void
+		{
+			if(!_allowSelection)
+			{
+				return;
+			}
+			if (_allowMultipleSelection)
+			{
+				_dictSelectedItems = new Array();
+				_dictSelectedItems.push(_selectedItem);
+			}
+			else
+			{
+				_selectedItem = value;
+				//_selectedIndex = -1;// вычислить на get-ере
+			}
+			update();
+			
+		}
+		
+		public function get selectedItems():Array
+		{
+			var items:Array;
+			if (_allowMultipleSelection)
+			{
+				items = _dictSelectedItems.concat();
+			}
+			else
+			{
+				items = _selectedItem != null ? [_selectedItem] : [];
+			}
+			
+			return items;
+		}
+		public function set selectedItems(value:Array):void
+		{
+			setSelectedItems(value);
+		}	
+		
+		/**
+		 * value:Array or value:Collection
+		 */
+		protected function setSelectedItems(value:*):void
+		{
+			if(!_allowSelection)
+			{
+				return;
+			}
+			if (_allowMultipleSelection)
+			{
+				_dictSelectedItems = new Array();
+				
+				if (value != null && value.length > 0)
+				{
+					_selectedItem = value[0];
+					for each(var element:* in value)
+					{
+						if (_dictSelectedItems.indexOf(element) == -1)
+						{
+							_dictSelectedItems.push(element);
+						}
+						
+						if (_dictSelectedItems.length >= _numMaxSelectedItems)
+						{
+							break;
+						}
+					}
+				}
+				
+				//_selectedIndex = -1;// вычислиться на get-ере
+			}
+			else
+			{
+				if (value != null && value.length > 0)
+				{
+					_selectedItem = value[0];
+					//_selectedIndex = -1;// вычислиться на get-ере
+				}
+				else
+				{
+					_selectedItem = null;
+					//_selectedIndex = -1;
+				}
+			}
+			update();
+			
+		}
+		
+		public function selectAll():void
+		{
+			setSelectedItems(_dataSource);
+		}
+		
+		public function unselectAll():void
+		{
+			selectedItems = null;
+		}
+		
+		public function selectItem(itemData:*):void
+		{
+			if(!_allowSelection)
+			{
+				return;
+			}
+			if (_allowMultipleSelection)
+			{
+				if (numSelectedItems >= _numMaxSelectedItems) 
+				{
+					return;
+				}
+				
+				if (_dictSelectedItems.indexOf(itemData) == -1)
+				{
+					_dictSelectedItems.push(itemData);
+				}
+				
+				if (_selectedItem == null)
+					_selectedItem = itemData;
+				//_selectedIndex =
+				// индекс искать не надо, при необходимости вычислиться на get-ере
+			}
+			else
+			{
+				_selectedItem = itemData;
+				//_selectedIndex = -1;
+			}
+		}
+		//---
+		protected function unselectItem(itemData:*):void
+		{
+			if (_allowMultipleSelection)
+			{
+				var index:int = _dictSelectedItems.indexOf(itemData);
+				if (index != -1)
+				{
+					_dictSelectedItems.splice(index, 1);
+				}
+			}
+			else
+			{
+				if (_selectedItem == itemData)
+				{
+					_selectedItem = null;
+					//_selectedIndex = -1;
+				}
+			}
+		}
+		
+		protected function isItemSelected(itemData:*):Boolean
+		{
+			if(!_allowSelection)
+			{
+				return false;
+			}
+			var itemSelected:Boolean = false;
+			if (_allowMultipleSelection)
+			{
+				itemSelected = _dictSelectedItems.indexOf(itemData) != -1;
+			}
+			else
+			{
+				itemSelected = _selectedItem === itemData;
+			}
+			
+			return itemSelected;
+		}
+		
+		
+		/*** --------------------------------------------------------- ***/
+		/***                           Mouse                           ***/
+		/*** --------------------------------------------------------- ***/
+		private function onItemRendererClick(event:Input3DMouseEvent):void
+		{
+			var itemRenderer:IEasyItemRenderer = event.currentTarget as IEasyItemRenderer;
+			if (itemRenderer == null)
+				return;
+			
+			var itemData:* = itemRenderer.itemData;
+			
+			if (_itemClickEnabled)
+			{
+				dispatchEvent(
+					new ListEvent(ListEvent.ITEM_CLICK, itemData)
+				); 
+			}
+			
+			if (!_allowSelection || !itemRenderer.isSelectable)
+				return;
+			
+			if (itemData == null)
+				return;
+			
+			if (_allowMultipleSelection)
+			{
+				if ( isItemSelected(itemData) )
+				{
+					unselectItem(itemData);
+				}
+				else if (numSelectedItems < numMaxSelectedItems)
+				{
+					selectItem(itemData);
+				}
+			}
+			else
+			{
+				selectItem(itemData);
+			}
+			
+			update();
+		}
+		//---
+		private function onItemRendererRollOver(event:Input3DMouseEvent):void
+		{
+			var itemRenderer:IEasyItemRenderer = event.currentTarget as IEasyItemRenderer;
+			if (itemRenderer == null)
+				return;
+			
+			if(allowHighlight)
+			{
+				itemRenderer.highlighted = true;
+				itemRenderer.update();
+			}
+		}
+		//---
+		private function onItemRendererRollOut(event:Input3DMouseEvent):void
+		{
+			var itemRenderer:IEasyItemRenderer = event.currentTarget as IEasyItemRenderer;
+			if (itemRenderer == null)
+				return;
+			
+			if(allowHighlight)
+			{
+				itemRenderer.highlighted = false;
+				itemRenderer.update();
+			}
+		}		
+		//---------------------------------------------------------------------------------------
+		
+		
 		//==================
 		// scroll limits
 		//==================
@@ -792,6 +1112,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function validateBottomBorder():Boolean
 		{
+			if (_direction == Direction.VERTICAL)
+			{
+				return false;
+			}
+			
 			if (_snapToEnd)
 			{
 				if (_lastVisibleIndex < (_dataSource.length - 1))
@@ -849,6 +1174,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function validateTopBorder():Boolean
 		{
+			if (_direction == Direction.VERTICAL)
+			{
+				return false;
+			}
+			
 			if (_firstVisibleIndex != 0)
 			{
 				while (_itemsContainerCamera.scrollY <= _previousLinePosition && _firstVisibleIndex != 0)
@@ -874,6 +1204,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function validateRightBorder():Boolean
 		{
+			if (_direction == Direction.HORIZONTAL)
+			{
+				return false;
+			}
+			
 			if (_snapToEnd)
 			{
 				if (_lastVisibleIndex < (_dataSource.length - 1))
@@ -931,6 +1266,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function validateLeftBorder():Boolean
 		{
+			if (_direction == Direction.HORIZONTAL)
+			{
+				return false;
+			}
+			
 			if (_firstVisibleIndex != 0)
 			{
 				while (_itemsContainerCamera.scrollX <= _previousLinePosition && _firstVisibleIndex != 0)
@@ -1062,10 +1402,9 @@ package molehill.easy.ui3d.list
 			
 			_firstVisibleIndex = Math.min(currentItemMax, _firstVisibleIndex);
 			
-			if (!validateBorders())
-			{
-				updateItems();
-			}
+			updateItems();
+			
+			validateBorders();
 			
 			if (_mouseScrollShortListLock)
 			{
@@ -1132,6 +1471,7 @@ package molehill.easy.ui3d.list
 				}
 				
 				itemRenderer.itemData = dataSource[i];
+				itemRenderer.selected = isItemSelected(dataSource[i]);
 				itemRenderer.update();
 				
 				if (i < _firstVisibleIndex)
