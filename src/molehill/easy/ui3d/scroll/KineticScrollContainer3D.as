@@ -29,13 +29,13 @@ package molehill.easy.ui3d.scroll
 		public static const HORIZONTAL:String = "horizontal";
 		public static const VERTICAL:String = "vertical";
 		
-		protected var _itemsContainer:UIComponent3D;
-		public function get itemsContainer():UIComponent3D
+		protected var _container:UIComponent3D;
+		public function get container():UIComponent3D
 		{
-			return _itemsContainer;
+			return _container;
 		}
 
-		protected var _itemsContainerCamera:CustomCamera;
+		protected var _containerCamera:CustomCamera;
 		protected var _viewPort:Rectangle;
 		protected var _scrollingMask:InteractiveSprite3D;
 		
@@ -57,13 +57,13 @@ package molehill.easy.ui3d.scroll
 			_scrollingMask.setTexture("core_easy_scrolling_mask_texture");
 			addChild(_scrollingMask);
 			
-			_itemsContainerCamera = new CustomCamera();
+			_containerCamera = new CustomCamera();
 			
-			_itemsContainer = new UIComponent3D();
-			_itemsContainer.camera = _itemsContainerCamera;
-			addChild(_itemsContainer);
+			_container = new UIComponent3D();
+			_container.camera = _containerCamera;
+			addChild(_container);
 			
-			_itemsContainer.mask = _scrollingMask;
+			_container.mask = _scrollingMask;
 			
 			_viewPort = new Rectangle();
 		}
@@ -138,7 +138,7 @@ package molehill.easy.ui3d.scroll
 		
 		override protected function onAddedToScene():void
 		{
-			_itemsContainer.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_container.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			_scrollingMask.addEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			super.onAddedToScene();
 			
@@ -161,7 +161,7 @@ package molehill.easy.ui3d.scroll
 				_stage = null;
 			}
 			
-			_itemsContainer.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
+			_container.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			_scrollingMask.removeEventListener(Input3DMouseEvent.MOUSE_DOWN, onItemsContainerMouseDown);
 			
 			_velocityX = 0;
@@ -392,8 +392,8 @@ package molehill.easy.ui3d.scroll
 		
 		protected function scrollOn(diffX:Number, diffY:Number):Boolean
 		{
-			_itemsContainerCamera.scrollX -= diffX;
-			_itemsContainerCamera.scrollY -= diffY;
+			_containerCamera.scrollX -= diffX;
+			_containerCamera.scrollY -= diffY;
 			
 			return validateBorders();
 		}
@@ -430,12 +430,12 @@ package molehill.easy.ui3d.scroll
 		
 		protected function get itemsContainerWidth():Number
 		{
-			return _itemsContainer.width;
+			return _container.width;
 		}
 		
 		protected function get itemsContainerHeight():Number
 		{
-			return _itemsContainer.height;
+			return _container.height;
 		}
 		
 		private var _scrollStarted:Boolean;
@@ -444,8 +444,8 @@ package molehill.easy.ui3d.scroll
 			stopAnimation();
 			
 			_endHelperPoint.setTo(
-				_itemsContainerCamera.scrollX,
-				_itemsContainerCamera.scrollY
+				_containerCamera.scrollX,
+				_containerCamera.scrollY
 			);
 			
 			var borderReached:Boolean = checkCompleteScrollingPosition(_endHelperPoint);
@@ -453,7 +453,7 @@ package molehill.easy.ui3d.scroll
 			if (animate && borderReached)
 			{
 				_animation = OpenTween.go(
-					_itemsContainerCamera,
+					_containerCamera,
 					{
 						scrollX : _endHelperPoint.x,
 						scrollY : _endHelperPoint.y
@@ -468,8 +468,8 @@ package molehill.easy.ui3d.scroll
 			}
 			else
 			{
-				_itemsContainerCamera.scrollX = _endHelperPoint.x;
-				_itemsContainerCamera.scrollY = _endHelperPoint.y;
+				_containerCamera.scrollX = _endHelperPoint.x;
+				_containerCamera.scrollY = _endHelperPoint.y;
 				
 				validateBorders(true);
 			}
@@ -483,23 +483,23 @@ package molehill.easy.ui3d.scroll
 		{
 			var borderReached:Boolean = false;
 			
-			if (_itemsContainerCamera.scrollX < leftBorder || itemsContainerWidth <= _scrollingMask.width)
+			if (_containerCamera.scrollX < leftBorder || itemsContainerWidth <= _scrollingMask.width)
 			{
 				targetPoint.x = leftBorder;
 				borderReached = true;
 			}
-			else if (_itemsContainerCamera.scrollX > rightBorder)
+			else if (_containerCamera.scrollX > rightBorder)
 			{
 				targetPoint.x = rightBorder;
 				borderReached = true;
 			}
 			
-			if (_itemsContainerCamera.scrollY < topBorder || itemsContainerHeight <= _scrollingMask.height)
+			if (_containerCamera.scrollY < topBorder || itemsContainerHeight <= _scrollingMask.height)
 			{
 				targetPoint.y = topBorder;
 				borderReached = true;
 			}
-			else if (_itemsContainerCamera.scrollY > bottomBorder)
+			else if (_containerCamera.scrollY > bottomBorder)
 			{
 				targetPoint.y = bottomBorder;
 				borderReached = true;
@@ -514,14 +514,19 @@ package molehill.easy.ui3d.scroll
 			{
 				_animation.stop();
 			}
+			
+			if (_stage != null)
+			{
+				_stage.removeEventListener(Event.ENTER_FRAME, onKineticEnterFrame);
+			}
 		}
 		
 		protected function onAnimationCompleted():void
 		{
 			if (_snapCameraToPixels)
 			{
-				_itemsContainerCamera.scrollX = int(_itemsContainerCamera.scrollX);
-				_itemsContainerCamera.scrollY = int(_itemsContainerCamera.scrollY);
+				_containerCamera.scrollX = int(_containerCamera.scrollX);
+				_containerCamera.scrollY = int(_containerCamera.scrollY);
 			}
 			
 			onScrollCompleted();
@@ -534,9 +539,9 @@ package molehill.easy.ui3d.scroll
 		// ---- LEFT ---- //
 		protected function validateLeftBorder():Boolean
 		{
-			if (_itemsContainerCamera.scrollX < leftBorder - ELASCTIC_SIZE)
+			if (_containerCamera.scrollX < leftBorder - ELASCTIC_SIZE)
 			{
-				_itemsContainerCamera.scrollX = leftBorder - ELASCTIC_SIZE;
+				_containerCamera.scrollX = leftBorder - ELASCTIC_SIZE;
 				return true;
 			}
 			
@@ -551,9 +556,9 @@ package molehill.easy.ui3d.scroll
 		// ---- RIGHT ---- //
 		protected function validateRightBorder():Boolean
 		{
-			if (_itemsContainerCamera.scrollX > rightBorder + ELASCTIC_SIZE)
+			if (_containerCamera.scrollX > rightBorder + ELASCTIC_SIZE)
 			{
-				_itemsContainerCamera.scrollX = rightBorder + ELASCTIC_SIZE;
+				_containerCamera.scrollX = rightBorder + ELASCTIC_SIZE;
 				return true;
 			}
 			
@@ -562,9 +567,9 @@ package molehill.easy.ui3d.scroll
 		
 		protected function get rightBorder():Number
 		{
-			if (_itemsContainer.width > _scrollingMask.width)
+			if (_container.width > _scrollingMask.width)
 			{
-				return _itemsContainer.width - _scrollingMask.width + _rightGap;
+				return _container.width - _scrollingMask.width + _rightGap;
 			}
 			else
 			{
@@ -586,9 +591,9 @@ package molehill.easy.ui3d.scroll
 		// ---- TOP ---- //
 		protected function validateTopBorder():Boolean
 		{
-			if (_itemsContainerCamera.scrollY < topBorder - ELASCTIC_SIZE)
+			if (_containerCamera.scrollY < topBorder - ELASCTIC_SIZE)
 			{
-				_itemsContainerCamera.scrollY = topBorder - ELASCTIC_SIZE;
+				_containerCamera.scrollY = topBorder - ELASCTIC_SIZE;
 				return true;
 			}
 			
@@ -603,9 +608,9 @@ package molehill.easy.ui3d.scroll
 		// ---- BOTTOM ---- //
 		protected function validateBottomBorder():Boolean
 		{
-			if (_itemsContainerCamera.scrollY > bottomBorder + ELASCTIC_SIZE)
+			if (_containerCamera.scrollY > bottomBorder + ELASCTIC_SIZE)
 			{
-				_itemsContainerCamera.scrollY = bottomBorder + ELASCTIC_SIZE;
+				_containerCamera.scrollY = bottomBorder + ELASCTIC_SIZE;
 				return true;
 			}
 			
@@ -614,9 +619,9 @@ package molehill.easy.ui3d.scroll
 		
 		protected function get bottomBorder():Number
 		{
-			if (_itemsContainer.height > _scrollingMask.height)
+			if (_container.height > _scrollingMask.height)
 			{
-				return _itemsContainer.height - _scrollingMask.height + _bottomGap;
+				return _container.height - _scrollingMask.height + _bottomGap;
 			}
 			else
 			{
