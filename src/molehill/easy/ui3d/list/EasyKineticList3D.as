@@ -490,6 +490,9 @@ package molehill.easy.ui3d.list
 					scrolledBack = true;
 				}
 				
+				_containerCamera.scrollX = leftBorder;
+				_containerCamera.scrollY = topBorder;
+				
 				if (scrolledBack)
 				{
 					_firstVisibleIndex += _numItemsPerLine;
