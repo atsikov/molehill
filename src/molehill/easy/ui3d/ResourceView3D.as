@@ -4,12 +4,16 @@ package molehill.easy.ui3d
 	
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
+	import molehill.core.texture.ARFTextureData;
+	import molehill.core.texture.BRFTextureData;
 	import molehill.core.texture.TextureManager;
 	
 	import resources.Resource;
 	import resources.ResourceFactory;
 	import resources.ResourceTypes;
 	import resources.events.ResourceEvent;
+	import resources.species.ARFResource;
+	import resources.species.BRFResource;
 	
 	[Event(name="resize", type="flash.events.Event")]
 	[Event(name="ready", type="resources.events.ResourceEvent")]
@@ -133,6 +137,15 @@ package molehill.easy.ui3d
 		
 		private function onResourceReady(event:Event):void
 		{
+			if (_res is ARFResource)
+			{
+				_urlToTextureID = (_res.getContentInstance() as ARFTextureData).textureAtlasData.listTexturesNames[0];
+			}
+			else if (_res is BRFResource)
+			{
+				_urlToTextureID = (_res.getContentInstance() as BRFTextureData).textureAtlasData.listTexturesNames[0];
+			}
+			
 			if (!TextureManager.getInstance().isTextureCreated(_urlToTextureID))
 			{
 				TextureManager.createTexture(
