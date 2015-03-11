@@ -456,12 +456,12 @@ package molehill.core.render.engine
 				var currentShader:Shader3D = chunkData.shader;
 				if (currentShader == null)
 				{
-					currentShader = shaderFactory.getShaderInstance(Shader3D, premultAlpha);
+					currentShader = shaderFactory.getShaderInstance(null, premultAlpha);
 				}
 				else
 				{
-					var shaderClass:Class = getDefinitionByName(getQualifiedClassName(currentShader)) as Class;
-					currentShader = shaderFactory.getShaderInstance(shaderClass, premultAlpha, currentShader.textureReadParams);
+					var shaderClassName:String = getQualifiedClassName(currentShader);
+					currentShader = shaderFactory.getShaderInstance(shaderClassName, premultAlpha, currentShader.textureReadParams);
 				}
 				
 				var additionalVertexBuffers:Vector.<OrderedVertexBuffer> = chunkData.additionalVertexBuffers;

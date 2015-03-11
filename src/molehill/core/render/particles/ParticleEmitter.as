@@ -15,6 +15,7 @@ package molehill.core.render.particles
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	import flash.utils.Timer;
+	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 	
 	import molehill.core.molehill_internal;
@@ -42,7 +43,9 @@ package molehill.core.render.particles
 		private var _enterFrameListener:Sprite
 		public function ParticleEmitter()
 		{
-			shader = Shader3DFactory.getInstance().getShaderInstance(ParticleEmitterShader);
+			shader = Shader3DFactory.getInstance().getShaderInstance(
+				getQualifiedClassName(ParticleEmitterShader)
+			);
 			
 			_indicesData = new ByteArray();
 			_indicesData.endian = Endian.LITTLE_ENDIAN;

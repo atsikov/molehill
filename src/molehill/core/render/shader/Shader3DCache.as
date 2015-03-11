@@ -5,6 +5,7 @@ package molehill.core.render.shader
 	import flash.display.Shader;
 	import flash.display3D.Context3D;
 	import flash.utils.Dictionary;
+	import flash.utils.getDefinitionByName;
 
 	public class Shader3DCache
 	{
@@ -30,7 +31,7 @@ package molehill.core.render.shader
 				throw new Error("Use ShaderCache::getInstance()");
 			}
 			
-			_cacheAssembledShaders = new Dictionary();
+			_cacheAssembledShaders = new Object();
 			_assembler = new AGALMiniAssembler();
 		}
 		
@@ -53,30 +54,31 @@ package molehill.core.render.shader
 			}
 		}
 		
-		private var _cacheAssembledShaders:Dictionary;
-		public function registerShader(shaderClass:Class, premultAlpha:Boolean, textureParams:uint):Shader3D
+		private var _cacheAssembledShaders:Object;
+		public function registerShader(shaderClassName:String, premultAlpha:Boolean, textureParams:uint):Shader3D
 		{
 			var premultAlphaIndex:int = premultAlpha ? 1 : 0;
-			if (_cacheAssembledShaders[shaderClass] != null &&
-				_cacheAssembledShaders[shaderClass][premultAlphaIndex] != null &&
-				_cacheAssembledShaders[shaderClass][premultAlphaIndex][textureParams] != null)
+			if (_cacheAssembledShaders[shaderClassName] != null &&
+				_cacheAssembledShaders[shaderClassName][premultAlphaIndex] != null &&
+				_cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams] != null)
 			{
-				return _cacheAssembledShaders[shaderClass][premultAlphaIndex][textureParams];
+				return _cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams];
 			}
 			
+			var shaderClass:Class = getDefinitionByName(shaderClassName) as Class;
 			var shader:Shader3D = new shaderClass();
 			shader.premultAlpha = premultAlpha;
 			shader.textureReadParams = textureParams;
 			
-			if (_cacheAssembledShaders[shaderClass] == null)
+			if (_cacheAssembledShaders[shaderClassName] == null)
 			{
-				_cacheAssembledShaders[shaderClass] = new Array();
+				_cacheAssembledShaders[shaderClassName] = new Array();
 			}
-			if (_cacheAssembledShaders[shaderClass][premultAlphaIndex] == null)
+			if (_cacheAssembledShaders[shaderClassName][premultAlphaIndex] == null)
 			{
-				_cacheAssembledShaders[shaderClass][premultAlphaIndex] = new Array();
+				_cacheAssembledShaders[shaderClassName][premultAlphaIndex] = new Array();
 			}
-			_cacheAssembledShaders[shaderClass][premultAlphaIndex][textureParams] = shader;
+			_cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams] = shader;
 			
 			if (_context3D != null)
 			{

@@ -1,13 +1,12 @@
 package molehill.core.sprite
 {
-	import avmplus.getQualifiedClassName;
-	
 	import easy.collections.BinarySearchTreeNode;
 	
 	import flash.display.BitmapData;
 	import flash.events.EventDispatcher;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.utils.getQualifiedClassName;
 	
 	import molehill.core.Scene3DManager;
 	import molehill.core.molehill_internal;
@@ -1455,9 +1454,13 @@ package molehill.core.sprite
 				
 				if (value != null)
 				{
-					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
+					value.shader = Shader3DFactory.getInstance().getShaderInstance(
+						getQualifiedClassName(MaskAlphaCutoutShader)
+					);
 					_unmaskedShader = shader;
-					shader = Shader3DFactory.getInstance().getShaderInstance(MaskedObjectShader);
+					shader = Shader3DFactory.getInstance().getShaderInstance(
+						getQualifiedClassName(MaskedObjectShader)
+					);
 				}
 			}
 			
@@ -1490,9 +1493,13 @@ package molehill.core.sprite
 				
 				if (value != null && Scene3DManager.getInstance().renderEngine != null)
 				{
-					value.shader = Shader3DFactory.getInstance().getShaderInstance(MaskAlphaCutoutShader);
+					value.shader = Shader3DFactory.getInstance().getShaderInstance(
+						getQualifiedClassName(MaskAlphaCutoutShader)
+					);
 					_unmaskedShader = shader;
-					shader = Shader3DFactory.getInstance().getShaderInstance(CutoutObjectShader);
+					shader = Shader3DFactory.getInstance().getShaderInstance(
+						getQualifiedClassName(CutoutObjectShader)
+					);
 				}
 			}
 			

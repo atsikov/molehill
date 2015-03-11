@@ -106,7 +106,7 @@ package molehill.easy.ui3d
 				_photo.darkenColor = 0xFFFFFF
 				_photo.setTexture(_photoTextureId);
 				
-				_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
+				_photo.shader = Shader3DFactory.getInstance().getShaderInstance(null, true);
 				sizePhoto();
 				return;
 			}
@@ -143,7 +143,7 @@ package molehill.easy.ui3d
 				{
 					_photo = new Sprite3D();
 					_photo.darkenColor = _emptyPhotoFillColor;
-					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(null, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 				addChild(_photo);
 			}
@@ -158,7 +158,7 @@ package molehill.easy.ui3d
 				{
 					_photo.setTexture(null);
 					_photo.darkenColor = _emptyPhotoFillColor;
-					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+					_photo.shader = Shader3DFactory.getInstance().getShaderInstance(null, true, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				}
 			}
 			sizePhoto();
@@ -284,7 +284,7 @@ package molehill.easy.ui3d
 				addChild(_photo);
 			}
 			
-			_photo.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, true);
+			_photo.shader = Shader3DFactory.getInstance().getShaderInstance(null, true);
 			_photo.darkenColor = 0xFFFFFF
 			_photo.setTexture(_photoTextureId);
 			

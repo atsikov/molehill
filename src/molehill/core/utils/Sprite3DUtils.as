@@ -115,7 +115,7 @@ package molehill.core.utils
 			}
 			if (rawData['shader'] == 'color')
 			{
-				sprite.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+				sprite.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			}
 			
 			if (rawData['custom_animation'] != null)
@@ -168,7 +168,7 @@ package molehill.core.utils
 		public static function createRect(width:Number, height:Number, color:uint = 0xFFFFFF):Sprite3D
 		{
 			var rect:Sprite3D = new Sprite3D();
-			rect.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+			rect.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			rect.darkenColor = color;
 			rect.setSize(width, height);
 			return rect;

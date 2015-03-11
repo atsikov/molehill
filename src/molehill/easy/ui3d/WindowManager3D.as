@@ -182,7 +182,7 @@ package molehill.easy.ui3d
 		private function getModalBG():Sprite3D
 		{
 			var sprite:Sprite3D = new InteractiveSprite3D();
-			sprite.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+			sprite.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			sprite.moveTo(contentRegion.x, contentRegion.y);
 			sprite.setSize(contentRegion.width, contentRegion.height);
 			sprite.darkenColor = _modalBGColor;

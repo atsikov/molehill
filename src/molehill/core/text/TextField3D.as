@@ -33,7 +33,7 @@ package molehill.core.text
 			}
 
 			shader = Shader3DFactory.getInstance().getShaderInstance(
-				Shader3D,
+				null,
 				true,
 				Shader3D.TEXTURE_FILTER_LINEAR | Shader3D.TEXTURE_MIP_MIPLINEAR | Shader3D.TEXTURE_REPEAT_CLAMP
 			);

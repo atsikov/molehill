@@ -34,7 +34,7 @@ package molehill.easy.debug
 		public function PerformanceMonitorComponent()
 		{
 			var bgMemoryMonitor:Sprite3D = new Sprite3D();
-			bgMemoryMonitor.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+			bgMemoryMonitor.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 			bgMemoryMonitor.setSize(150, 150);
 			bgMemoryMonitor.darkenColor = 0x2f2f2f;
 			addChild(bgMemoryMonitor);
@@ -196,7 +196,7 @@ package molehill.easy.debug
 			{
 				piece = _cacheSprites.newInstance();
 				piece.darkenColor = 0x00FF00;
-				piece.shader = Shader3DFactory.getInstance().getShaderInstance(Shader3D, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+				piece.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
 				piece.setSize(1, 1);
 				piece.moveTo(150 - _containerMemoryGraph.x, pointY);
 				_containerMemoryGraph.addChild(piece);
