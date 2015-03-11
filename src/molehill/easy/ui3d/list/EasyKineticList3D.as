@@ -493,7 +493,7 @@ package molehill.easy.ui3d.list
 				_containerCamera.scrollX = leftBorder;
 				_containerCamera.scrollY = topBorder;
 				
-				if (scrolledBack)
+				if (scrolledBack && _lastVisibleIndex < _dataSource.length - 1)
 				{
 					_firstVisibleIndex += _numItemsPerLine;
 					updateItems();
