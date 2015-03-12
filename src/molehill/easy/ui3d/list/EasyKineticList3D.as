@@ -383,6 +383,12 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
+			if (_dataSource.length == 0)
+			{
+				scrollToIndex(0, false);
+				return;
+			}
+			
 			itemIndex = Math.min(itemIndex, _dataSource.length - 1);
 			var targetIndex:uint = Math.floor(itemIndex / _numItemsPerLine) * _numItemsPerLine;
 			
