@@ -279,6 +279,13 @@ package molehill.core.text
 					charTextureData = charAtlasData.getTextureData(textureName);
 				}
 				
+				if (charTextureData == null)
+				{
+					charAtlasData = null;
+					i--;
+					continue;
+				}
+				
 				var child:TextField3DCharacter;
 				if (childIndex < numChildren)
 				{
@@ -465,6 +472,11 @@ package molehill.core.text
 			{
 				_parent.updateDimensions(this, needUpdateParent);
 			}
+		}
+		
+		public function get hashChars():Object
+		{
+			return _hashChars;
 		}
 		
 		private static var _hashChars:Object = new Object();
