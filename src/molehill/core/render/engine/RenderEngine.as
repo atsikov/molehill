@@ -489,15 +489,19 @@ package molehill.core.render.engine
 					}
 				}
 				
-				if (lastShaderClassName != currentShaderClassName)
+				if (lastShader != currentShader)
 				{
-					if (lastShader != null)
+					if (lastShaderClassName != currentShaderClassName)
 					{
-						lastShader.cleanUpContext(_context3D);
+						if (lastShader != null)
+						{
+							lastShader.cleanUpContext(_context3D);
+						}
+						
+						//trace("setting shader: " + currentShader);						
 					}
-					currentShader.prepareContext(_context3D);
 					
-					//trace("setting shader: " + currentShader);
+					currentShader.prepareContext(_context3D);
 					_context3D.setProgram(currentShader.getAssembledProgram());
 					
 					lastShader = currentShader;
