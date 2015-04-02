@@ -388,6 +388,8 @@ package molehill.core.render.engine
 			
 			var currentCamera:CustomCamera;
 			
+			var lastShaderClassName:String = null;
+			
 			while (!_listRenderChunks.empty)
 			{
 				var chunkData:RenderChunkData = _listRenderChunks.dequeue() as RenderChunkData;
@@ -454,14 +456,16 @@ package molehill.core.render.engine
 				var premultAlpha:Boolean = !isCompressed && !toBitmapData;
 				
 				var currentShader:Shader3D = chunkData.shader;
+				var currentShaderClassName:String = null;
+				
 				if (currentShader == null)
 				{
 					currentShader = shaderFactory.getShaderInstance(null, premultAlpha);
 				}
 				else
 				{
-					var shaderClassName:String = getQualifiedClassName(currentShader);
-					currentShader = shaderFactory.getShaderInstance(shaderClassName, premultAlpha, currentShader.textureReadParams);
+					currentShaderClassName = getQualifiedClassName(currentShader);
+					currentShader = shaderFactory.getShaderInstance(currentShaderClassName, premultAlpha, currentShader.textureReadParams);
 				}
 				
 				var additionalVertexBuffers:Vector.<OrderedVertexBuffer> = chunkData.additionalVertexBuffers;
@@ -485,7 +489,7 @@ package molehill.core.render.engine
 					}
 				}
 				
-				if (lastShader != currentShader)
+				if (lastShaderClassName != currentShaderClassName)
 				{
 					if (lastShader != null)
 					{
@@ -497,6 +501,7 @@ package molehill.core.render.engine
 					_context3D.setProgram(currentShader.getAssembledProgram());
 					
 					lastShader = currentShader;
+					lastShaderClassName = currentShaderClassName;
 				}
 				
 				_context3D.setTextureAt(0, chunkData.texture);

@@ -1269,7 +1269,7 @@ package molehill.easy.ui3d.list
 		
 		override protected function get bottomBorder():Number
 		{
-			if (_container.numChildren > 0 && _itemsContainerSize > _viewPort.height)
+			if (_container.numChildren > 0 && _itemsContainerSize > (_viewPort.height + _viewPort.y))
 			{
 				return _itemsContainerSize - _viewPort.height - _viewPort.y + bottomGap;
 			}
@@ -1361,7 +1361,7 @@ package molehill.easy.ui3d.list
 		
 		override protected function get rightBorder():Number
 		{
-			if (_container.numChildren > 0 && _itemsContainerSize > _viewPort.width)
+			if (_container.numChildren > 0 && _itemsContainerSize > (_viewPort.width + _viewPort.x))
 			{
 				return _itemsContainerSize - _viewPort.width - _viewPort.x + rightGap;
 			}
