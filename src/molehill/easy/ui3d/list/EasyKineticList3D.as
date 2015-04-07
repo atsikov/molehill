@@ -456,8 +456,8 @@ package molehill.easy.ui3d.list
 			
 			stopAnimation();
 			
-			index = Math.max(0, index);
 			index = Math.min(index, _dataSource.length - 1)
+			index = Math.max(0, index);
 			
 			stopScrolling();
 			
