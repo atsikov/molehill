@@ -1781,7 +1781,7 @@ package molehill.easy.ui3d.list
 			
 			if (_showEmptyCells)
 			{
-				var numEmptyRenderers:uint = (lastAddedIndex + 1) % _numItemsPerLine;
+				var numEmptyRenderers:uint = _numItemsPerLine - 1 - lastAddedIndex % _numItemsPerLine;
 				
 				if (numEmptyRenderers > 0)
 				{
