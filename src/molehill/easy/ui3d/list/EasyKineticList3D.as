@@ -1297,7 +1297,6 @@ package molehill.easy.ui3d.list
 			{
 				while (_containerCamera.scrollY <= _previousLinePosition && _firstVisibleIndex != 0)
 				{
-					trace(_containerCamera.scrollY, _previousLinePosition, _firstVisibleIndex);
 					_containerCamera.scrollY -= _previousLinePosition;
 					_firstVisibleIndex = Math.max(0, _firstVisibleIndex - _numItemsPerLine);
 					updateItems();
