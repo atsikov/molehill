@@ -408,7 +408,12 @@ package molehill.easy.ui3d.list
 			
 			if (_snapToEnd)
 			{
-				index = (_dataSource.length + _dataSource.length % _numItemsPerLine) - numItemsPerPage;
+				if (_dataSource.length < numItemsPerPage)
+				{
+					return 0;
+				}
+				
+				index = (_dataSource.length + (_dataSource.length - 1) % _numItemsPerLine) - numItemsPerPage;
 			}
 			else
 			{
@@ -675,6 +680,8 @@ package molehill.easy.ui3d.list
 			}
 			
 			_numItemsPerLine = value;
+			
+			_firstVisibleIndex -= _firstVisibleIndex % _numItemsPerLine;
 			
 			updateAutoViewPort();
 		}
@@ -1290,6 +1297,7 @@ package molehill.easy.ui3d.list
 			{
 				while (_containerCamera.scrollY <= _previousLinePosition && _firstVisibleIndex != 0)
 				{
+					trace(_containerCamera.scrollY, _previousLinePosition, _firstVisibleIndex);
 					_containerCamera.scrollY -= _previousLinePosition;
 					_firstVisibleIndex = Math.max(0, _firstVisibleIndex - _numItemsPerLine);
 					updateItems();
