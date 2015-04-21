@@ -441,7 +441,24 @@ package molehill.easy.ui3d.list
 		{
 			if (index == _firstVisibleIndex)
 			{
-				if (_containerCamera.scrollX != leftBorder || _containerCamera.scrollY != topBorder)
+				if (_snapToEnd && index == currentItemMax)
+				{
+					if (_containerCamera.scrollX != rightBorder || _containerCamera.scrollY != bottomBorder)
+					{
+						_animation = OpenTween.go(
+							_containerCamera,
+							{
+								scrollX : rightBorder,
+								scrollY : bottomBorder
+							},
+							LINE_ANIMATION_DURATION,
+							0,
+							Linear.easeNone,
+							_updateCallback
+						);
+					}
+				}
+				else if (_containerCamera.scrollX != leftBorder || _containerCamera.scrollY != topBorder)
 				{
 					_animation = OpenTween.go(
 						_containerCamera,
@@ -499,10 +516,23 @@ package molehill.easy.ui3d.list
 					updateItems();
 					
 					scrolledBack = true;
+					
+					if (_firstVisibleIndex < currentItemMax)
+					{
+						break;
+					}
 				}
 				
-				_containerCamera.scrollX = leftBorder;
-				_containerCamera.scrollY = topBorder;
+				if (_snapToEnd && _firstVisibleIndex == currentItemMax - 1)
+				{
+					_containerCamera.scrollX = rightBorder;
+					_containerCamera.scrollY = bottomBorder;
+				}
+				else
+				{
+					_containerCamera.scrollX = leftBorder;
+					_containerCamera.scrollY = topBorder;
+				}
 				
 				if (scrolledBack && _lastVisibleIndex < _dataSource.length - 1)
 				{
@@ -885,6 +915,23 @@ package molehill.easy.ui3d.list
 			}
 			
 			return _container.getChildAt(childIndex) as IEasyItemRenderer;
+		}
+		
+		public function getItemRendererByData(itemData:*):IEasyItemRenderer
+		{
+			for (var i:int = 0; i < _container.numChildren; i++) 
+			{
+				var itemRenderer:IEasyItemRenderer = _container.getChildAt(i) as IEasyItemRenderer;
+				
+				if (itemRenderer == null || itemRenderer.itemData !== itemData)
+				{
+					continue;
+				}
+				
+				return itemRenderer;
+			}
+			
+			return null;
 		}
 		
 		private var _itemClickEnabled:Boolean = false;
@@ -1276,6 +1323,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function get bottomBorder():Number
 		{
+			if (_direction == Direction.VERTICAL)
+			{
+				return 0;
+			}
+			
 			if (_container.numChildren > 0 && _itemsContainerSize > (_viewPort.height + _viewPort.y))
 			{
 				return _itemsContainerSize - _viewPort.height - _viewPort.y + bottomGap;
@@ -1368,6 +1420,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function get rightBorder():Number
 		{
+			if (_direction == Direction.HORIZONTAL)
+			{
+				return 0;
+			}
+			
 			if (_container.numChildren > 0 && _itemsContainerSize > (_viewPort.width + _viewPort.x))
 			{
 				return _itemsContainerSize - _viewPort.width - _viewPort.x + rightGap;
