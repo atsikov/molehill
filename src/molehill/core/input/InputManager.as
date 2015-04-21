@@ -156,6 +156,7 @@ package molehill.core.input
 			_mouseKeyStateChanged = true;
 		}
 		
+		private var _tapEvent:Boolean;
 		private var _listObjectsMouseDown:Array;
 		private function onMouseDown(event:MouseEvent):void
 		{
@@ -166,6 +167,8 @@ package molehill.core.input
 			
 			_mouseKeyPressed = true;
 			_mouseKeyStateChanged = true;
+			
+			_tapEvent = true;
 		}
 		
 		private var _objectsUnderMouse:Dictionary;
@@ -239,6 +242,8 @@ package molehill.core.input
 				return;
 			}
 			
+			_tapEvent &&= !_mouseKeyPressed;
+			
 			var listener:InteractiveSprite3D;
 			var mousePoint:Point = new Point(_mouseStageX, _mouseStageY);
 			var nativeObjects:Array = _stage.stage.getObjectsUnderPoint(mousePoint);
@@ -288,6 +293,16 @@ package molehill.core.input
 					_objectsUnderMouse[listener] = null;
 				}
 				
+				if (_tapEvent)
+				{
+					_tapEvent = false;
+					onListenerEnterFrame(event);
+					return;
+				}
+				
+				_mouseKeyStateChanged = false;
+				_mouseCoordsChanged = false;
+					
 				return;
 			}
 			
@@ -380,7 +395,7 @@ package molehill.core.input
 				
 				if (_mouseKeyStateChanged)
 				{
-					_lastMouseDownObject = _mouseKeyPressed ? topInteractiveParent : null;
+					_lastMouseDownObject = _mouseKeyPressed || _tapEvent ? topInteractiveParent : null;
 				}
 			}
 			
@@ -427,6 +442,13 @@ package molehill.core.input
 				_objectsUnderMouse[listener] = null;
 			}
 			
+			if (_tapEvent)
+			{
+				_tapEvent = false;
+				onListenerEnterFrame(event);
+				return;
+			}
+			
 			_mouseKeyStateChanged = false;
 			_mouseCoordsChanged = false;
 		}
@@ -450,7 +472,7 @@ package molehill.core.input
 				}
 			}
 			
-			if (_mouseKeyStateChanged && !_mouseKeyPressed && _lastMouseDownObject === candidate)
+			if (_mouseKeyStateChanged && !(_mouseKeyPressed || _tapEvent) && _lastMouseDownObject === candidate)
 			{
 				if (candidate.onMouseClick(
 					_mouseStageX,
@@ -464,7 +486,7 @@ package molehill.core.input
 				}
 			}
 			
-			if (_mouseKeyStateChanged && !_mouseKeyPressed)
+			if (_mouseKeyStateChanged && !(_mouseKeyPressed || _tapEvent))
 			{
 				if (candidate.onMouseUp(
 					_mouseStageX,
@@ -478,7 +500,7 @@ package molehill.core.input
 				}
 			}
 			
-			if (_mouseKeyStateChanged && _mouseKeyPressed)
+			if (_mouseKeyStateChanged && (_mouseKeyPressed || _tapEvent))
 			{
 				if (candidate.onMouseDown(
 					_mouseStageX,
