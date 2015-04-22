@@ -413,7 +413,7 @@ package molehill.easy.ui3d.list
 					return 0;
 				}
 				
-				index = (_dataSource.length + (_dataSource.length - 1) % _numItemsPerLine) - numItemsPerPage;
+				index = (Math.floor((_dataSource.length - 1) / _numItemsPerLine) + 1) * _numItemsPerLine - numItemsPerPage;
 			}
 			else
 			{
@@ -523,7 +523,7 @@ package molehill.easy.ui3d.list
 					}
 				}
 				
-				if (_snapToEnd && _firstVisibleIndex == currentItemMax - 1)
+				if (_snapToEnd && _firstVisibleIndex == currentItemMax - _numItemsPerLine)
 				{
 					_containerCamera.scrollX = rightBorder;
 					_containerCamera.scrollY = bottomBorder;
