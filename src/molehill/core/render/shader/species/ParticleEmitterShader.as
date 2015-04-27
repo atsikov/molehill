@@ -73,7 +73,7 @@ package molehill.core.render.shader.species
 		{
 			var outputColor:ShaderRegister = FT1;
 			var textureCoords:ShaderRegister = V0;
-			var fragmentColor:ShaderRegister = FT7;
+			var fragmentColor:ShaderRegister = FT3;
 			
 			// x - lived for (secs), y - life progress, z - time^2 (secs), w - life progress^2
 			var time:ShaderRegister = V2;

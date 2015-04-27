@@ -519,8 +519,12 @@ package molehill.core.texture
 		private var _hashARFDataByTextureID:Object;
 		
 		private var _notUsedTextures:Dictionary;
+		
+		public static var lastRestoredTexture:String;
 		private function tryRestoreTexture(textureId:String):Boolean
 		{
+			lastRestoredTexture = textureId;
+			
 			if (_hashAtlasDataByTextureID[textureId] == null)
 			{
 				return false;
