@@ -11,6 +11,7 @@ package molehill.easy.ui3d
 		}
 		
 		public var isCenter:Boolean = true;
+		public var skipEmptyChildren:Boolean = false;
 		public var space:int = 10;
 
 		protected var _boxWidth:Number;
@@ -54,6 +55,7 @@ package molehill.easy.ui3d
 				
 				var boundsWidth:Number = 0;
 				var boundsHeight:Number = 0;
+				var numSkipped:uint = 0;
 				var child:Sprite3D;
 				for (i = 0; i < numChildren; i++)
 				{
@@ -67,9 +69,14 @@ package molehill.easy.ui3d
 						boundsWidth = child.width;
 					}
 					boundsHeight += child.height;
+					
+					if (child.height == 0 && skipEmptyChildren)
+					{
+						numSkipped++;
+					}
 				}
 				
-				boundsHeight += space * (numChildren - 1);
+				boundsHeight += space * Math.max(0, numChildren - 1 - numSkipped);
 				var center:Number;
 				var currentY:Number;
 				if (autosize)
@@ -95,7 +102,11 @@ package molehill.easy.ui3d
 					}
 					child.x = isCenter ? int(center - child.width / 2) : 0;
 					child.y = int(currentY);
-					currentY += child.height + space;
+					
+					if (child.height > 0 || !skipEmptyChildren)
+					{
+						currentY += child.height + space;
+					}
 				}
 			}
 			else
