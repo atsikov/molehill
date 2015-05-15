@@ -39,6 +39,31 @@ package molehill.easy.ui3d.list
 			super();
 		}
 		
+		private var _scroller:EasyKineticList3DScrollerBase;
+		public function get scroller():EasyKineticList3DScrollerBase 
+		{ 
+			return _scroller; 
+		}
+		
+		/** check <b>rowHeight</b> or <b>columnWidth</b> and <b>numLinesPerPage</b> for this list
+		 * @see EasyKineticList3D.rowHeight
+		 * @see EasyKineticList3D.columnWidth
+		 * @see EasyKineticList3D.numLinesPerPage
+		 */
+		public function set scroller(value:EasyKineticList3DScrollerBase):void
+		{
+			if (_scroller == value)
+				return;
+			if (_scroller != null)
+			{
+				_scroller.list = null;
+			}
+			
+			_scroller = value;
+			_scroller.list = this;
+		}
+		
+		
 		private var _delayedUpdate:Boolean = false;
 		override protected function onAddedToScene():void
 		{
@@ -113,6 +138,14 @@ package molehill.easy.ui3d.list
 				{
 					item.locked = true;
 				}
+			}
+		}
+		
+		override protected function completeScrollingTweenUpdate():void
+		{
+			if (_scroller != null)
+			{
+				_scroller.updatePosition();
 			}
 		}
 		
@@ -454,7 +487,8 @@ package molehill.easy.ui3d.list
 							LINE_ANIMATION_DURATION,
 							0,
 							Linear.easeNone,
-							_updateCallback
+							_updateCallback,
+							completeScrollingTweenUpdate
 						);
 					}
 				}
@@ -469,7 +503,8 @@ package molehill.easy.ui3d.list
 						LINE_ANIMATION_DURATION,
 						0,
 						Linear.easeNone,
-						_updateCallback
+						_updateCallback,
+						completeScrollingTweenUpdate
 					);
 				}
 				
@@ -544,6 +579,11 @@ package molehill.easy.ui3d.list
 				else
 				{
 					completeScrolling(false);
+				}
+				
+				if (_scroller != null)
+				{
+					_scroller.updatePosition();
 				}
 			}
 		}
@@ -675,8 +715,12 @@ package molehill.easy.ui3d.list
 		public function set rowHeight(value:int):void
 		{
 			_rowHeight = value;
-			
 			updateAutoViewPort();
+			
+			if (_scroller != null)
+			{
+				_scroller.updatePosition();
+			}
 		}
 		
 		
@@ -693,6 +737,11 @@ package molehill.easy.ui3d.list
 			_columnWidth = value;
 			
 			updateAutoViewPort();
+			
+			if (_scroller != null)
+			{
+				_scroller.updatePosition();
+			}
 		}
 		
 		
@@ -1246,6 +1295,117 @@ package molehill.easy.ui3d.list
 		
 		
 		//==================
+		// scroller interface
+		//==================
+		
+		public function startExternalScrolling():void
+		{
+			onScrollStarted();
+		}
+		
+		public function completeExternalScrolling():void
+		{
+			completeScrolling(true);
+		}
+		
+		internal function get totalScrollSize():Number
+		{
+			var lineSize:Number = _direction == Direction.HORIZONTAL ? _rowHeight : _columnWidth;
+			var lineGap:Number = _direction == Direction.HORIZONTAL ? _rowsGap : _columnsGap;
+			var totalSize:int = Math.floor(currentItemMax / numItemsPerLine) * (lineSize + lineGap);
+			
+			if (_snapToEnd && totalSize > 0)
+			{
+				totalSize -= lineSize + lineGap - bottomBorder;
+				
+				if (_lastVisibleIndex < _dataSource.length - 1)
+				{
+					totalSize -= lineGap; 
+				}
+			}
+			
+			return totalSize;
+		}
+		
+		public function scrollToPercentPosition(position:Number):void
+		{
+//			position = Math.max(0, position);
+//			position = Math.min(1, position);
+			
+			var lineSize:Number = _direction == Direction.HORIZONTAL ? _rowHeight : _columnWidth;
+			
+			if (lineSize == 0)
+			{
+				trace("need rowHeight or columnHeight to percent scroll");
+				return;
+			}
+			
+			if (numItems == 0)
+			{
+				return;
+			}
+			
+			var lineGap:Number = _direction == Direction.HORIZONTAL ? _rowsGap : _columnsGap;
+			var scrollPosition:Number = _direction == Direction.HORIZONTAL ? _containerCamera.scrollY : _containerCamera.scrollX;
+			var currentLine:int = Math.floor(currentItem / numItemsPerLine);
+			var totalSize:int = Math.floor(currentItemMax / numItemsPerLine) * (lineSize + lineGap);
+			
+			if (_snapToEnd && totalSize > 0)
+			{
+				totalSize -= lineSize + lineGap - bottomBorder;
+				
+				if (_lastVisibleIndex < _dataSource.length - 1)
+				{
+					totalSize -= lineGap; 
+				}
+			}
+			
+			var currentPosition:Number = currentLine * (lineSize + lineGap) + scrollPosition;
+			
+			var scrollSize:Number = position * totalSize - currentPosition;
+			
+			if (scrollSize == 0)
+			{
+				return;
+			}
+			
+			scrollOn(
+				_direction == Direction.HORIZONTAL ? 0 : -scrollSize,
+				_direction == Direction.HORIZONTAL ? -scrollSize : 0
+			);
+		}
+		
+		public function get scrollPercentPosition():Number
+		{
+			var lineSize:Number = _direction == Direction.HORIZONTAL ? _rowHeight : _columnWidth;
+			
+			if (lineSize == 0 || numItems == 0)
+			{
+				trace("need rowHeight or columnWidth to percent scroll");
+				return 0;
+			}
+			
+			var lineGap:Number = _direction == Direction.HORIZONTAL ? _rowsGap : _columnsGap;
+			var scrollPosition:Number = _direction == Direction.HORIZONTAL ? _containerCamera.scrollY : _containerCamera.scrollX;
+			var currentLine:int = Math.floor(currentItem / numItemsPerLine);
+			var totalSize:int = Math.floor(currentItemMax / numItemsPerLine) * (lineSize + lineGap);
+			
+			if (_snapToEnd && totalSize > 0)
+			{
+				totalSize -= lineSize + lineGap - bottomBorder;
+				
+				if (_lastVisibleIndex < _dataSource.length - 1)
+				{
+					totalSize -= lineGap; 
+				}
+			}
+			
+			var currentPosition:Number = currentLine * (lineSize + lineGap) + scrollPosition;
+			
+			return totalSize > 0 ? currentPosition / totalSize : 0;
+		}
+		
+		//==================
 		// scroll limits
 		//==================
 		private var _firstVisibleIndex:uint = 0;
@@ -1266,6 +1426,11 @@ package molehill.easy.ui3d.list
 				{
 					_updateCallback();
 				}
+			}
+			
+			if (_scroller != null)
+			{
+				_scroller.updatePosition();
 			}
 			
 			return result;
@@ -1589,6 +1754,11 @@ package molehill.easy.ui3d.list
 				{
 					_containerCamera.scrollX = leftBorder;
 					_containerCamera.scrollY = topBorder;
+					
+					if (_scroller != null)
+					{
+						_scroller.updatePosition();
+					}
 				}
 			}
 		}

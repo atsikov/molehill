@@ -221,8 +221,8 @@ package molehill.easy.ui3d.scroll
 		private var _endHelperPoint:Point = new Point();
 		private function onStageMouseMove(event:MouseEvent):void
 		{
-			_startHelperPoint.x = _startHelperPoint.x == _endHelperPoint.x ? _startHelperPoint.x : _endHelperPoint.x;
-			_startHelperPoint.y = _startHelperPoint.y == _endHelperPoint.y ? _startHelperPoint.y : _endHelperPoint.y;
+			_startHelperPoint.x = _endHelperPoint.x;
+			_startHelperPoint.y = _endHelperPoint.y;
 			
 			_endHelperPoint.setTo(
 				_scrollDirection == VERTICAL ? 0 : event.stageX,
@@ -462,7 +462,7 @@ package molehill.easy.ui3d.scroll
 					0,
 					Linear.easeOut,
 					validateBorders,
-					null,
+					completeScrollingTweenUpdate,
 					[true]
 				);
 			}
@@ -473,6 +473,12 @@ package molehill.easy.ui3d.scroll
 				
 				validateBorders(true);
 			}
+		}
+		
+		protected function completeScrollingTweenUpdate():void
+		{
+			// TODO Auto Generated method stub
+			
 		}
 		
 		/**
