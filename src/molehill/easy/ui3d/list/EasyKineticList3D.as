@@ -562,7 +562,7 @@ package molehill.easy.ui3d.list
 					}
 				}
 				
-				if (_snapToEnd && _firstVisibleIndex == currentItemMax - _numItemsPerLine)
+				if (_snapToEnd && (_firstVisibleIndex == currentItemMax - _numItemsPerLine) && index > 0)
 				{
 					_containerCamera.scrollX = rightBorder;
 					_containerCamera.scrollY = bottomBorder;
