@@ -1379,9 +1379,14 @@ package molehill.easy.ui3d.list
 		{
 			var lineSize:Number = _direction == Direction.HORIZONTAL ? _rowHeight : _columnWidth;
 			
-			if (lineSize == 0 || numItems == 0)
+			if (lineSize == 0)
 			{
 				trace("need rowHeight or columnWidth to percent scroll");
+				return 0;
+			}
+			
+			if (numItems == 0)
+			{
 				return 0;
 			}
 			
