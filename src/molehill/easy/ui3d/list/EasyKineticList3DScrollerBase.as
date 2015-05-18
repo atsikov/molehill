@@ -58,6 +58,7 @@ package molehill.easy.ui3d.list
 		
 		private var _startHelperPoint:Point = new Point();
 		private var _endHelperPoint:Point = new Point();
+		private var _limitMousePoint:Point = new Point();
 		private function onScrollerMouseDown(event:Input3DMouseEvent):void
 		{
 			if (_list == null)
@@ -71,18 +72,114 @@ package molehill.easy.ui3d.list
 				_direction == Direction.HORIZONTAL ? 0 : event.stageX,
 				_direction == Direction.VERTICAL ? 0 : event.stageY
 			);
+			
+			if (_currentPosition == 0 || _currentPosition == 1)
+			{
+				_limitMousePoint.setTo(
+					_direction == Direction.HORIZONTAL ? 0 : event.stageX,
+					_direction == Direction.VERTICAL ? 0 : event.stageY
+				);
+			}
+			
+//			_endHelperPoint.setTo(
+//				_direction == Direction.HORIZONTAL ? 0 : _stage.mouseX,
+//				_direction == Direction.VERTICAL ? 0 : _stage.mouseY
+//			);
 			_stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp, false, int.MAX_VALUE);
-			_stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
+			_stage.addEventListener(Event.ENTER_FRAME, onMouseEnterFrame);
+//			_stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
 		}
 		
 		private function onStageMouseUp(event:MouseEvent):void
 		{
-			_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
+//			_stage.removeEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
+			_stage.removeEventListener(Event.ENTER_FRAME, onMouseEnterFrame);
 			_stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			
 			if (_list != null)
 			{
 				_list.completeExternalScrolling();
+			}
+		}
+		
+		private function onMouseEnterFrame(event:Event):void
+		{
+			if (_list == null)
+			{
+				return;
+			}
+			
+			_startHelperPoint.copyFrom(_endHelperPoint);
+			
+			_endHelperPoint.setTo(
+				_direction == Direction.HORIZONTAL ? 0 : _stage.mouseX,
+				_direction == Direction.VERTICAL ? 0 : _stage.mouseY
+			);
+			
+			var limitDiff:Number = _direction == Direction.HORIZONTAL ? 
+				_endHelperPoint.y - _limitMousePoint.y :
+				_endHelperPoint.x - _limitMousePoint.x;
+			
+			if (_currentPosition == 0 && limitDiff < 0)
+			{
+				_startHelperPoint.copyFrom(_limitMousePoint);
+				return;
+			}
+			if (_currentPosition == 1 && limitDiff > 0)
+			{
+				_startHelperPoint.copyFrom(_limitMousePoint);
+				return;
+			}
+			
+			
+			var diff:Number = _direction == Direction.HORIZONTAL ? 
+				_endHelperPoint.y - _startHelperPoint.y :
+				_endHelperPoint.x - _startHelperPoint.x;
+			
+			if (diff == 0)
+			{
+				return;
+			}
+			
+			
+			var scrollerPosition:Number = _direction == Direction.HORIZONTAL ? _scroller.y : _scroller.x;
+			var newPercent:Number = (scrollerPosition + diff) / _size;
+			
+			newPercent = Math.max(newPercent, 0);
+			newPercent = Math.min(newPercent, 1);
+			
+			if (newPercent == _currentPosition)
+			{
+				return;
+			}
+			
+			_list.scrollToPercentPosition(newPercent);
+			
+			if (_stage != null && (_currentPosition == 0 || _currentPosition == 1))
+			{
+				var limitValue:Number;
+				
+				_limitMousePoint.setTo(
+					_currentPosition == 0 ? 0 : _scroller.width,
+					_currentPosition == 0 ? 0 : _scroller.height
+				);
+				
+				_scroller.localToGlobal(_limitMousePoint);
+				
+				if (_direction == Direction.HORIZONTAL)
+				{
+					_limitMousePoint.setTo(
+						0,
+						_currentPosition == 0 ? Math.max(_stage.mouseY, _limitMousePoint.y) : Math.min(_stage.mouseY, _limitMousePoint.y)
+					);
+				}
+				else
+				{
+					_limitMousePoint.setTo(
+						_currentPosition == 0 ? Math.max(_stage.mouseX, _limitMousePoint.x) : Math.min(_stage.mouseX, _limitMousePoint.x),
+						0
+					);
+				}
 			}
 		}
 		
@@ -99,8 +196,21 @@ package molehill.easy.ui3d.list
 				_direction == Direction.HORIZONTAL ? 0 : event.stageX,
 				_direction == Direction.VERTICAL ? 0 : event.stageY
 			);
-			// TODO Auto-generated method stub
 			
+			var limitDiff:Number = _direction == Direction.HORIZONTAL ? 
+				_endHelperPoint.y - _limitMousePoint.y :
+				_endHelperPoint.x - _limitMousePoint.x;
+			
+			if (_currentPosition == 0 && limitDiff < 0)
+			{
+				_startHelperPoint.copyFrom(_limitMousePoint);
+				return;
+			}
+			if (_currentPosition == 1 && limitDiff > 0)
+			{
+				_startHelperPoint.copyFrom(_limitMousePoint);
+				return;
+			}
 			
 			var diff:Number = _direction == Direction.HORIZONTAL ? 
 				_endHelperPoint.y - _startHelperPoint.y :
@@ -117,7 +227,39 @@ package molehill.easy.ui3d.list
 			newPercent = Math.max(newPercent, 0);
 			newPercent = Math.min(newPercent, 1);
 			
+			if (newPercent == _currentPosition)
+			{
+				return;
+			}
+			
 			_list.scrollToPercentPosition(newPercent);
+			
+			if (_stage != null && (_currentPosition == 0 || _currentPosition == 1))
+			{
+				var limitValue:Number;
+				
+				_limitMousePoint.setTo(
+					_currentPosition == 0 ? 0 : _scroller.width,
+					_currentPosition == 0 ? 0 : _scroller.height
+				);
+				
+				_scroller.localToGlobal(_limitMousePoint);
+				
+				if (_direction == Direction.HORIZONTAL)
+				{
+					_limitMousePoint.setTo(
+						0,
+						_currentPosition == 0 ? Math.max(event.stageY, _limitMousePoint.y) : Math.min(event.stageY, _limitMousePoint.y)
+					);
+				}
+				else
+				{
+					_limitMousePoint.setTo(
+						_currentPosition == 0 ? Math.max(event.stageX, _limitMousePoint.x) : Math.min(event.stageX, _limitMousePoint.x),
+						0
+					);
+				}
+			}
 		}
 		
 		private var _list:EasyKineticList3D;
@@ -145,6 +287,7 @@ package molehill.easy.ui3d.list
 			
 		}
 		
+		protected var _currentPosition:Number;
 		public function updatePosition():void
 		{
 			if (_list == null)
@@ -155,6 +298,8 @@ package molehill.easy.ui3d.list
 			var percent:Number = Math.max(_list.scrollPercentPosition, 0);
 			percent = Math.min(percent, 1);
 			var newPosition:int = int(percent * _size);
+			
+			_currentPosition = percent;
 			
 			_scroller.moveTo(
 				_direction == Direction.HORIZONTAL ? 0 : newPosition, 

@@ -1320,12 +1320,11 @@ package molehill.easy.ui3d.list
 			
 			if (_snapToEnd && totalSize > 0)
 			{
-				totalSize -= lineSize + lineGap - bottomBorder;
+				var viewPortSize:Number = _direction == Direction.HORIZONTAL ? _viewPort.height + _viewPort.y : _viewPort.x + _viewPort.x;
+				var numEndLines:int = Math.ceil(viewPortSize / (lineSize + lineGap));
+				var endBottomBorder:Number = numEndLines * (lineSize + lineGap) - lineGap - viewPortSize + bottomGap; 
 				
-				if (_lastVisibleIndex < _dataSource.length - 1)
-				{
-					totalSize -= lineGap; 
-				}
+				totalSize -= lineSize + lineGap - endBottomBorder;
 			}
 			
 			return totalSize;
@@ -1356,12 +1355,11 @@ package molehill.easy.ui3d.list
 			
 			if (_snapToEnd && totalSize > 0)
 			{
-				totalSize -= lineSize + lineGap - bottomBorder;
+				var viewPortSize:Number = _direction == Direction.HORIZONTAL ? _viewPort.height + _viewPort.y : _viewPort.x + _viewPort.x;
+				var numEndLines:int = Math.ceil(viewPortSize / (lineSize + lineGap));
+				var endBottomBorder:Number = numEndLines * (lineSize + lineGap) - lineGap - viewPortSize + bottomGap; 
 				
-				if (_lastVisibleIndex < _dataSource.length - 1)
-				{
-					totalSize -= lineGap; 
-				}
+				totalSize -= lineSize + lineGap - endBottomBorder;
 			}
 			
 			var currentPosition:Number = currentLine * (lineSize + lineGap) + scrollPosition;
@@ -1401,12 +1399,11 @@ package molehill.easy.ui3d.list
 			
 			if (_snapToEnd && totalSize > 0)
 			{
-				totalSize -= lineSize + lineGap - bottomBorder;
+				var viewPortSize:Number = _direction == Direction.HORIZONTAL ? _viewPort.height + _viewPort.y : _viewPort.x + _viewPort.x;
+				var numEndLines:int = Math.ceil(viewPortSize / (lineSize + lineGap));
+				var endBottomBorder:Number = numEndLines * (lineSize + lineGap) - lineGap - viewPortSize + bottomGap; 
 				
-				if (_lastVisibleIndex < _dataSource.length - 1)
-				{
-					totalSize -= lineGap; 
-				}
+				totalSize -= lineSize + lineGap - endBottomBorder;
 			}
 			
 			var currentPosition:Number = currentLine * (lineSize + lineGap) + scrollPosition;
