@@ -60,7 +60,11 @@ package molehill.easy.ui3d.list
 			}
 			
 			_scroller = value;
-			_scroller.list = this;
+			
+			if (_scroller != null)
+			{
+				_scroller.list = this;
+			}
 		}
 		
 		
