@@ -263,7 +263,6 @@ package molehill.easy.ui3d.scroll
 			{
 				_velocityX = 0;
 				_velocityY = 0;
-				_stage.removeEventListener(Event.ENTER_FRAME, onScrollEnterFrame);
 				return;
 			}
 			
