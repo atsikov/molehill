@@ -921,7 +921,7 @@ package molehill.core.sprite
 				return 0;
 			}
 			
-			return _containerRight - _containerX;
+			return (_containerRight - _containerX) / _parentScaleX;
 		}
 		
 		override public function set width(value:Number):void
@@ -936,7 +936,7 @@ package molehill.core.sprite
 				return 0;
 			}
 			
-			return _containerBottom - _containerY;
+			return (_containerBottom - _containerY) / _parentScaleY;
 		}
 		
 		override public function set height(value:Number):void
