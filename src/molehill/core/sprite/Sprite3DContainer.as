@@ -4,6 +4,7 @@ package molehill.core.sprite
 	import easy.collections.TreeNode;
 	
 	import flash.geom.Point;
+	import flash.geom.Rectangle;
 	import flash.utils.Dictionary;
 	
 	import molehill.core.molehill_internal;
@@ -941,6 +942,24 @@ package molehill.core.sprite
 		override public function set height(value:Number):void
 		{
 			scaleY = value / height;
+		}
+		
+		override public function getBounds():Rectangle
+		{
+			if (_containerX == int.MIN_VALUE) 
+			{
+				return new Rectangle(0, 0);
+			}
+			
+			var dx:Number = _parentShiftX + _shiftX * _parentScaleX;
+			var dy:Number = _parentShiftY + _shiftY * _parentScaleY;
+			
+			return new Rectangle(
+				_containerX - dx,
+				_containerY - dy,
+				_containerRight - dx,
+				_containerBottom - dy
+			);
 		}
 		
 		// cached parent properties

@@ -43,10 +43,10 @@ package molehill.core.sprite
 		public static const NUM_VERTICES_PER_SPRITE:uint = 4;
 		
 		public static const VERTICES_OFFSET:uint = 0;
-		public static const COLOR_OFFSET:uint = 2; //3;
-		public static const TEXTURE_OFFSET:uint = 6; //7;
+		public static const COLOR_OFFSET:uint = 2; // 3;
+		public static const TEXTURE_OFFSET:uint = 6; // 7;
 		
-		public static const NUM_ELEMENTS_PER_VERTEX:uint = 8; //9;
+		public static const NUM_ELEMENTS_PER_VERTEX:uint = 8; // 9;
 		
 		public static const NUM_ELEMENTS_PER_SPRITE:uint = NUM_ELEMENTS_PER_VERTEX * NUM_VERTICES_PER_SPRITE;
 		
@@ -767,6 +767,11 @@ package molehill.core.sprite
 			_cachedHeight = _height * _scaleY;
 			
 			markChanged(true);
+		}
+		
+		public function getBounds():Rectangle
+		{
+			return new Rectangle(0, 0, width, height);
 		}
 		
 		molehill_internal var _visible:Boolean = true;
