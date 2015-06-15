@@ -189,7 +189,7 @@ package molehill.easy.ui3d
 			
 			_content.setSize(w, h);
 		}
-		/*
+		
 		override public function setScale(scaleX:Number, scaleY:Number):void
 		{
 			if (_content == null)
@@ -239,6 +239,5 @@ package molehill.easy.ui3d
 			
 			return _content.scaleY;
 		}
-		*/
 	}
 }
