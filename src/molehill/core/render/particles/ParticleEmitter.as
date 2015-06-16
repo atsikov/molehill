@@ -29,6 +29,7 @@ package molehill.core.render.particles
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureAtlasData;
+	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.CachingFactory;
@@ -674,6 +675,12 @@ package molehill.core.render.particles
 				var width2:Number = Math.abs((_x2 - _x0) / 2);
 				var height2:Number = Math.abs((_y2 - _y0) / 2);
 				
+				var textureData:TextureData = TextureManager.getInstance().getAtlasDataByID(_textureAtlasID).getTextureData(textureID);
+				var offsetLeft:int = width2 - textureData.blankOffsetX;
+				var offsetRight:int = width2 - (textureData.width - textureData.blankOffsetX - textureData.croppedWidth);
+				var offsetTop:int = height2 - textureData.blankOffsetY;
+				var offsetBottom:int = height2 - (textureData.height - textureData.blankOffsetY - textureData.croppedHeight);
+				
 				_vertexData.length = numParticles * bytesPerParticle;
 				
 				while (i < numParticles && cursor != null)
@@ -684,23 +691,23 @@ package molehill.core.render.particles
 					var particleScale:Number = particle.startScale;
 					var particleAlpha:Number = particle.startAlpha;
 					
-					_vertexData.writeFloat(centerX - width2 * particleScale);
-					_vertexData.writeFloat(centerY - height2 * particleScale);
+					_vertexData.writeFloat(centerX - offsetLeft * particleScale);
+					_vertexData.writeFloat(centerY - offsetTop * particleScale);
 					_vertexData.writeFloat(_textureU0);
 					_vertexData.writeFloat(_textureW0);
 					
-					_vertexData.writeFloat(centerX - width2 * particleScale);
-					_vertexData.writeFloat(centerY + height2 * particleScale);
+					_vertexData.writeFloat(centerX - offsetLeft * particleScale);
+					_vertexData.writeFloat(centerY + offsetBottom * particleScale);
 					_vertexData.writeFloat(_textureU1);
 					_vertexData.writeFloat(_textureW1);
 					
-					_vertexData.writeFloat(centerX + width2 * particleScale);
-					_vertexData.writeFloat(centerY + height2 * particleScale);
+					_vertexData.writeFloat(centerX + offsetRight * particleScale);
+					_vertexData.writeFloat(centerY + offsetBottom * particleScale);
 					_vertexData.writeFloat(_textureU2);
 					_vertexData.writeFloat(_textureW2);
 					
-					_vertexData.writeFloat(centerX + width2 * particleScale);
-					_vertexData.writeFloat(centerY - height2 * particleScale);
+					_vertexData.writeFloat(centerX + offsetRight * particleScale);
+					_vertexData.writeFloat(centerY - offsetTop * particleScale);
 					_vertexData.writeFloat(_textureU3);
 					_vertexData.writeFloat(_textureW3);
 					
@@ -747,10 +754,13 @@ package molehill.core.render.particles
 					//trace(JSON.stringify(particle));
 					_additionalVertexBufferData.position = i * bytesPerAdditionalParticleData;
 					
+					var deltaScale:Number = particle.endScale - particle.startScale;
 					particleAlpha = _parentAlpha * _alpha * (particle.endAlpha - particle.startAlpha);
 					//trace(particleAlpha);
-					var deltaSizeX:Number = width2 * (particle.endScale - particle.startScale);
-					var deltaSizeY:Number = height2 * (particle.endScale - particle.startScale);
+					var deltaSizeLeft:Number = offsetLeft * deltaScale;
+					var deltaSizeTop:Number = offsetTop * deltaScale;
+					var deltaSizeRight:Number = offsetRight * deltaScale;
+					var deltaSizeBottom:Number = offsetBottom * deltaScale;
 					
 					var shiftX:Number = particle.shiftX;
 					var shiftY:Number = particle.shiftY;
@@ -795,27 +805,27 @@ package molehill.core.render.particles
 					commonData.writeFloat(accX);
 					commonData.writeFloat(accY);
 					// va5
-					commonData.writeFloat(-deltaSizeX);
-					commonData.writeFloat(-deltaSizeY);
+					commonData.writeFloat(-deltaSizeLeft);
+					commonData.writeFloat(-deltaSizeTop);
 					//commonData.writeFloat(particleAlpha);
 					
 					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					commonData.position = 32;
-					commonData.writeFloat(-deltaSizeX);
-					commonData.writeFloat(deltaSizeY);
+					commonData.writeFloat(-deltaSizeLeft);
+					commonData.writeFloat(deltaSizeBottom);
 					
 					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					commonData.position = 32;
-					commonData.writeFloat(deltaSizeX);
-					commonData.writeFloat(deltaSizeY);
+					commonData.writeFloat(deltaSizeRight);
+					commonData.writeFloat(deltaSizeBottom);
 					
 					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
 					commonData.position = 32;
-					commonData.writeFloat(deltaSizeX);
-					commonData.writeFloat(-deltaSizeY);
+					commonData.writeFloat(deltaSizeRight);
+					commonData.writeFloat(-deltaSizeTop);
 					
 					_additionalVertexBufferData.writeBytes(commonData, 0, bytesPerCommonData);
 					
