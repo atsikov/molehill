@@ -480,6 +480,7 @@ package molehill.core.render
 				sprite = cursor.data as Sprite3D;
 				
 				var isOnScreen:Boolean = true;
+				var spriteChanged:Boolean = sprite.hasChanged;
 				if (!sprite.visible)
 				{
 					sprite.markChanged(false);
@@ -488,12 +489,16 @@ package molehill.core.render
 				}
 				else
 				{
-					if (sprite.updateOnRender)
+					if (spriteChanged && sprite.updateOnRender)
 					{
 						sprite.updateValues();
+						if (sprite.parent != null)
+						{
+							sprite.parent.updateDimensions(sprite, true);
+						}
 					}
 					
-					if (sprite.hasChanged || _needUpdateBuffers)
+					if (spriteChanged || _needUpdateBuffers)
 					{
 						var position:int = _numVisibleSprites * 8;
 						_vertexBufferVerticesData[position++] = sprite._vertexX0;

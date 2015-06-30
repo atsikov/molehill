@@ -522,7 +522,6 @@ package molehill.core.sprite
 			if (_valuesUpdated)
 			{
 				return;
-
 			}
 			
 			var scaledWidth:Number;
