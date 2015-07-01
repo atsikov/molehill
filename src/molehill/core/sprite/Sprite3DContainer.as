@@ -113,11 +113,9 @@ package molehill.core.sprite
 			
 			child.syncedInUIComponent = false;
 			
+			child._parent = this;
 			updateChildParentValues(child);
 			child.updateValues();
-			
-			child._parent = this;
-			child.setScene(_scene);
 			
 			if (_blendMode != null)
 			{
@@ -154,6 +152,8 @@ package molehill.core.sprite
 			
 			updateDimensionsTree(child);
 			
+			child.setScene(_scene);
+			
 			return child;
 		}
 		
@@ -171,11 +171,9 @@ package molehill.core.sprite
 			
 			child.syncedInUIComponent = false;
 			
+			child._parent = this;
 			updateChildParentValues(child);
 			child.updateValues();
-			
-			child._parent = this;
-			child.setScene(_scene);
 			
 			if (_blendMode != null)
 			{
@@ -219,6 +217,8 @@ package molehill.core.sprite
 			}
 			
 			updateDimensionsTree(child);
+			
+			child.setScene(_scene);
 			
 			return child;
 		}
@@ -312,7 +312,6 @@ package molehill.core.sprite
 				child.updateOnRender = updateOnRender;
 			}
 			
-			child.markChanged(true);
 			/*
 			if (!child.notifyParentChanged)
 			{
