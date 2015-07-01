@@ -311,6 +311,8 @@ package molehill.core.sprite
 			{
 				child.updateOnRender = updateOnRender;
 			}
+			
+			child.markChanged(true);
 			/*
 			if (!child.notifyParentChanged)
 			{
