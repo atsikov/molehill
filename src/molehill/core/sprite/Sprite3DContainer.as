@@ -150,7 +150,7 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			updateDimensionsTree(child);
+			updateDimensions(child, true);
 			
 			child.setScene(_scene);
 			
@@ -216,7 +216,7 @@ package molehill.core.sprite
 				_scene._needUpdateBatchers = true;
 			}
 			
-			updateDimensionsTree(child);
+			updateDimensions(child, true);
 			
 			child.setScene(_scene);
 			

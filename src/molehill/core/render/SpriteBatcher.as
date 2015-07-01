@@ -489,17 +489,17 @@ package molehill.core.render
 				}
 				else
 				{
-					if (spriteChanged && sprite.updateOnRender)
-					{
-						sprite.updateValues();
-						if (sprite.parent != null)
-						{
-							sprite.parent.updateDimensions(sprite, true);
-						}
-					}
-					
 					if (spriteChanged || _needUpdateBuffers)
 					{
+						if (sprite.updateOnRender)
+						{
+							sprite.updateValues();
+							if (sprite.parent != null)
+							{
+								sprite.parent.updateDimensions(sprite, true);
+							}
+						}
+						
 						var position:int = _numVisibleSprites * 8;
 						_vertexBufferVerticesData[position++] = sprite._vertexX0;
 						_vertexBufferVerticesData[position++] = sprite._vertexY0;
