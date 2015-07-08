@@ -17,6 +17,10 @@ package molehill.core.sprite
 			}
 			
 			var spriteData:SpriteData = new SpriteData(null);
+			if (rawData['label'] != null)
+			{
+				spriteData._label = rawData['label'];
+			}
 			for (var i:int = 0; i < spriteData._params.length; i++)
 			{
 				if (rawData[spriteData._params[i]] != null)
@@ -181,6 +185,12 @@ package molehill.core.sprite
 				_values['matrix'].ty
 			);
 			*/
+		}
+		
+		private var _label:String = "";
+		public function get label():String
+		{
+			return _label;
 		}
 		
 		public function toString():String

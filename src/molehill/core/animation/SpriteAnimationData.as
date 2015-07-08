@@ -11,6 +11,7 @@ package molehill.core.animation
 		{
 			var spriteAnimationData:SpriteAnimationData = new SpriteAnimationData(null, null);
 			spriteAnimationData._animationName = rawData['animationName'];
+			spriteAnimationData._frameRate = int(rawData['frameRate']);
 			spriteAnimationData._listStates = new Vector.<SpriteData>();
 			for (var i:int = 0; i < rawData['listStates'].length; i++)
 			{
@@ -73,6 +74,12 @@ package molehill.core.animation
 			animation.gotoAndStop(1);
 		}
 		
+		private var _frameRate:int = 0;
+		public function get frameRate():int
+		{
+			return _frameRate;
+		}
+		
 		public function get totalFrames():uint
 		{
 			return _listStates.length;
@@ -122,5 +129,6 @@ package molehill.core.animation
 			
 			return rawArray;
 		}
+
 	}
 }

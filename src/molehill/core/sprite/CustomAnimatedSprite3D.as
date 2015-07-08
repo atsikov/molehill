@@ -5,7 +5,11 @@ package molehill.core.sprite
 	import molehill.core.animation.AnimationPlayMode;
 	import molehill.core.animation.CustomAnimationData;
 	import molehill.core.animation.CustomAnimationFrameData;
+	import molehill.core.animation.SpriteAnimationUpdater;
+	import molehill.core.molehill_internal;
 
+	use namespace molehill_internal;
+	
 	public class CustomAnimatedSprite3D extends AnimatedSprite3D
 	{
 		public function CustomAnimatedSprite3D()
@@ -65,10 +69,14 @@ package molehill.core.sprite
 		private var _currentFrameIndex:int;
 		private var _currentFrameRepeated:int;
 		private var _lastFrameTime:int;
+		
+		private var _currentTimelineFrameIndex:int = 0;
+		private var _lastTimelineFrameTime:int = 0;
+		
 		private var _isReversed:Boolean = false;
 		override protected function updateFrame():void
 		{
-			if (_customAnimationData == null)
+			if (_customAnimationData == null && _animationTimelineData == null)
 			{
 				if (_isPlaying)
 				{
@@ -77,8 +85,49 @@ package molehill.core.sprite
 				return;
 			}
 			
-			var numAnimationFrames:int = _customAnimationData.listFrames.length;
-			var currentFrameTime:int = getTimer() - _lastFrameTime;
+			if (_animationTimelineData != null)
+			{
+				var numAnimationFrames:int = _animationTimelineData.totalFrames;
+				var currentFrameTime:int = getTimer() - _lastTimelineFrameTime;
+				
+				var timelineFrameRate:int = _animationTimelineData.frameRate > 0 ? _animationTimelineData.frameRate : SpriteAnimationUpdater.getInstance().fps;
+				var currentFrameIndex:int = _currentTimelineFrameIndex;
+				if (currentFrameTime > (1000 / timelineFrameRate))
+				{
+					_currentTimelineFrameIndex++;
+				}
+				
+				if (currentFrameIndex != _currentTimelineFrameIndex)
+				{
+					if (_currentTimelineFrameIndex >= numAnimationFrames)
+					{
+						_currentTimelineFrameIndex = 0;
+					}
+					
+					var state:SpriteData = _animationTimelineData.getFrameState(_currentTimelineFrameIndex);
+					if (state != null)
+					{
+						state.applyScale(_parentScaleX, _parentScaleY);
+						
+						visible = true;
+						state.applyValues(this);
+					}
+					else
+					{
+						visible = false;
+					}
+				}
+				
+				_lastTimelineFrameTime = getTimer();
+			}
+			
+			if (_customAnimationData == null)
+			{
+				return;
+			}
+			
+			numAnimationFrames = _customAnimationData.listFrames.length;
+			currentFrameTime = getTimer() - _lastFrameTime;
 			if (currentFrameTime < (1000 / _customAnimationData.frameRate))
 			{
 				return;

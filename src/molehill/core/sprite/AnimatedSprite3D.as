@@ -51,10 +51,10 @@ package molehill.core.sprite
 			_totalFrames = value;
 		}
 		
-		private var _currentFrame:int = 0;
+		protected var _currentTimelineFrame:int = 0;
 		public function get currentFrame():int
 		{
-			return _currentFrame;
+			return _currentTimelineFrame;
 		}
 		
 		private var _regionsInRow:int = 1;
@@ -78,7 +78,7 @@ package molehill.core.sprite
 			
 			if (frame != -1)
 			{
-				_currentFrame = frame;
+				_currentTimelineFrame = frame;
 			}
 			nextFrame();
 			
@@ -89,23 +89,23 @@ package molehill.core.sprite
 		{
 			if (frame != -1)
 			{
-				_currentFrame = frame;
+				_currentTimelineFrame = frame;
 			}
 			updateFrame();
 			
 			SpriteAnimationUpdater.getInstance().removeAnimation(this);
 		}
 		
-		private var _animationData:SpriteAnimationData;
+		protected var _animationTimelineData:SpriteAnimationData;
 		public function get animationData():SpriteAnimationData
 		{
-			return _animationData;
+			return _animationTimelineData;
 		}
 		
 		public function set animationData(value:SpriteAnimationData):void
 		{
-			_animationData = value;
-			_totalFrames = _animationData.totalFrames;
+			_animationTimelineData = value;
+			_totalFrames = _animationTimelineData.totalFrames;
 			
 			updateFrame();
 		}
@@ -114,10 +114,10 @@ package molehill.core.sprite
 		{
 			updateFrame();
 			
-			_currentFrame++;
-			if (_currentFrame == _totalFrames)
+			_currentTimelineFrame++;
+			if (_currentTimelineFrame == _totalFrames)
 			{
-				_currentFrame = 0;
+				_currentTimelineFrame = 0;
 			}
 			
 			_textureChanged = true;
@@ -135,7 +135,7 @@ package molehill.core.sprite
 			var spriteSheetData:SpriteSheetData = TextureManager.getInstance().getSpriteSheetData(textureID);
 			if (spriteSheetData != null)
 			{
-				var frameRegion:Rectangle = spriteSheetData.getFrameRectangle(_currentFrame % spriteSheetData.totalFrames);
+				var frameRegion:Rectangle = spriteSheetData.getFrameRectangle(_currentTimelineFrame % spriteSheetData.totalFrames);
 				var atlas:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(textureID);
 				var sheetRegion:Rectangle = atlas.getTextureBitmapRect(textureID);
 				
@@ -154,9 +154,9 @@ package molehill.core.sprite
 				textureRegion =  TextureManager.getInstance().getTextureRegion(textureID);
 			}
 			
-			if (_animationData != null)
+			if (_animationTimelineData != null)
 			{
-				var state:SpriteData = _animationData.getFrameState(_currentFrame % _animationData.totalFrames);
+				var state:SpriteData = _animationTimelineData.getFrameState(_currentTimelineFrame % _animationTimelineData.totalFrames);
 				if (state != null)
 				{
 					state.applyScale(_parentScaleX, _parentScaleY);
