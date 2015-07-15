@@ -510,7 +510,7 @@ package molehill.core.render.engine
 				
 				_context3D.setTextureAt(0, chunkData.texture);
 				
-				// avoiding try..check in release versions 
+				// avoiding try..catch in release versions 
 				if (errorCheckEnabled)
 				{
 					totalTris += renderChunkTryCatch(chunkData);

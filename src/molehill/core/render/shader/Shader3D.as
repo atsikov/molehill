@@ -1,6 +1,9 @@
 package molehill.core.render.shader
 {
 	import flash.display3D.Context3D;
+	import flash.display3D.Context3DClearMask;
+	import flash.display3D.Context3DCompareMode;
+	import flash.display3D.Context3DTriangleFace;
 	import flash.display3D.Program3D;
 
 	public class Shader3D
@@ -378,7 +381,10 @@ package molehill.core.render.shader
 		
 		public function prepareContext(context3D:Context3D):void
 		{
-			
+			context3D.clear(0, 0, 0, 0, 0, 0, Context3DClearMask.STENCIL);
+			context3D.setStencilReferenceValue(0);
+			// setting default stencil actions
+			context3D.setStencilActions();
 		}
 		
 		public function cleanUpContext(context3D:Context3D):void
