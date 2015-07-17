@@ -97,6 +97,8 @@ package molehill.core.render.shader.species
 		private var _vc4:Vector.<Number>;
 		override public function prepareContext(context3D:Context3D):void
 		{
+			super.prepareContext(context3D);
+			
 			_vc4[0] = getTimer();
 			context3D.setProgramConstantsFromVector(Context3DProgramType.VERTEX, 4, _vc4);
 		}

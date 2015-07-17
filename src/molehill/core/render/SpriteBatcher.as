@@ -637,6 +637,7 @@ package molehill.core.render
 			
 			if (currentNumVisibleSprites < _numVisibleSprites)
 			{
+				/*
 				if (_vertexBufferVertices != null)
 				{
 					_vertexBufferVertices.dispose()
@@ -666,6 +667,8 @@ package molehill.core.render
 				_needUploadTextureData = true;
 				
 				_needUploadIndexData = true;
+				*/
+				clearBatcher();
 			}
 			
 			_needUpdateBuffers = false;
@@ -697,22 +700,42 @@ package molehill.core.render
 		private var _vertexBufferTexture:VertexBuffer3D;
 		
 		private var _listOrderedBuffers:Vector.<OrderedVertexBuffer>;
+		
+		private var _vertexBufferNumSprites:int = 0;
 		public function getAdditionalVertexBuffers(context:Context3D):Vector.<OrderedVertexBuffer>
 		{
 			var vertexBufferChanged:Boolean = false;
 			if (_vertexBufferVertices == null)
 			{
-				_vertexBufferVertices = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				_vertexBufferNumSprites = _numVisibleSprites;
+				
+				_vertexBufferVertices = CacheSpriteBatcherBuffers.getCoordsVertexBuffer(_numVisibleSprites);
+				if (_vertexBufferVertices == null)
+				{
+					_vertexBufferVertices = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				}
 				vertexBufferChanged = true;
 			}
 			if (_vertexBufferColor == null)
 			{
-				_vertexBufferColor = context.createVertexBuffer(_numVisibleSprites * 4, 4);
+				_vertexBufferNumSprites = _numVisibleSprites;
+				
+				_vertexBufferColor = CacheSpriteBatcherBuffers.getColorVertexBuffer(_numVisibleSprites);
+				if (_vertexBufferColor == null)
+				{
+					_vertexBufferColor = context.createVertexBuffer(_numVisibleSprites * 4, 4);
+				}
 				vertexBufferChanged = true;
 			}
 			if (_vertexBufferTexture == null)
 			{
-				_vertexBufferTexture = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				_vertexBufferNumSprites = _numVisibleSprites;
+				
+				_vertexBufferTexture = CacheSpriteBatcherBuffers.getTextureVertexBuffer(_numVisibleSprites);
+				if (_vertexBufferTexture == null)
+				{
+					_vertexBufferTexture = context.createVertexBuffer(_numVisibleSprites * 4, 2);
+				}
 				vertexBufferChanged = true;
 			}
 			if (_needUploadVertexData)
@@ -786,7 +809,11 @@ package molehill.core.render
 		{
 			if (_indexBuffer == null)
 			{
-				_indexBuffer = context.createIndexBuffer(_numVisibleSprites * 6);
+				_indexBuffer = CacheSpriteBatcherBuffers.getIndexBuffer(_numVisibleSprites);
+				if (_indexBuffer == null)
+				{
+					_indexBuffer = context.createIndexBuffer(_numVisibleSprites * 6);
+				}
 			}
 			if (_needUploadIndexData)
 			{
@@ -816,23 +843,26 @@ package molehill.core.render
 			return 0;
 		}
 		
-		public function onContextRestored():void
+		public function clearBatcher():void
 		{
 			if (_vertexBufferVertices != null)
 			{
-				_vertexBufferVertices.dispose();
+				//_vertexBufferVertices.dispose();
+				CacheSpriteBatcherBuffers.storeCoordsVertexBuffer(_vertexBufferVertices, _vertexBufferNumSprites);
 				_vertexBufferVertices = null;
 			}
 			
 			if (_vertexBufferColor != null)
 			{
-				_vertexBufferColor.dispose();
+				//_vertexBufferColor.dispose();
+				CacheSpriteBatcherBuffers.storeColorVertexBuffer(_vertexBufferColor, _vertexBufferNumSprites);
 				_vertexBufferColor = null;
 			}
 			
 			if (_vertexBufferTexture != null)
 			{
-				_vertexBufferTexture.dispose();
+				//_vertexBufferTexture.dispose();
+				CacheSpriteBatcherBuffers.storeTextureVertexBuffer(_vertexBufferTexture, _vertexBufferNumSprites);
 				_vertexBufferTexture = null;
 			}
 			
@@ -842,11 +872,18 @@ package molehill.core.render
 			
 			if (_indexBuffer != null)
 			{
-				_indexBuffer.dispose();
+				//_indexBuffer.dispose();
+				CacheSpriteBatcherBuffers.storeIndexBuffer(_indexBuffer, _vertexBufferNumSprites);
 				_indexBuffer = null;
 			}
 			
 			_needUploadIndexData = true;
+		}
+		
+		public function onContextRestored():void
+		{
+			clearBatcher();
+			CacheSpriteBatcherBuffers.clearCache();
 		}
 		
 		public function toString():String

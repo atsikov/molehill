@@ -1018,6 +1018,11 @@ package molehill.core.render.particles
 			return 0;
 		}
 		
+		public function clearBatcher():void
+		{
+			onContextRestored();
+		}
+		
 		public function onContextRestored():void
 		{
 			if (_mainVertexBuffer != null)

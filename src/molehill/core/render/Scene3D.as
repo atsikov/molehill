@@ -552,7 +552,7 @@ package molehill.core.render
 						{
 							var index:int = _listSpriteBatchers.indexOf(spriteBatcher);
 							_listSpriteBatchers.splice(index, 1);
-							spriteBatcher.onContextRestored();
+							spriteBatcher.clearBatcher();
 							if (_debug)
 							{
 								log('removing batcher from ' + index + ' position\n' + spriteBatcher);
@@ -563,7 +563,7 @@ package molehill.core.render
 					{
 						index = _listSpriteBatchers.indexOf(batchingInfo.batcher)
 						_listSpriteBatchers.splice(index, 1);
-						batchingInfo.batcher.onContextRestored();
+						batchingInfo.batcher.clearBatcher();
 						if (_debug)
 						{
 							log('removing batcher from ' + index + ' position\n' + batchingInfo.batcher);

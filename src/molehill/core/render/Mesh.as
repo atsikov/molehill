@@ -405,6 +405,11 @@ package molehill.core.render
 			return 0;
 		}
 		
+		public function clearBatcher():void
+		{
+			onContextRestored();
+		}
+		
 		public function onContextRestored():void
 		{
 			if (_vertexBuffer != null)

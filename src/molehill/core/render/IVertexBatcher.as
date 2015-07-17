@@ -10,6 +10,8 @@ package molehill.core.render
 
 	public interface IVertexBatcher
 	{
+		function clearBatcher():void;
+		
 		function onContextRestored():void;
 		
 		function getVerticesData():ByteArray;
