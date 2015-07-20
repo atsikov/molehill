@@ -108,8 +108,6 @@ package molehill.core.input
 				_stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 				
 				_stage.removeEventListener(Event.ENTER_FRAME, onListenerEnterFrame);
-				
-				_objectsUnderMouse = null;
 			}
 			
 			_enabled = value;
