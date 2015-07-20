@@ -94,6 +94,8 @@ package molehill.core.input
 				_stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 				_stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 				
+				_stage.addEventListener(Event.ENTER_FRAME, onListenerEnterFrame, false, int.MAX_VALUE);
+				
 				_objectsUnderMouse = new Dictionary();
 			}
 			else
@@ -104,6 +106,8 @@ package molehill.core.input
 				
 				_stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 				_stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+				
+				_stage.removeEventListener(Event.ENTER_FRAME, onListenerEnterFrame);
 				
 				_objectsUnderMouse = null;
 			}
