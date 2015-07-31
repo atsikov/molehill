@@ -121,8 +121,13 @@ package molehill.core.text
 		
 		protected static var _cacheSprites:CachingFactory;
 		
-		protected var _hashSymbolsByLine:Object;
 		protected var _numLines:uint = 0;
+		public function get numLines():uint
+		{
+			return _numLines;
+		}
+
+		protected var _hashSymbolsByLine:Object;
 		private var _lastChild:Sprite3D;
 		
 		private var _lineY:int = 0;
@@ -177,6 +182,7 @@ package molehill.core.text
 					_numSpaces = i - childIndex - numLineBreaks;
 					
 					_lineY += _lineHeight + _leading;
+					_numLines++;
 					numLineBreaks++;
 
 					lineWidth = 0;
