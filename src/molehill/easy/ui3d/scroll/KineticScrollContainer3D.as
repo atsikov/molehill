@@ -117,7 +117,7 @@ package molehill.easy.ui3d.scroll
 		
 		protected var ELASCTIC_SIZE:int = 60;
 		
-		protected var COMPLETE_SCROLLING_ANIMATION_TIME:Number = 0.3;
+		public var COMPLETE_SCROLLING_ANIMATION_TIME:Number = 0.3;
 		// =========================== //
 		
 		private var _diff:Point = new Point();
