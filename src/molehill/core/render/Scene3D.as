@@ -510,13 +510,13 @@ package molehill.core.render
 		{
 			while (node != null)
 			{
+				var batchingInfo:BatchingInfo = node.value as BatchingInfo;
 				if (node.hasChildren)
 				{
 					removeNodeReferences(node.firstChild);
 				}
 				else
 				{
-					var batchingInfo:BatchingInfo = node.value as BatchingInfo;
 					var sprite:Sprite3D = batchingInfo.child;
 					if (_debug)
 					{
@@ -574,11 +574,6 @@ package molehill.core.render
 							log('removing batcher from ' + index + ' position\n' + batchingInfo.batcher);
 						}
 					}
-					
-					batchingInfo.child = null;
-					batchingInfo.batcher = null;
-					
-					_cacheBatchingInfo.storeInstance(batchingInfo);
 				}
 				
 				var nextSibling:TreeNode = node.nextSibling;
@@ -588,6 +583,12 @@ package molehill.core.render
 					node.reset();
 					_cacheBatchingTreeNodes.storeInstance(node);
 				}
+				
+				batchingInfo.child = null;
+				batchingInfo.batcher = null;
+				
+				_cacheBatchingInfo.storeInstance(batchingInfo);
+				
 				node = nextSibling;
 			}
 		}
