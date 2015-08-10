@@ -798,6 +798,7 @@ package molehill.core.render
 					if (node.parent != null)
 					{
 						node.parent.removeNode(node);
+						node.reset();
 						_cacheTreeNodes.storeInstance(node);
 					}
 				}

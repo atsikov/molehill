@@ -18,6 +18,7 @@ package molehill.core.render
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 	
+	import utils.CachingFactory;
 	import utils.DebugLogger;
 	import utils.ObjectUtils;
 	import utils.StringUtils;
@@ -170,6 +171,20 @@ package molehill.core.render
 		private var _hashChangeBatchersLater:Dictionary;
 		private var _hashWaitForSprite:Dictionary;
 		
+		private static var _cacheBatchingTreeNodes:CachingFactory = new CachingFactory(TreeNode);
+		private static var _cacheBatchingInfo:CachingFactory = new CachingFactory(BatchingInfo);
+		
+		private function getNewBatchingNode(child:Sprite3D):TreeNode
+		{
+			var batchingInfo:BatchingInfo = _cacheBatchingInfo.newInstance();
+			batchingInfo.child = child;
+			
+			var treeNode:TreeNode = _cacheBatchingTreeNodes.newInstance();
+			treeNode.value = batchingInfo;
+			
+			return treeNode;
+		}
+		
 		/**
 		 * Main method to build batchers on current render tree
 		 **/
@@ -214,9 +229,7 @@ package molehill.core.render
 					else
 					{
 						// adding new empty container to batching
-						batchNode = new TreeNode(
-							new BatchingInfo(sprite)
-						);
+						batchNode = getNewBatchingNode(sprite);
 						var renderTreePrevNode:TreeNode = renderTree.prevSibling
 						var renderTreeParent:TreeNode = renderTree.parent;
 						renderTreeParent.removeNode(renderTree);
@@ -249,9 +262,7 @@ package molehill.core.render
 					if (!sprite.addedToScene)
 					{
 						// new child was added to render tree
-						batchNode = new TreeNode(
-							new BatchingInfo(sprite)
-						);
+						batchNode = getNewBatchingNode(sprite);
 						
 						var treeParent:TreeNode = renderTree.parent;
 						var prevSibling:TreeNode = renderTree.prevSibling;
@@ -302,9 +313,7 @@ package molehill.core.render
 						{
 							treeParent = renderTree.parent;
 							
-							batchNode = new TreeNode(
-								new BatchingInfo(sprite)
-							);
+							batchNode = getNewBatchingNode(sprite);
 							treeParent.removeNode(renderTree);
 							prepareBatchers(renderTree, batchNode, cameraOwner);
 							if (prevNode != null)
@@ -372,9 +381,7 @@ package molehill.core.render
 						if (!batchingTree.hasChildren)
 						{
 							// adding new empty container to batching
-							batchNode = new TreeNode(
-								new BatchingInfo(containerRenderTree.firstChild.value)
-							);
+							batchNode = getNewBatchingNode(containerRenderTree.firstChild.value);
 							var firstChild:TreeNode = containerRenderTree.firstChild;
 							containerRenderTree.removeNode(firstChild);
 							prepareBatchers(firstChild, batchNode, cameraOwner);
@@ -422,9 +429,7 @@ package molehill.core.render
 				if (renderTree.nextSibling != null && batchingTree.nextSibling == null)
 				{
 					// need to add new branch at the end of the current
-					batchNode = new TreeNode(
-						new BatchingInfo(renderTree.nextSibling.value)
-					);
+					batchNode = getNewBatchingNode(renderTree.nextSibling.value);
 					
 					var nextSibling:TreeNode = renderTree.nextSibling;
 					renderTree.parent.removeNode(nextSibling);
@@ -531,7 +536,7 @@ package molehill.core.render
 						spriteBatcher = _hashBatchersOldToNew[spriteBatcher];
 						if (_debug)
 						{
-							log('>> children moved to bacther ' + StringUtils.getObjectAddress(spriteBatcher));
+							log('>> children moved to batcher ' + StringUtils.getObjectAddress(spriteBatcher));
 						}
 					}
 					
@@ -569,9 +574,21 @@ package molehill.core.render
 							log('removing batcher from ' + index + ' position\n' + batchingInfo.batcher);
 						}
 					}
+					
+					batchingInfo.child = null;
+					batchingInfo.batcher = null;
+					
+					_cacheBatchingInfo.storeInstance(batchingInfo);
 				}
 				
-				node = node.nextSibling;
+				var nextSibling:TreeNode = node.nextSibling;
+				if (node.parent != null)
+				{
+					node.parent.removeNode(node);
+					node.reset();
+					_cacheBatchingTreeNodes.storeInstance(node);
+				}
+				node = nextSibling;
 			}
 		}
 		
@@ -628,9 +645,7 @@ package molehill.core.render
 					if (batcherTree.firstChild == null)
 					{
 						// new branch found
-						var batchNode:TreeNode = new TreeNode(
-							new BatchingInfo(renderTreeFirstChild.value)
-						);
+						var batchNode:TreeNode = getNewBatchingNode(renderTreeFirstChild.value);
 						batcherTree.addNode(batchNode);
 					}
 					
@@ -756,9 +771,7 @@ package molehill.core.render
 				
 				if (node != null && batcherTree.nextSibling == null)
 				{
-					batchNode = new TreeNode(
-						new BatchingInfo(node.value)
-					);
+					batchNode = getNewBatchingNode(node.value);
 					batcherTree.parent.insertNodeAfter(batcherTree, batchNode);
 				}
 				batcherTree = batcherTree.nextSibling;
@@ -899,9 +912,7 @@ package molehill.core.render
 					_doBatching = true;
 					
 					_listSpriteBatchers = new Vector.<IVertexBatcher>();
-					_bacthingTree = new TreeNode(
-						new BatchingInfo(this)
-					);
+					_bacthingTree = getNewBatchingNode(this);
 					prepareBatchers(localRenderTree, _bacthingTree, null);
 				}
 				

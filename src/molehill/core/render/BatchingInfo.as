@@ -6,14 +6,19 @@ package molehill.core.render
 	internal final class BatchingInfo
 	{
 		private var _child:Sprite3D;
-		public function BatchingInfo(child:Sprite3D)
+		public function BatchingInfo()
 		{
-			_child = child;
+			
 		}
 		
 		public function get child():Sprite3D
 		{
 			return _child;
+		}
+		
+		public function set child(value:Sprite3D):void
+		{
+			_child = value;
 		}
 		
 		private var _batcher:IVertexBatcher;
