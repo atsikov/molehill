@@ -301,6 +301,12 @@ package molehill.easy.ui3d
 		}
 		
 		private var _openedWindows:Vector.<Sprite3D> = new Vector.<Sprite3D>();
+
+		public function get openedWindows():Vector.<Sprite3D>
+		{
+			return _openedWindows;
+		}
+
 		public function get numWindows():uint
 		{
 			return _openedWindows.length;
