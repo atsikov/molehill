@@ -166,6 +166,11 @@ package molehill.core.sprite
 		{
 			if (child.parent != null)
 			{
+				if (child.parent === this && getChildIndex(child) < index)
+				{
+					index--;
+				}
+				
 				child.parent.removeChild(child);
 			}
 			
