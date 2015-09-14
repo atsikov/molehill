@@ -134,6 +134,11 @@ package molehill.easy.ui3d.list
 		
 		override protected function onScrollStarted():void
 		{
+			lockItems();
+		}
+		
+		public function lockItems():void
+		{
 			for (var i:int = 0; i < _container.numChildren; i++) 
 			{
 				var item:ILockableEasyItemRenderer = _container.getChildAt(i) as ILockableEasyItemRenderer;
@@ -141,6 +146,19 @@ package molehill.easy.ui3d.list
 				if (item != null)
 				{
 					item.locked = true;
+				}
+			}
+		}
+		
+		public function unlockItems():void
+		{
+			for (var i:int = 0; i < _container.numChildren; i++) 
+			{
+				var item:ILockableEasyItemRenderer = _container.getChildAt(i) as ILockableEasyItemRenderer;
+				
+				if (item != null)
+				{
+					item.locked = false;
 				}
 			}
 		}
@@ -155,15 +173,7 @@ package molehill.easy.ui3d.list
 		
 		override protected function onScrollCompleted():void
 		{
-			for (var i:int = 0; i < _container.numChildren; i++) 
-			{
-				var item:ILockableEasyItemRenderer = _container.getChildAt(i) as ILockableEasyItemRenderer;
-				
-				if (item != null)
-				{
-					item.locked = false;
-				}
-			}
+			unlockItems();
 		}
 		
 		private var _useCustomViewPort:Boolean = false;
@@ -315,7 +325,7 @@ package molehill.easy.ui3d.list
 			return _showEmptyCells;
 		}
 		/**
-		 * Enable or disable adding emty item renderers to fill the last line
+		 * Enable or disable adding empty item renderers to fill the last line
 		 * Required emptyItemRendererFactory to be set
 		 */
 		public function set showEmptyCells(value:Boolean):void
@@ -328,6 +338,30 @@ package molehill.easy.ui3d.list
 			_showEmptyCells = value;
 			
 			if (!_showEmptyCells)
+			{
+				freeAllEmptyItemRenderers();
+			}
+		}
+		
+		private var _fillEmptyCellsMinNum:int = 0;
+		public function get fillEmptyCellsMinNum():int
+		{
+			return _fillEmptyCellsMinNum;
+		}
+		/**
+		 * Enable or disable adding empty item renderers to fill min num elements
+		 * Required emptyItemRendererFactory to be set
+		 */
+		public function set fillEmptyCellsMinNum(value:int):void
+		{
+			if (_emptyItemRendererFactory == null)
+			{
+				return;
+			}
+			
+			_fillEmptyCellsMinNum = value;
+			
+			if (_fillEmptyCellsMinNum == 0)
 			{
 				freeAllEmptyItemRenderers();
 			}
@@ -530,7 +564,7 @@ package molehill.easy.ui3d.list
 				
 				var duration:Number = numPagesToScroll == 0 ? LINE_ANIMATION_DURATION : PAGE_ANIMATION_DURATION / numPagesToScroll;
 				
-				if (Math.abs(numLinesToScroll) > 3)
+				if (Math.abs(numLinesToScroll) > 5)
 				{
 					_numLinesToScroll = Math.abs(numLinesToScroll);
 					_scrollForward = numLinesToScroll > 0;
@@ -603,16 +637,21 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			_numLinesToScroll--;
+			var numLines:int = Math.ceil(_numLinesToScroll / 5);
 			
-			var nextPosition:Number = _scrollForward ? 
-				_secondLinePosition : 
-				(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition);
-			
-			_containerCamera.scrollX = _direction == Direction.VERTICAL ? nextPosition : 0;
-			_containerCamera.scrollY =  _direction == Direction.VERTICAL ? 0 : nextPosition;
-			
-			validateBorders();
+			for (var i:int = 0; i < numLines; i++) 
+			{
+				_numLinesToScroll--;
+				
+				var nextPosition:Number = _scrollForward ? 
+					_secondLinePosition : 
+					(_previousLinePosition == 0 ? -ELASCTIC_SIZE : _previousLinePosition);
+				
+				_containerCamera.scrollX = _direction == Direction.VERTICAL ? nextPosition : 0;
+				_containerCamera.scrollY =  _direction == Direction.VERTICAL ? 0 : nextPosition;
+				
+				validateBorders();
+			}
 		}		
 		
 		private function scrollNextLine(numLinesToScroll:int, duration:Number, forward:Boolean):void
@@ -985,6 +1024,47 @@ package molehill.easy.ui3d.list
 			}
 			
 			return null;
+		}
+		
+		public function getListItemRenderersAfterData(itemData:*, includeSearchItem:Boolean = false):Vector.<IEasyItemRenderer>
+		{
+			for (var i:int = 0; i < _container.numChildren; i++) 
+			{
+				var itemRenderer:IEasyItemRenderer = _container.getChildAt(i) as IEasyItemRenderer;
+				
+				if (itemRenderer == null || itemRenderer.itemData !== itemData)
+				{
+					continue;
+				}
+				
+				break;
+			}
+			
+			if (i == _container.numChildren)
+			{
+				return null
+			}
+			
+			var listRenderers:Vector.<IEasyItemRenderer>;
+			
+			for (i = includeSearchItem ? i : i + 1; i < _container.numChildren; i++) 
+			{
+				itemRenderer = _container.getChildAt(i) as IEasyItemRenderer;
+				
+				if (itemRenderer == null)
+				{
+					continue;
+				}
+				
+				if (listRenderers == null)
+				{
+					listRenderers = new Vector.<IEasyItemRenderer>();
+				}
+				
+				listRenderers.push(itemRenderer)
+			}
+			
+			return listRenderers;
 		}
 		
 		private var _itemClickEnabled:Boolean = false;
@@ -1415,7 +1495,12 @@ package molehill.easy.ui3d.list
 		// scroll limits
 		//==================
 		private var _firstVisibleIndex:uint = 0;
-		private var _lastVisibleIndex:uint = 0;
+		private var _lastVisibleIndex:int = 0;
+		public function get lastVisibleIndex():int
+		{
+			return _lastVisibleIndex;
+		}
+
 		
 		private var _previousLinePosition:Number = 0;
 		private var _secondLinePosition:Number = 0;
@@ -1786,7 +1871,7 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			if (_showEmptyCells)
+			if (_showEmptyCells || _fillEmptyCellsMinNum > 0)
 			{
 				freeAllEmptyItemRenderers();
 			}
@@ -1812,6 +1897,8 @@ package molehill.easy.ui3d.list
 			var dataBeginIdx:int = dataBeginIndex;
 			
 			var lastAddedIndex:uint = 0;
+			
+			_lastVisibleIndex = -1;
 			
 			for (var i:int = dataBeginIdx; i < dataSource.length; i++) 
 			{
@@ -2019,9 +2106,11 @@ package molehill.easy.ui3d.list
 				freeItemRenderer(_container.removeChildAt(_container.numChildren - 1) as IEasyItemRenderer);
 			}
 			
-			if (_showEmptyCells)
+			var numEmptyRenderers:uint;
+			
+			if (_showEmptyCells && (_fillEmptyCellsMinNum == 0 || numItems > _fillEmptyCellsMinNum))
 			{
-				var numEmptyRenderers:uint = _numItemsPerLine - 1 - lastAddedIndex % _numItemsPerLine;
+				numEmptyRenderers = _numItemsPerLine - 1 - lastAddedIndex % _numItemsPerLine;
 				
 				if (numEmptyRenderers > 0)
 				{
@@ -2034,6 +2123,76 @@ package molehill.easy.ui3d.list
 							currentY
 						);
 						
+						if (_direction == Direction.HORIZONTAL)
+						{
+							currentX += (itemRenderer as Sprite3D).width + _columnsGap;
+						}
+						else
+						{
+							currentY += (itemRenderer as Sprite3D).height + _rowsGap;
+						}
+						
+						_container.addChild(itemRenderer as Sprite3D);
+						_listAddedEmptyItemRenderers.push(itemRenderer);
+					}
+				}
+			}
+			if (_fillEmptyCellsMinNum > 0 && numItems < _fillEmptyCellsMinNum)
+			{
+				numEmptyRenderers = _fillEmptyCellsMinNum - numItems;
+				
+				if (numEmptyRenderers > 0)
+				{
+					for (i = 0; i < numEmptyRenderers; i++) 
+					{
+						if (_direction == Direction.HORIZONTAL)
+						{
+							rowHeight = Math.max(itemRenderer != null ? (itemRenderer as Sprite3D).height : 0, rowHeight);
+						}
+						else
+						{
+							rowWidth = Math.max(itemRenderer != null ? (itemRenderer as Sprite3D).width : 0, rowWidth);
+						}
+						if ((lastAddedIndex + i + 1) % _numItemsPerLine == 0)
+						{
+							if (i != 0 || (lastAddedIndex + 1) % _numItemsPerLine != 0)
+							{
+								if (_direction == Direction.HORIZONTAL)
+								{
+									currentY += rowHeight + _rowsGap;
+									currentX = 0;
+									
+									_itemsContainerSize += rowHeight + _rowsGap;
+									
+									if (_secondLinePosition == 0 && currentY > 0)
+									{
+										_secondLinePosition = currentY;
+									}
+								}
+								else
+								{
+									currentX += rowWidth + _columnsGap;
+									currentY = 0;
+									
+									_itemsContainerSize += rowWidth + _columnsGap;
+									
+									if (_secondLinePosition == 0 && currentX > 0)
+									{
+										_secondLinePosition = currentX;
+									}
+								}
+							}
+							
+							rowHeight = 0;
+							rowWidth = 0;
+						}
+						
+						itemRenderer = getEmptyItemRenderer();
+						
+						(itemRenderer as Sprite3D).moveTo(
+							currentX,
+							currentY
+						);
 						if (_direction == Direction.HORIZONTAL)
 						{
 							currentX += (itemRenderer as Sprite3D).width + _columnsGap;
