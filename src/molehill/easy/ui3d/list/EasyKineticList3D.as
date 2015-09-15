@@ -1912,7 +1912,7 @@ package molehill.easy.ui3d.list
 			
 			var dataBeginIdx:int = dataBeginIndex;
 			
-			var lastAddedIndex:uint = 0;
+			var lastAddedIndex:int = -1;
 			
 			_lastVisibleIndex = -1;
 			
@@ -1969,7 +1969,6 @@ package molehill.easy.ui3d.list
 						{
 							for (j = 0; j < numVisibleItems; j++) 
 							{
-								//_itemsContainer.getChildAt(j).y -= currentY;
 								_helperCache[j + "y"] -= currentY;
 								
 								child = _container.getChildAt(j);
@@ -2048,7 +2047,6 @@ package molehill.easy.ui3d.list
 						{
 							for (j = 0; j < numVisibleItems; j++) 
 							{
-								//_itemsContainer.getChildAt(j).x -= currentX;
 								_helperCache[j + "x"] -= currentX;
 								
 								child = _container.getChildAt(j);
@@ -2159,6 +2157,15 @@ package molehill.easy.ui3d.list
 				
 				if (numEmptyRenderers > 0)
 				{
+					if (_direction == Direction.HORIZONTAL)
+					{
+						_itemsContainerSize -= rowHeight;
+					}
+					else
+					{
+						_itemsContainerSize -= rowWidth;
+					}
+					
 					for (i = 0; i < numEmptyRenderers; i++) 
 					{
 						if (_direction == Direction.HORIZONTAL)
@@ -2168,39 +2175,6 @@ package molehill.easy.ui3d.list
 						else
 						{
 							rowWidth = Math.max(itemRenderer != null ? (itemRenderer as Sprite3D).width : 0, rowWidth);
-						}
-						if ((lastAddedIndex + i + 1) % _numItemsPerLine == 0)
-						{
-							if (i != 0 || (lastAddedIndex + 1) % _numItemsPerLine != 0)
-							{
-								if (_direction == Direction.HORIZONTAL)
-								{
-									currentY += rowHeight + _rowsGap;
-									currentX = 0;
-									
-									_itemsContainerSize += rowHeight + _rowsGap;
-									
-									if (_secondLinePosition == 0 && currentY > 0)
-									{
-										_secondLinePosition = currentY;
-									}
-								}
-								else
-								{
-									currentX += rowWidth + _columnsGap;
-									currentY = 0;
-									
-									_itemsContainerSize += rowWidth + _columnsGap;
-									
-									if (_secondLinePosition == 0 && currentX > 0)
-									{
-										_secondLinePosition = currentX;
-									}
-								}
-							}
-							
-							rowHeight = 0;
-							rowWidth = 0;
 						}
 						
 						itemRenderer = getEmptyItemRenderer();
@@ -2218,8 +2192,56 @@ package molehill.easy.ui3d.list
 							currentY += (itemRenderer as Sprite3D).height + _rowsGap;
 						}
 						
+						if ((lastAddedIndex + i + 2) % _numItemsPerLine == 0)
+					{
+							if (_direction == Direction.HORIZONTAL)
+							{
+								currentY += rowHeight + _rowsGap;
+								currentX = 0;
+								
+								if (i != numEmptyRenderers - 1)
+								{
+									_itemsContainerSize += rowHeight + _rowsGap;
+									rowHeight = 0;
+								}
+								
+								if (_secondLinePosition == 0 && currentY > 0)
+								{
+									_secondLinePosition = currentY;
+								}
+							}
+							else
+							{
+								currentX += rowWidth + _columnsGap;
+								currentY = 0;
+								
+								if (i != numEmptyRenderers - 1)
+								{
+									_itemsContainerSize += rowWidth + _columnsGap;
+									rowWidth = 0;
+								}
+								
+								if (_secondLinePosition == 0 && currentX > 0)
+								{
+									_secondLinePosition = currentX;
+								}
+							}
+						}
+						
 						_container.addChild(itemRenderer as Sprite3D);
 						_listAddedEmptyItemRenderers.push(itemRenderer);
+						
+						if (i == numEmptyRenderers - 1)
+						{
+							if (_direction == Direction.HORIZONTAL)
+							{
+								_itemsContainerSize += rowHeight;
+							}
+							else
+							{
+								_itemsContainerSize += rowWidth;
+							}
+						}
 					}
 				}
 			}

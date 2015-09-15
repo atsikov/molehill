@@ -300,6 +300,7 @@ package molehill.easy.ui3d.scroll
 		//Scroll on mouse release
 		private function onStageMouseUp(event:MouseEvent):void
 		{
+			var noScroll:Boolean = !_scrollStarted;
 			if (_scrollStarted)
 			{
 				event.stopImmediatePropagation();
@@ -324,7 +325,10 @@ package molehill.easy.ui3d.scroll
 			
 			if (_listVelocityX.length == 0)
 			{
-				onKineticEnterFrame(null);
+				if (!noScroll)
+				{
+					onKineticEnterFrame(null);
+				}
 				return;
 			}
 			
