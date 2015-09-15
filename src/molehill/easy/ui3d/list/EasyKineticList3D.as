@@ -2157,15 +2157,6 @@ package molehill.easy.ui3d.list
 				
 				if (numEmptyRenderers > 0)
 				{
-					if (_direction == Direction.HORIZONTAL)
-					{
-						_itemsContainerSize -= rowHeight;
-					}
-					else
-					{
-						_itemsContainerSize -= rowWidth;
-					}
-					
 					for (i = 0; i < numEmptyRenderers; i++) 
 					{
 						if (_direction == Direction.HORIZONTAL)
@@ -2193,7 +2184,7 @@ package molehill.easy.ui3d.list
 						}
 						
 						if ((lastAddedIndex + i + 2) % _numItemsPerLine == 0)
-					{
+						{
 							if (_direction == Direction.HORIZONTAL)
 							{
 								currentY += rowHeight + _rowsGap;
@@ -2201,7 +2192,6 @@ package molehill.easy.ui3d.list
 								
 								if (i != numEmptyRenderers - 1)
 								{
-									_itemsContainerSize += rowHeight + _rowsGap;
 									rowHeight = 0;
 								}
 								
@@ -2217,7 +2207,6 @@ package molehill.easy.ui3d.list
 								
 								if (i != numEmptyRenderers - 1)
 								{
-									_itemsContainerSize += rowWidth + _columnsGap;
 									rowWidth = 0;
 								}
 								
@@ -2230,18 +2219,6 @@ package molehill.easy.ui3d.list
 						
 						_container.addChild(itemRenderer as Sprite3D);
 						_listAddedEmptyItemRenderers.push(itemRenderer);
-						
-						if (i == numEmptyRenderers - 1)
-						{
-							if (_direction == Direction.HORIZONTAL)
-							{
-								_itemsContainerSize += rowHeight;
-							}
-							else
-							{
-								_itemsContainerSize += rowWidth;
-							}
-						}
 					}
 				}
 			}
