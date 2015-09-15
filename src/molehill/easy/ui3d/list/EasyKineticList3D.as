@@ -516,11 +516,37 @@ package molehill.easy.ui3d.list
 				{
 					if (_containerCamera.scrollX != rightBorder || _containerCamera.scrollY != bottomBorder)
 					{
+						if (animate)
+						{
+							_animation = OpenTween.go(
+								_containerCamera,
+								{
+									scrollX : rightBorder,
+									scrollY : bottomBorder
+								},
+								LINE_ANIMATION_DURATION,
+								0,
+								Linear.easeNone,
+								_updateCallback,
+								completeScrollingTweenUpdate
+							);
+						}
+						else
+						{
+							_containerCamera.scrollX = rightBorder;
+							_containerCamera.scrollY = bottomBorder;
+						}
+					}
+				}
+				else if (_containerCamera.scrollX != leftBorder || _containerCamera.scrollY != topBorder)
+				{
+					if (animate)
+					{
 						_animation = OpenTween.go(
 							_containerCamera,
 							{
-								scrollX : rightBorder,
-								scrollY : bottomBorder
+								scrollX : leftBorder,
+								scrollY : topBorder
 							},
 							LINE_ANIMATION_DURATION,
 							0,
@@ -529,21 +555,11 @@ package molehill.easy.ui3d.list
 							completeScrollingTweenUpdate
 						);
 					}
-				}
-				else if (_containerCamera.scrollX != leftBorder || _containerCamera.scrollY != topBorder)
-				{
-					_animation = OpenTween.go(
-						_containerCamera,
-						{
-							scrollX : leftBorder,
-							scrollY : topBorder
-						},
-						LINE_ANIMATION_DURATION,
-						0,
-						Linear.easeNone,
-						_updateCallback,
-						completeScrollingTweenUpdate
-					);
+					else
+					{
+						_containerCamera.scrollX = leftBorder;
+						_containerCamera.scrollY = topBorder;
+					}
 				}
 				
 				return;
