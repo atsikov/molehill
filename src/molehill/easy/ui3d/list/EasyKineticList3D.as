@@ -215,7 +215,15 @@ package molehill.easy.ui3d.list
 		private var MOUSE_WHEEL_STEP:Number = 30;
 		
 		
+		private var _itemsHaveChanged:Boolean = false;
+		/** flag that can be set to true before calling update callback */ 
+		public function get itemsHaveChanged():Boolean
+		{
+			return _itemsHaveChanged;
+		}
+
 		private var _updateCallback:Function;
+		/** @see itemsWereUpdated*/
 		public function set updateCallback(value:Function):void
 		{
 			_updateCallback = value;
@@ -2225,7 +2233,9 @@ package molehill.easy.ui3d.list
 			
 			if (_updateCallback != null)
 			{
+				_itemsHaveChanged = true;
 				_updateCallback();
+				_itemsHaveChanged = false;
 			}
 		}
 	}
