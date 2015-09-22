@@ -5,6 +5,7 @@ package molehill.easy.ui3d.list
 	import easy.core.Direction;
 	import easy.core.IFactory;
 	import easy.core.events.ListEvent;
+	import easy.core.events.SelectEvent;
 	import easy.ui.IEasyItemRenderer;
 	import easy.ui.ILockableEasyItemRenderer;
 	
@@ -32,6 +33,7 @@ package molehill.easy.ui3d.list
 	import org.goasap.managers.LinearGoRepeater;
 	import org.opentween.OpenTween;
 
+	[Event(name="selectionChanged", type="easy.core.events.SelectEvent")]
 	public class EasyKineticList3D extends KineticScrollContainer3D
 	{
 		public function EasyKineticList3D()
@@ -969,13 +971,7 @@ package molehill.easy.ui3d.list
 		
 		private function createItemRenderer():IEasyItemRenderer
 		{
-			var itemRenderer:Sprite3D = _itemRendererFactory.newInstance() as Sprite3D;
-			
-			itemRenderer.addEventListener(Input3DMouseEvent.CLICK, onItemRendererClick);
-			itemRenderer.addEventListener(Input3DMouseEvent.MOUSE_OVER, onItemRendererRollOver);
-			itemRenderer.addEventListener(Input3DMouseEvent.MOUSE_OUT, onItemRendererRollOut);
-			
-			return itemRenderer as IEasyItemRenderer;
+			return _itemRendererFactory.newInstance() as IEasyItemRenderer;
 		}
 		
 		private var _listFreeItemRenderers:Array = new Array();
@@ -992,6 +988,10 @@ package molehill.easy.ui3d.list
 			{
 				itemRenderer = createItemRenderer();
 			}
+			
+			(itemRenderer as Sprite3D).addEventListener(Input3DMouseEvent.CLICK, onItemRendererClick);
+			(itemRenderer as Sprite3D).addEventListener(Input3DMouseEvent.MOUSE_OVER, onItemRendererRollOver);
+			(itemRenderer as Sprite3D).addEventListener(Input3DMouseEvent.MOUSE_OUT, onItemRendererRollOut);
 			
 			return itemRenderer;
 		}
@@ -1181,6 +1181,9 @@ package molehill.easy.ui3d.list
 			}
 			update();
 			
+			dispatchEvent(
+				new SelectEvent(SelectEvent.SELECTION_CHANGED)
+			);
 		}
 		
 		public function get selectedItems():Array
@@ -1249,6 +1252,9 @@ package molehill.easy.ui3d.list
 			}
 			update();
 			
+			dispatchEvent(
+				new SelectEvent(SelectEvent.SELECTION_CHANGED)
+			);
 		}
 		
 		public function selectAll():void
@@ -1289,6 +1295,10 @@ package molehill.easy.ui3d.list
 				_selectedItem = itemData;
 				//_selectedIndex = -1;
 			}
+			
+			dispatchEvent(
+				new SelectEvent(SelectEvent.SELECTION_CHANGED)
+			);
 		}
 		//---
 		protected function unselectItem(itemData:*):void
