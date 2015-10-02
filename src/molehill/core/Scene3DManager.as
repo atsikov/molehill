@@ -48,13 +48,20 @@ package molehill.core
 			_listRestoredScenes = new Vector.<Scene3D>();
 		}
 		
-		/**
-		 *  Inintialization 
-		 **/
 		private var _tryForConstrained:Boolean = false;
 		private var _stage:Stage;
 		private var _initCallback:Function;
 		private var _contextLossCallback:Function;
+		/**
+		 *  Method to initialize Stage3D render
+		 * 
+		 * @param stage Flash player stage instance
+		 * @param initCallback Method to be called on successful initialization. Context3D instance will be passed as a parameter <i>initCallback(context:Context3D)</i>
+		 * @param contextLossCallback Method to handle context loss. Context3D instance will be passed as a parameter <i>contextLossCallback(context:Context3D)</i>
+		 * @param onlyConstrained BASELINE_CONSTRAINED mode will be forced if set to true
+		 * @param tryForConstrained BASELINE_CONSTRAINED mode will be selected if BASELINE is unavailable
+		 * 
+		 **/
 		public function initContext(stage:Stage, initCallback:Function, contextLossCallback:Function, onlyConstrained:Boolean = false, tryForConstrained:Boolean = false):void
 		{
 			_stage = stage;
