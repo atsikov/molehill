@@ -1768,38 +1768,7 @@ package molehill.easy.ui3d.list
 		{
 			var borderReached:Boolean = false;
 			
-			if (_direction == Direction.VERTICAL)
-			{
-				if (itemsContainerWidth <= (_scrollingMask.width + _scrollingMask.x) ||
-					(_containerCamera.scrollX < leftBorder && _firstVisibleIndex == 0)
-				)
-				{
-					targetPoint.x = leftBorder;
-					borderReached = true;
-				}
-				else if (_containerCamera.scrollX > rightBorder && _lastVisibleIndex == (_dataSource.length - 1))
-				{
-					targetPoint.x = rightBorder;
-					borderReached = true;
-				}
-			}
-			else
-			{
-				if (itemsContainerHeight <= (_scrollingMask.height + _scrollingMask.y) ||
-					(_containerCamera.scrollY < topBorder && _firstVisibleIndex == 0)
-				)
-				{
-					targetPoint.y = topBorder;
-					borderReached = true;
-				}
-				else if (_containerCamera.scrollY > bottomBorder && _lastVisibleIndex == (_dataSource.length - 1))
-				{
-					targetPoint.y = bottomBorder;
-					borderReached = true;
-				}
-			}
-			
-			if (!borderReached && _snapToClosestItem)
+			if (_snapToClosestItem)
 			{
 				var cameraScrollPosition:Number = _direction == Direction.HORIZONTAL ? _containerCamera.scrollY : _containerCamera.scrollX;
 				var gap:Number = _direction == Direction.HORIZONTAL ? _rowsGap : _columnsGap;
@@ -1842,6 +1811,39 @@ package molehill.easy.ui3d.list
 					}
 					
 					borderReached = true;
+				}
+			}
+			else
+			{
+				if (_direction == Direction.VERTICAL)
+				{
+					if (itemsContainerWidth <= (_scrollingMask.width + _scrollingMask.x) ||
+						(_containerCamera.scrollX < leftBorder && _firstVisibleIndex == 0)
+					)
+					{
+						targetPoint.x = leftBorder;
+						borderReached = true;
+					}
+					else if (_containerCamera.scrollX > rightBorder && _lastVisibleIndex == (_dataSource.length - 1))
+					{
+						targetPoint.x = rightBorder;
+						borderReached = true;
+					}
+				}
+				else
+				{
+					if (itemsContainerHeight <= (_scrollingMask.height + _scrollingMask.y) ||
+						(_containerCamera.scrollY < topBorder && _firstVisibleIndex == 0)
+					)
+					{
+						targetPoint.y = topBorder;
+						borderReached = true;
+					}
+					else if (_containerCamera.scrollY > bottomBorder && _lastVisibleIndex == (_dataSource.length - 1))
+					{
+						targetPoint.y = bottomBorder;
+						borderReached = true;
+					}
 				}
 			}
 			
