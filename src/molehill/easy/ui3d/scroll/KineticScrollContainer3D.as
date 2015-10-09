@@ -25,10 +25,6 @@ package molehill.easy.ui3d.scroll
 	
 	public class KineticScrollContainer3D extends Sprite3DContainer
 	{
-		public static const FREE:String = "free";
-		public static const HORIZONTAL:String = "horizontal";
-		public static const VERTICAL:String = "vertical";
-		
 		protected var _container:UIComponent3D;
 		public function get container():UIComponent3D
 		{
@@ -75,7 +71,7 @@ package molehill.easy.ui3d.scroll
 			_scrollingMask.setSize(_viewPort.width, _viewPort.height);
 		}
 		
-		protected var _scrollDirection:String = VERTICAL;
+		protected var _scrollDirection:String = KineticScrollContainerDirection.VERTICAL;
 		public function get scrollDirection():String
 		{
 			return _scrollDirection;
@@ -198,8 +194,8 @@ package molehill.easy.ui3d.scroll
 			_listVelocityY.splice(0, _listVelocityY.length);
 			
 			_startPoint.setTo(
-				_scrollDirection == VERTICAL ? 0 : event.stageX,
-				_scrollDirection == HORIZONTAL ? 0 : event.stageY
+				_scrollDirection == KineticScrollContainerDirection.VERTICAL ? 0 : event.stageX,
+				_scrollDirection == KineticScrollContainerDirection.HORIZONTAL ? 0 : event.stageY
 			);
 			
 			_lastTime = 0;
@@ -209,8 +205,8 @@ package molehill.easy.ui3d.scroll
 			_stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp, false, int.MAX_VALUE);
 			
 			_endHelperPoint.setTo(
-				_scrollDirection == VERTICAL ? 0 : event.stageX,
-				_scrollDirection == HORIZONTAL ? 0 : event.stageY
+				_scrollDirection == KineticScrollContainerDirection.VERTICAL ? 0 : event.stageX,
+				_scrollDirection == KineticScrollContainerDirection.HORIZONTAL ? 0 : event.stageY
 			);
 			
 			_stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMove);
@@ -225,8 +221,8 @@ package molehill.easy.ui3d.scroll
 			_startHelperPoint.y = _endHelperPoint.y;
 			
 			_endHelperPoint.setTo(
-				_scrollDirection == VERTICAL ? 0 : event.stageX,
-				_scrollDirection == HORIZONTAL ? 0 : event.stageY
+				_scrollDirection == KineticScrollContainerDirection.VERTICAL ? 0 : event.stageX,
+				_scrollDirection == KineticScrollContainerDirection.HORIZONTAL ? 0 : event.stageY
 			);
 			
 			if (!_scrollStarted)
@@ -247,8 +243,8 @@ package molehill.easy.ui3d.scroll
 				
 				_lastTime = getTimer();
 				_lastPosition.setTo(
-					_scrollDirection == VERTICAL ? 0 : _stage.mouseX,
-					_scrollDirection == HORIZONTAL ? 0 : _stage.mouseY
+					_scrollDirection == KineticScrollContainerDirection.VERTICAL ? 0 : _stage.mouseX,
+					_scrollDirection == KineticScrollContainerDirection.HORIZONTAL ? 0 : _stage.mouseY
 				);
 				
 				_stage.addEventListener(Event.ENTER_FRAME, onScrollEnterFrame);
@@ -274,8 +270,8 @@ package molehill.easy.ui3d.scroll
 			}
 			
 			_newPosition.setTo(
-				_scrollDirection == VERTICAL ? 0 : _stage.mouseX,
-				_scrollDirection == HORIZONTAL ? 0 : _stage.mouseY
+				_scrollDirection == KineticScrollContainerDirection.VERTICAL ? 0 : _stage.mouseX,
+				_scrollDirection == KineticScrollContainerDirection.HORIZONTAL ? 0 : _stage.mouseY
 			);
 			
 			_velocityX = (_newPosition.x - _lastPosition.x) / (_newTime - _lastTime);
@@ -424,6 +420,11 @@ package molehill.easy.ui3d.scroll
 				onAnimationCompleted();
 			}
 			
+			if (_scroller != null)
+			{
+				_scroller.updatePosition();
+			}
+			
 			return borderReached;
 		}
 		
@@ -476,8 +477,10 @@ package molehill.easy.ui3d.scroll
 		
 		protected function completeScrollingTweenUpdate():void
 		{
-			// TODO Auto Generated method stub
-			
+			if (_scroller != null)
+			{
+				_scroller.updatePosition();
+			}
 		}
 		
 		/**
@@ -574,7 +577,7 @@ package molehill.easy.ui3d.scroll
 		{
 			if (_container.width > _scrollingMask.width)
 			{
-				return _container.width - _scrollingMask.width + _rightGap;
+				return _container.width - _scrollingMask.width - _scrollingMask.x + _rightGap;
 			}
 			else
 			{
@@ -626,7 +629,7 @@ package molehill.easy.ui3d.scroll
 		{
 			if (_container.height > _scrollingMask.height)
 			{
-				return _container.height - _scrollingMask.height + _bottomGap;
+				return _container.height - _scrollingMask.height - _scrollingMask.y + _bottomGap;
 			}
 			else
 			{
@@ -645,5 +648,65 @@ package molehill.easy.ui3d.scroll
 			_bottomGap = value;
 		}
 		/* =================== */
+		
+		//==================
+		// scroller interface
+		//==================
+		
+		
+		
+		protected var _scroller:KineticScrollContainer3DScrollerBase;
+		public function get scroller():KineticScrollContainer3DScrollerBase 
+		{ 
+			return _scroller; 
+		}
+		
+		/**
+		 * Would not work with FREE scroll direction
+		 */
+		public function set scroller(value:KineticScrollContainer3DScrollerBase):void
+		{
+			if (_scroller == value || _scrollDirection == KineticScrollContainerDirection.FREE)
+				return;
+			if (_scroller != null)
+			{
+				_scroller.scrollContainer = null;
+			}
+			
+			_scroller = value;
+			
+			if (_scroller != null)
+			{
+				_scroller.scrollContainer = this;
+			}
+		}
+		
+		public function startExternalScrolling():void
+		{
+			onScrollStarted();
+		}
+		
+		public function completeExternalScrolling():void
+		{
+			completeScrolling(true);
+		}
+		
+		public function scrollToPercentPosition(position:Number):void
+		{
+			scrollOn(
+				_scrollDirection == KineticScrollContainerDirection.HORIZONTAL ? _containerCamera.scrollX - (rightBorder - leftBorder) * position : 0,
+				_scrollDirection == KineticScrollContainerDirection.VERTICAL ? _containerCamera.scrollY - (bottomBorder - topBorder) * position : 0
+			);
+		}
+		
+		public function get scrollPercentPosition():Number
+		{
+			if (_scrollDirection == KineticScrollContainerDirection.HORIZONTAL)
+			{
+				return _containerCamera.scrollX / (rightBorder - leftBorder);
+			}
+			
+			return _containerCamera.scrollY / (_container.height + _bottomGap);
+		}
 	}
 }

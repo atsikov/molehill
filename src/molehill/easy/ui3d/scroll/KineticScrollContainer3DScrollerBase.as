@@ -1,4 +1,4 @@
-package molehill.easy.ui3d.list
+package molehill.easy.ui3d.scroll
 {
 	import easy.core.Direction;
 	
@@ -11,10 +11,10 @@ package molehill.easy.ui3d.list
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	
-	public class EasyKineticList3DScrollerBase extends Sprite3DContainer
+	public class KineticScrollContainer3DScrollerBase extends Sprite3DContainer
 	{
 		protected var _scroller:InteractiveSprite3D;
-		public function EasyKineticList3DScrollerBase()
+		public function KineticScrollContainer3DScrollerBase()
 		{
 			super();
 			
@@ -61,29 +61,29 @@ package molehill.easy.ui3d.list
 		private var _limitMousePoint:Point = new Point();
 		private function onScrollerMouseDown(event:Input3DMouseEvent):void
 		{
-			if (_list == null)
+			if (_scrollContainer == null)
 			{
 				return;
 			}
 			
-			_list.startExternalScrolling();
+			_scrollContainer.startExternalScrolling();
 			
 			_endHelperPoint.setTo(
-				_direction == Direction.HORIZONTAL ? 0 : event.stageX,
-				_direction == Direction.VERTICAL ? 0 : event.stageY
+				_direction == KineticScrollContainerDirection.VERTICAL ? 0 : event.stageX,
+				_direction == KineticScrollContainerDirection.HORIZONTAL ? 0 : event.stageY
 			);
 			
 			if (_currentPosition == 0 || _currentPosition == 1)
 			{
 				_limitMousePoint.setTo(
-					_direction == Direction.HORIZONTAL ? 0 : event.stageX,
-					_direction == Direction.VERTICAL ? 0 : event.stageY
+					_direction == KineticScrollContainerDirection.VERTICAL ? 0 : event.stageX,
+					_direction == KineticScrollContainerDirection.HORIZONTAL ? 0 : event.stageY
 				);
 			}
 			
 //			_endHelperPoint.setTo(
-//				_direction == Direction.HORIZONTAL ? 0 : _stage.mouseX,
-//				_direction == Direction.VERTICAL ? 0 : _stage.mouseY
+//				_direction == KineticScrollContainerDirection.VERTICAL ? 0 : _stage.mouseX,
+//				_direction == KineticScrollContainerDirection.HORIZONTAL ? 0 : _stage.mouseY
 //			);
 			_stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp, false, int.MAX_VALUE);
 			_stage.addEventListener(Event.ENTER_FRAME, onMouseEnterFrame);
@@ -96,15 +96,15 @@ package molehill.easy.ui3d.list
 			_stage.removeEventListener(Event.ENTER_FRAME, onMouseEnterFrame);
 			_stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
 			
-			if (_list != null)
+			if (_scrollContainer != null)
 			{
-				_list.completeExternalScrolling();
+				_scrollContainer.completeExternalScrolling();
 			}
 		}
 		
 		private function onMouseEnterFrame(event:Event):void
 		{
-			if (_list == null)
+			if (_scrollContainer == null)
 			{
 				return;
 			}
@@ -112,11 +112,11 @@ package molehill.easy.ui3d.list
 			_startHelperPoint.copyFrom(_endHelperPoint);
 			
 			_endHelperPoint.setTo(
-				_direction == Direction.HORIZONTAL ? 0 : _stage.mouseX,
-				_direction == Direction.VERTICAL ? 0 : _stage.mouseY
+				_direction == KineticScrollContainerDirection.VERTICAL ? 0 : _stage.mouseX,
+				_direction == KineticScrollContainerDirection.HORIZONTAL ? 0 : _stage.mouseY
 			);
 			
-			var limitDiff:Number = _direction == Direction.HORIZONTAL ? 
+			var limitDiff:Number = _direction == KineticScrollContainerDirection.VERTICAL ? 
 				_endHelperPoint.y - _limitMousePoint.y :
 				_endHelperPoint.x - _limitMousePoint.x;
 			
@@ -132,7 +132,7 @@ package molehill.easy.ui3d.list
 			}
 			
 			
-			var diff:Number = _direction == Direction.HORIZONTAL ? 
+			var diff:Number = _direction == KineticScrollContainerDirection.VERTICAL ? 
 				_endHelperPoint.y - _startHelperPoint.y :
 				_endHelperPoint.x - _startHelperPoint.x;
 			
@@ -142,7 +142,7 @@ package molehill.easy.ui3d.list
 			}
 			
 			
-			var scrollerPosition:Number = _direction == Direction.HORIZONTAL ? _scroller.y : _scroller.x;
+			var scrollerPosition:Number = _direction == KineticScrollContainerDirection.VERTICAL ? _scroller.y : _scroller.x;
 			var newPercent:Number = (scrollerPosition + diff) / _size;
 			
 			newPercent = Math.max(newPercent, 0);
@@ -153,7 +153,7 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			_list.scrollToPercentPosition(newPercent);
+			_scrollContainer.scrollToPercentPosition(newPercent);
 			
 			if (_stage != null && (_currentPosition == 0 || _currentPosition == 1))
 			{
@@ -166,7 +166,7 @@ package molehill.easy.ui3d.list
 				
 				_scroller.localToGlobal(_limitMousePoint);
 				
-				if (_direction == Direction.HORIZONTAL)
+				if (_direction == KineticScrollContainerDirection.VERTICAL)
 				{
 					_limitMousePoint.setTo(
 						0,
@@ -185,7 +185,7 @@ package molehill.easy.ui3d.list
 		
 		private function onStageMouseMove(event:MouseEvent):void
 		{
-			if (_list == null)
+			if (_scrollContainer == null)
 			{
 				return;
 			}
@@ -193,11 +193,11 @@ package molehill.easy.ui3d.list
 			_startHelperPoint.copyFrom(_endHelperPoint);
 			
 			_endHelperPoint.setTo(
-				_direction == Direction.HORIZONTAL ? 0 : event.stageX,
-				_direction == Direction.VERTICAL ? 0 : event.stageY
+				_direction == KineticScrollContainerDirection.VERTICAL ? 0 : event.stageX,
+				_direction == KineticScrollContainerDirection.HORIZONTAL ? 0 : event.stageY
 			);
 			
-			var limitDiff:Number = _direction == Direction.HORIZONTAL ? 
+			var limitDiff:Number = _direction == KineticScrollContainerDirection.VERTICAL ? 
 				_endHelperPoint.y - _limitMousePoint.y :
 				_endHelperPoint.x - _limitMousePoint.x;
 			
@@ -212,7 +212,7 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			var diff:Number = _direction == Direction.HORIZONTAL ? 
+			var diff:Number = _direction == KineticScrollContainerDirection.VERTICAL ? 
 				_endHelperPoint.y - _startHelperPoint.y :
 				_endHelperPoint.x - _startHelperPoint.x;
 			
@@ -221,7 +221,7 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			var scrollerPosition:Number = _direction == Direction.HORIZONTAL ? _scroller.y : _scroller.x;
+			var scrollerPosition:Number = _direction == KineticScrollContainerDirection.VERTICAL ? _scroller.y : _scroller.x;
 			var newPercent:Number = (scrollerPosition + diff) / _size;
 			
 			newPercent = Math.max(newPercent, 0);
@@ -232,7 +232,7 @@ package molehill.easy.ui3d.list
 				return;
 			}
 			
-			_list.scrollToPercentPosition(newPercent);
+			_scrollContainer.scrollToPercentPosition(newPercent);
 			
 			if (_stage != null && (_currentPosition == 0 || _currentPosition == 1))
 			{
@@ -245,7 +245,7 @@ package molehill.easy.ui3d.list
 				
 				_scroller.localToGlobal(_limitMousePoint);
 				
-				if (_direction == Direction.HORIZONTAL)
+				if (_direction == KineticScrollContainerDirection.VERTICAL)
 				{
 					_limitMousePoint.setTo(
 						0,
@@ -262,16 +262,16 @@ package molehill.easy.ui3d.list
 			}
 		}
 		
-		private var _list:EasyKineticList3D;
+		private var _scrollContainer:KineticScrollContainer3D;
 
 		protected var _direction:String;
-		internal function set list(value:EasyKineticList3D):void
+		internal function set scrollContainer(value:KineticScrollContainer3D):void
 		{
-			_list = value;
+			_scrollContainer = value;
 			
-			if (_list != null)
+			if (_scrollContainer != null)
 			{
-				_direction = _list.direction;
+				_direction = _scrollContainer.scrollDirection;
 				resize();
 			}
 		}
@@ -290,20 +290,20 @@ package molehill.easy.ui3d.list
 		protected var _currentPosition:Number;
 		public function updatePosition():void
 		{
-			if (_list == null)
+			if (_scrollContainer == null)
 			{
 				return;
 			}
 			
-			var percent:Number = Math.max(_list.scrollPercentPosition, 0);
+			var percent:Number = Math.max(_scrollContainer.scrollPercentPosition, 0);
 			percent = Math.min(percent, 1);
 			var newPosition:int = int(percent * _size);
 			
 			_currentPosition = percent;
 			
 			_scroller.moveTo(
-				_direction == Direction.HORIZONTAL ? 0 : newPosition, 
-				_direction == Direction.VERTICAL ? 0 : newPosition
+				_direction == KineticScrollContainerDirection.VERTICAL ? 0 : newPosition, 
+				_direction == KineticScrollContainerDirection.HORIZONTAL ? 0 : newPosition
 			);
 		}
 		

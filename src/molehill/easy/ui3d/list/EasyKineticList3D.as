@@ -11,26 +11,17 @@ package molehill.easy.ui3d.list
 	
 	import fl.motion.easing.Linear;
 	
-	import flash.display.BitmapData;
-	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
-	import flash.utils.getTimer;
 	
 	import molehill.core.events.Input3DMouseEvent;
-	import molehill.core.render.InteractiveSprite3D;
-	import molehill.core.render.UIComponent3D;
-	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
-	import molehill.core.texture.TextureManager;
-	import molehill.easy.ui3d.GridBox;
 	import molehill.easy.ui3d.scroll.KineticScrollContainer3D;
+	import molehill.easy.ui3d.scroll.KineticScrollContainerDirection;
 	
 	import org.goasap.PlayStates;
-	import org.goasap.managers.LinearGoRepeater;
 	import org.opentween.OpenTween;
 
 	[Event(name="selectionChanged", type="easy.core.events.SelectEvent")]
@@ -40,35 +31,6 @@ package molehill.easy.ui3d.list
 		{
 			super();
 		}
-		
-		private var _scroller:EasyKineticList3DScrollerBase;
-		public function get scroller():EasyKineticList3DScrollerBase 
-		{ 
-			return _scroller; 
-		}
-		
-		/** check <b>rowHeight</b> or <b>columnWidth</b> and <b>numLinesPerPage</b> for this list
-		 * @see EasyKineticList3D.rowHeight
-		 * @see EasyKineticList3D.columnWidth
-		 * @see EasyKineticList3D.numLinesPerPage
-		 */
-		public function set scroller(value:EasyKineticList3DScrollerBase):void
-		{
-			if (_scroller == value)
-				return;
-			if (_scroller != null)
-			{
-				_scroller.list = null;
-			}
-			
-			_scroller = value;
-			
-			if (_scroller != null)
-			{
-				_scroller.list = this;
-			}
-		}
-		
 		
 		private var _delayedUpdate:Boolean = false;
 		override protected function onAddedToScene():void
@@ -162,14 +124,6 @@ package molehill.easy.ui3d.list
 				{
 					item.locked = false;
 				}
-			}
-		}
-		
-		override protected function completeScrollingTweenUpdate():void
-		{
-			if (_scroller != null)
-			{
-				_scroller.updatePosition();
 			}
 		}
 		
@@ -847,7 +801,7 @@ package molehill.easy.ui3d.list
 			
 			_direction = value;
 			
-			scrollDirection = _direction == Direction.HORIZONTAL ? VERTICAL : HORIZONTAL;
+			scrollDirection = _direction == Direction.HORIZONTAL ? KineticScrollContainerDirection.VERTICAL : KineticScrollContainerDirection.HORIZONTAL;
 			
 			updateAutoViewPort();
 			
@@ -1416,35 +1370,7 @@ package molehill.easy.ui3d.list
 		// scroller interface
 		//==================
 		
-		public function startExternalScrolling():void
-		{
-			onScrollStarted();
-		}
-		
-		public function completeExternalScrolling():void
-		{
-			completeScrolling(true);
-		}
-		
-		internal function get totalScrollSize():Number
-		{
-			var lineSize:Number = _direction == Direction.HORIZONTAL ? _rowHeight : _columnWidth;
-			var lineGap:Number = _direction == Direction.HORIZONTAL ? _rowsGap : _columnsGap;
-			var totalSize:int = Math.floor(currentItemMax / numItemsPerLine) * (lineSize + lineGap);
-			
-			if (_snapToEnd && totalSize > 0)
-			{
-				var viewPortSize:Number = _direction == Direction.HORIZONTAL ? _viewPort.height + _viewPort.y : _viewPort.x + _viewPort.x;
-				var numEndLines:int = Math.ceil(viewPortSize / (lineSize + lineGap));
-				var endBottomBorder:Number = numEndLines * (lineSize + lineGap) - lineGap - viewPortSize + bottomGap; 
-				
-				totalSize -= lineSize + lineGap - endBottomBorder;
-			}
-			
-			return totalSize;
-		}
-		
-		public function scrollToPercentPosition(position:Number):void
+		override public function scrollToPercentPosition(position:Number):void
 		{
 //			position = Math.max(0, position);
 //			position = Math.min(1, position);
@@ -1491,7 +1417,7 @@ package molehill.easy.ui3d.list
 			);
 		}
 		
-		public function get scrollPercentPosition():Number
+		override public function get scrollPercentPosition():Number
 		{
 			var lineSize:Number = _direction == Direction.HORIZONTAL ? _rowHeight : _columnWidth;
 			
