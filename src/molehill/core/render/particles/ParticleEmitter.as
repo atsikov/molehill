@@ -9,6 +9,7 @@ package molehill.core.render.particles
 	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
+	import flash.display3D.textures.Texture;
 	import flash.events.Event;
 	import flash.events.TimerEvent;
 	import flash.geom.Rectangle;
@@ -69,6 +70,13 @@ package molehill.core.render.particles
 			var timer:uint = getTimer();
 			
 			if (_appearInterval == 0 || textureID == null)
+			{
+				return;
+			}
+			
+			var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByID(_textureAtlasID);
+			var textureData:TextureData = textureAtlasData != null ? textureAtlasData.getTextureData(textureID) : null;
+			if (textureData == null)
 			{
 				return;
 			}
@@ -641,9 +649,12 @@ package molehill.core.render.particles
 			// 12 floats per vertex * 4 vertices per sprite (quad) * 4 bytes per float = 192
 			var bytesPerAdditionalParticleData:uint = NUM_ADDITIONAL_DATA_COMPONENTS * 4 * 4;
 			
+			var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByID(_textureAtlasID);
+			var textureData:TextureData = textureAtlasData.getTextureData(textureID);
+			
 			var numStoredParticles:uint = _vertexData.length / bytesPerParticle;
 			_vertexData.position = 0;
-			if (_numRemovedParticles != 0 || _numAddedParticles != 0)
+			if (textureData == null && (_numRemovedParticles != 0 || _numAddedParticles != 0))
 			{
 				if (_numRemovedParticles > 0)
 				{
@@ -675,7 +686,6 @@ package molehill.core.render.particles
 				var width2:Number = Math.abs((_x2 - _x0) / 2);
 				var height2:Number = Math.abs((_y2 - _y0) / 2);
 				
-				var textureData:TextureData = TextureManager.getInstance().getAtlasDataByID(_textureAtlasID).getTextureData(textureID);
 				var offsetLeft:int = width2 - textureData.blankOffsetX;
 				var offsetRight:int = width2 - (textureData.width - textureData.blankOffsetX - textureData.croppedWidth);
 				var offsetTop:int = height2 - textureData.blankOffsetY;
