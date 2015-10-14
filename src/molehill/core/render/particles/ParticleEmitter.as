@@ -654,7 +654,7 @@ package molehill.core.render.particles
 			
 			var numStoredParticles:uint = _vertexData.length / bytesPerParticle;
 			_vertexData.position = 0;
-			if (textureData == null && (_numRemovedParticles != 0 || _numAddedParticles != 0))
+			if (_numRemovedParticles != 0 || _numAddedParticles != 0)
 			{
 				if (_numRemovedParticles > 0)
 				{
