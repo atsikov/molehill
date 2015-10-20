@@ -326,7 +326,7 @@ package molehill.core.text
 					lastSpaceIndex == 0 ? i : lastSpaceIndex,
 					numLineBreaks,
 					placedChildIndex,
-					lastSpaceChildIndex == 0 ? childIndex : lastSpaceChildIndex,
+					lastSpaceChildIndex == 0 ? childIndex - 1 : lastSpaceChildIndex,
 					lastSpaceWidth == 0 ? lastLineWidth : lastSpaceWidth,
 					currentLineWidth
 				);
