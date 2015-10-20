@@ -154,10 +154,6 @@ package molehill.easy.ui3d
 			}
 			
 			update();
-			
-			dispatchEvent(
-				new ResourceEvent(ResourceEvent.READY)
-			);
 		}
 		
 		override public function set width(value:Number):void
