@@ -499,11 +499,15 @@ package molehill.core.render
 				batchingTreeNode = batchingTreeNode.nextSibling;
 			}
 			
+			_batcherInsertPosition = _listSpriteBatchers.indexOf(_lastBatchedChildBatcher) + 1;
+			_currentBatcher = _lastBatchedChildBatcher;
+			/*
 			if (lastBatcher != null)
 			{
 				_batcherInsertPosition = _listSpriteBatchers.indexOf(lastBatcher) + 1;
 				_currentBatcher = lastBatcher;
 			}
+			*/
 		}
 		
 		private function removeNodeReferences(node:TreeNode):void
