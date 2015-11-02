@@ -17,9 +17,9 @@ package molehill.easy.ui3d
 			_cacheSprites = new CachingFactory(Sprite3D);
 		}
 		
-		override public function setTexture(textureId:String):void
+		override public function setTexture(textureID:String):void
 		{
-			_referenceSprite.setTexture(textureId);
+			_referenceSprite.setTexture(textureID);
 			
 			setSize(_tiledWidth, _tiledHeight);
 		}

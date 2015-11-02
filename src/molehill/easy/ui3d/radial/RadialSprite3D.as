@@ -468,11 +468,11 @@ package molehill.easy.ui3d.radial
 			}
 		}		
 		
-		override public function setTexture(textureId:String):void
+		override public function setTexture(textureID:String):void
 		{
-			_textureAtlasID = TextureManager.getInstance().getAtlasDataByTextureID(textureId).atlasID;
+			_textureAtlasID = TextureManager.getInstance().getAtlasDataByTextureID(textureID).atlasID;
 			
-			super.setTexture(textureId);
+			super.setTexture(textureID);
 		}
 		
 		

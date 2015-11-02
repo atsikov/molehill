@@ -22,12 +22,12 @@ package molehill.easy.ui3d
 	public class Photo3D extends Sprite3DContainer
 	{
 		static private var _emptyPhotoTextureID:String;
-		static public function set emptyPhotoTextureId(value:String):void
+		static public function set emptyPhotoTextureID(value:String):void
 		{
 			_emptyPhotoTextureID = value;
 		}
 		
-		static public function get emptyPhotoTextureId():String
+		static public function get emptyPhotoTextureID():String
 		{
 			return _emptyPhotoTextureID;
 		}
@@ -49,7 +49,7 @@ package molehill.easy.ui3d
 		private var _photoHeight:int = 0;
 		
 		private var _photo:Sprite3D;
-		private var _photoTextureId:String;
+		private var _photoTextureID:String;
 		private var _photoLoader:BitmapResource;
 		
 		private var _noSpace:Boolean;
@@ -94,17 +94,17 @@ package molehill.easy.ui3d
 				return;
 			
 			_photoURL = url;
-			_photoTextureId = _photoURL != null ? "photo_" + _photoURL.replace(/[\/\:\.\?\&]/g, '_') : null;
+			_photoTextureID = _photoURL != null ? "photo_" + _photoURL.replace(/[\/\:\.\?\&]/g, '_') : null;
 			
-			if (_photoTextureId != null && TextureManager.getInstance().isTextureCreated(_photoTextureId))
+			if (_photoTextureID != null && TextureManager.getInstance().isTextureCreated(_photoTextureID))
 			{
 				if (_photo == null)
 				{
-					_photo = Sprite3D.createFromTexture(_photoTextureId);
+					_photo = Sprite3D.createFromTexture(_photoTextureID);
 					addChild(_photo);
 				}
 				_photo.darkenColor = 0xFFFFFF
-				_photo.setTexture(_photoTextureId);
+				_photo.setTexture(_photoTextureID);
 				
 				_photo.shader = Shader3DFactory.getInstance().getShaderInstance(null, true);
 				sizePhoto();
@@ -166,7 +166,7 @@ package molehill.easy.ui3d
 		
 		public function sizePhoto():void
 		{
-			var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(_photoTextureId);
+			var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByTextureID(_photoTextureID);
 			if (textureAtlasData == null)
 			{
 				if (_photoWidth != 0 && _photoHeight != 0)
@@ -177,9 +177,9 @@ package molehill.easy.ui3d
 				return;
 			}
 			
-			var textureRegion:Rectangle = textureAtlasData.getTextureRegion(_photoTextureId);
-			var unscaledPhotoWidth:Number  = textureAtlasData.getTextureData(_photoTextureId).width;
-			var unscaledPhotoHeight:Number = textureAtlasData.getTextureData(_photoTextureId).height;
+			var textureRegion:Rectangle = textureAtlasData.getTextureRegion(_photoTextureID);
+			var unscaledPhotoWidth:Number  = textureAtlasData.getTextureData(_photoTextureID).width;
+			var unscaledPhotoHeight:Number = textureAtlasData.getTextureData(_photoTextureID).height;
 			
 			var newPhotoWidth:Number  = 0;
 			var newPhotoHeight:Number = 0;
@@ -272,21 +272,21 @@ package molehill.easy.ui3d
 				return;
 			}
 	
-			if (!TextureManager.getInstance().isTextureCreated(_photoTextureId))
+			if (!TextureManager.getInstance().isTextureCreated(_photoTextureID))
 			{
 				// event may be triggered in more than one photo
-				TextureManager.getInstance().createTextureFromBitmapData(originalBitmapData, _photoTextureId);
+				TextureManager.getInstance().createTextureFromBitmapData(originalBitmapData, _photoTextureID);
 			}
 
 			if (_photo == null)
 			{
-				_photo = Sprite3D.createFromTexture(_photoTextureId);
+				_photo = Sprite3D.createFromTexture(_photoTextureID);
 				addChild(_photo);
 			}
 			
 			_photo.shader = Shader3DFactory.getInstance().getShaderInstance(null, true);
 			_photo.darkenColor = 0xFFFFFF
-			_photo.setTexture(_photoTextureId);
+			_photo.setTexture(_photoTextureID);
 			
 			sizePhoto();	
 				

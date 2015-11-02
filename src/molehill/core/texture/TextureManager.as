@@ -108,18 +108,18 @@ package molehill.core.texture
 				
 				_hashAtlasIDByTexture[texture] = null;
 				
-				for (var textureId:String in atlasData._hashTextures)
+				for (var textureID:String in atlasData._hashTextures)
 				{
-					delete _hashTexturesByTextureID[textureId];
+					delete _hashTexturesByTextureID[textureID];
 				}
 				
-				if (_hashARFDataByTextureID[textureId] != null)
+				if (_hashARFDataByTextureID[textureID] != null)
 				{
-					delete _hashCompressedTexturesByARFData[_hashARFDataByTextureID[textureId]];
+					delete _hashCompressedTexturesByARFData[_hashARFDataByTextureID[textureID]];
 				}
 				else
 				{
-					delete _hashTexturesByTextureID[_hashAtlasBitmapByTextureID[textureId]];
+					delete _hashTexturesByTextureID[_hashAtlasBitmapByTextureID[textureID]];
 				}
 				
 				delete _hashTextureTypeByTexture[texture];
@@ -153,18 +153,18 @@ package molehill.core.texture
 				
 				_hashAtlasIDByTexture[texture] = null;
 				
-				for (var textureId:String in atlasData._hashTextures)
+				for (var textureID:String in atlasData._hashTextures)
 				{
-					delete _hashTexturesByTextureID[textureId];
+					delete _hashTexturesByTextureID[textureID];
 				}
 				
-				if (_hashARFDataByTextureID[textureId] != null)
+				if (_hashARFDataByTextureID[textureID] != null)
 				{
-					delete _hashCompressedTexturesByARFData[_hashARFDataByTextureID[textureId]];
+					delete _hashCompressedTexturesByARFData[_hashARFDataByTextureID[textureID]];
 				}
 				else
 				{
-					delete _hashTexturesByTextureID[_hashAtlasBitmapByTextureID[textureId]];
+					delete _hashTexturesByTextureID[_hashAtlasBitmapByTextureID[textureID]];
 				}
 				
 				delete _hashTextureTypeByTexture[texture];
@@ -542,20 +542,20 @@ package molehill.core.texture
 		private var _notUsedTextures:Dictionary;
 		
 		public static var lastRestoredTexture:String;
-		private function tryRestoreTexture(textureId:String):Boolean
+		private function tryRestoreTexture(textureID:String):Boolean
 		{
-			lastRestoredTexture = textureId;
+			lastRestoredTexture = textureID;
 			
-			if (_hashAtlasDataByTextureID[textureId] == null)
+			if (_hashAtlasDataByTextureID[textureID] == null)
 			{
 				return false;
 			}
 			
 			var texture:Texture;
 			var id:String;
-			if (_hashARFDataByTextureID[textureId] != null)
+			if (_hashARFDataByTextureID[textureID] != null)
 			{
-				var arfData:ARFTextureData = _hashARFDataByTextureID[textureId];
+				var arfData:ARFTextureData = _hashARFDataByTextureID[textureID];
 				texture = _context3D.createTexture(arfData.width, arfData.height, Context3DTextureFormat.BGRA, false);
 				texture.uploadCompressedTextureFromByteArray(arfData.rawATFData, 0, asyncTexturesLoading);
 				
@@ -573,9 +573,9 @@ package molehill.core.texture
 				
 				return true;
 			}
-			else if (_hashAtlasBitmapByTextureID[textureId] != null)
+			else if (_hashAtlasBitmapByTextureID[textureID] != null)
 			{
-				var atlas:TextureAtlasBitmapData = _hashAtlasBitmapByTextureID[textureId];
+				var atlas:TextureAtlasBitmapData = _hashAtlasBitmapByTextureID[textureID];
 				var needMipmaps:Boolean = atlas is FontBRFTextureData;
 				texture = _context3D.createTexture(atlas.width, atlas.height, Context3DTextureFormat.BGRA, false);
 				texture.uploadFromBitmapData(atlas, 0);
@@ -757,11 +757,11 @@ package molehill.core.texture
 			if (_hashTexturesByAtlasID[atlasID] == null)
 			{
 				var atlasData:TextureAtlasData = getAtlasDataByID(atlasID);
-				for (var textureId:String in atlasData._hashTextures)
+				for (var textureID:String in atlasData._hashTextures)
 				{
 					break;
 				}
-				tryRestoreTexture(textureId);
+				tryRestoreTexture(textureID);
 			}
 			
 			var texture:Texture = _hashTexturesByAtlasID[atlasID] as Texture;
