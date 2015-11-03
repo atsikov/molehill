@@ -17,12 +17,14 @@ package molehill.easy.ui3d.scroll
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
+	import molehill.easy.ui3d.scroll.events.KineticScrollContainer3DEvent;
 	
 	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
 	
 	import utils.DebugLogger;
 	
+	[Event(name="scrollCompleted", type="molehill.easy.ui3d.scroll.events.KineticScrollContainer3DEvent")]
 	public class KineticScrollContainer3D extends Sprite3DContainer
 	{
 		protected var _container:UIComponent3D;
@@ -175,7 +177,11 @@ package molehill.easy.ui3d.scroll
 		
 		protected function onScrollCompleted():void
 		{
-			
+			dispatchEvent(
+				new KineticScrollContainer3DEvent(
+					KineticScrollContainer3DEvent.SCROLL_COMPLETED
+				)
+			);
 		}
 		
 		public function stopScrolling():void

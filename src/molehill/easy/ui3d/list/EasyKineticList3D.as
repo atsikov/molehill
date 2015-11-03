@@ -130,6 +130,7 @@ package molehill.easy.ui3d.list
 		override protected function onScrollCompleted():void
 		{
 			unlockItems();
+			super.onScrollCompleted();
 		}
 		
 		private var _useCustomViewPort:Boolean = false;
@@ -491,7 +492,7 @@ package molehill.easy.ui3d.list
 								LINE_ANIMATION_DURATION,
 								0,
 								Linear.easeNone,
-								_updateCallback,
+								completeScrolling,
 								completeScrollingTweenUpdate
 							);
 						}
@@ -499,6 +500,7 @@ package molehill.easy.ui3d.list
 						{
 							_containerCamera.scrollX = rightBorder;
 							_containerCamera.scrollY = bottomBorder;
+							onScrollCompleted();
 						}
 					}
 				}
@@ -515,7 +517,7 @@ package molehill.easy.ui3d.list
 							LINE_ANIMATION_DURATION,
 							0,
 							Linear.easeNone,
-							_updateCallback,
+							completeScrolling,
 							completeScrollingTweenUpdate
 						);
 					}
@@ -523,7 +525,12 @@ package molehill.easy.ui3d.list
 					{
 						_containerCamera.scrollX = leftBorder;
 						_containerCamera.scrollY = topBorder;
+						onScrollCompleted();
 					}
+				}
+				else
+				{
+					onScrollCompleted();
 				}
 				
 				return;
