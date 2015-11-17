@@ -537,7 +537,7 @@ package molehill.core.text
 
 		override public function get width():Number
 		{
-			return wordWrap ? _width : _textWidth;
+			return _width < int.MAX_VALUE ? _width : _textWidth;
 		}
 		
 		override public function set width(value:Number):void
@@ -554,7 +554,7 @@ package molehill.core.text
 		
 		override public function get height():Number
 		{
-			return wordWrap ? _height : _textHeight;
+			return _height < int.MAX_VALUE ? _height : _textHeight;
 		}
 		
 		override public function set height(value:Number):void
