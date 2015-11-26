@@ -32,6 +32,29 @@ package molehill.easy.ui3d
 			_numElementsPerRow = value;
 		}
 		
+		private var _fixedElementWidth:Number = 0;
+		public function get fixedElementWidth():Number 
+		{ 
+			return _fixedElementWidth; 
+		}
+		
+		public function set fixedElementWidth(value:Number):void
+		{
+			_fixedElementWidth = value;
+		}
+		
+		private var _fixedElementHeight:Number = 0;
+		public function get fixedElementHeight():Number 
+		{ 
+			return _fixedElementHeight; 
+		}
+		
+		public function set fixedElementHeight(value:Number):void
+		{
+			_fixedElementHeight = value;
+		}
+		
+		
 		private var _vSpace:int = 10;
 		public function get vSpace():int
 		{
@@ -70,7 +93,7 @@ package molehill.easy.ui3d
 					var i:int;
 					
 					var boundsWidth:Number = 0;
-					var boundsHeight:Number = 0;
+					var boundsHeight:Number = _fixedElementHeight > 0 ? _fixedElementHeight : 0;
 					var child:Sprite3D;
 					for (i = numChildrenPlaced; i < numChildrenPlaced + _numElementsPerRow; i++)
 					{
@@ -84,14 +107,14 @@ package molehill.easy.ui3d
 						{
 							continue;
 						}
-						if (child.height > boundsHeight)
+						if (_fixedElementHeight <= 0 && child.height > boundsHeight)
 						{
 							boundsHeight = child.height;
 						}
-						boundsWidth += child.width;
+						boundsWidth += _fixedElementWidth > 0 ? _fixedElementWidth : child.width;
 					}
 					
-					boundsWidth += _hSpace * (_numElementsPerRow - 1);
+					boundsWidth += _hSpace * ((i - numChildrenPlaced) - 1);
 					listBoundWidths.push(boundsWidth);
 					
 					if (_align != GridBoxAlign.ALIGN_LEFT && maxBoundsWidth < boundsWidth)
@@ -150,7 +173,7 @@ package molehill.easy.ui3d
 							continue;
 						}
 						child.moveTo(int(currentX), currentY);
-						currentX += child.width + _hSpace;
+						currentX += (_fixedElementWidth > 0 ? _fixedElementWidth : child.width) + _hSpace;
 					}
 					currentY += _vSpace + boundsHeight;
 					
