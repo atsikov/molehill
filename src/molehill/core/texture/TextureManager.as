@@ -564,9 +564,13 @@ package molehill.core.texture
 				_hashTexturesByAtlasID[arfData.textureAtlasData.atlasID] = texture;
 				_hashAtlasIDByTexture[texture] = arfData.textureAtlasData.atlasID;
 				
+				var atlasID:String = arfData.textureAtlasData.atlasID;
 				for (id in arfData.textureAtlasData._hashTextures)
 				{
-					_hashTexturesByTextureID[id] = texture;
+					if (_hashAtlasIDByTextureID[id] == atlasID)
+					{
+						_hashTexturesByTextureID[id] = texture;
+					}
 				}
 				
 				_hashTextureTypeByTexture[texture] = true;
@@ -759,7 +763,10 @@ package molehill.core.texture
 				var atlasData:TextureAtlasData = getAtlasDataByID(atlasID);
 				for (var textureID:String in atlasData._hashTextures)
 				{
-					break;
+					if (_hashAtlasIDByTextureID[textureID] == atlasID)
+					{
+						break;
+					}
 				}
 				tryRestoreTexture(textureID);
 			}
