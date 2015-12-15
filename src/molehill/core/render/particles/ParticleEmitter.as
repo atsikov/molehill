@@ -587,28 +587,28 @@ package molehill.core.render.particles
 		
 		public function get left():Number
 		{
-			return _x0;
+			return _x0 - _xRadius;
 		}
 		
 		private var _right:Number = int.MAX_VALUE;
 		
 		public function get right():Number
 		{
-			return _x2;
+			return _x0 + _xRadius;
 		}
 		
 		private var _top:Number = int.MIN_VALUE;
 		
 		public function get top():Number
 		{
-			return _y1;
+			return _y1 - _yRadius;
 		}
 		
 		private var _bottom:Number = int.MAX_VALUE;
 		
 		public function get bottom():Number
 		{
-			return _y0;
+			return _y1 + _yRadius;
 		}
 		
 		private static const NUM_VERTEX_DATA_COMPONENTS:uint = 4;
