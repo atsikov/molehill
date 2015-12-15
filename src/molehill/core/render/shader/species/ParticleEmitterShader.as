@@ -18,6 +18,21 @@ package molehill.core.render.shader.species
 			_vc4.fixed = true;
 		}
 		
+		protected function get appearParamsRegister():ShaderRegister
+		{
+			return VA2;
+		}
+		
+		protected function get speedAccelsRegister():ShaderRegister
+		{
+			return VA3;
+		}
+		
+		protected function get sizeAlphaRegister():ShaderRegister
+		{
+			return VA4;
+		}
+		
 		override protected function prepareVertexShader():void
 		{
 			// va2 = x0, y0, appear time (ms), life time (ms)
@@ -28,7 +43,7 @@ package molehill.core.render.shader.species
 			
 			var currentTimer:String = VC4.x;
 			
-			var initialParams:ShaderRegister = VA2;
+			var initialParams:ShaderRegister = appearParamsRegister;
 			var appearTime:String = initialParams.z;
 			var lifeTime:String = initialParams.w;
 			
@@ -41,7 +56,7 @@ package molehill.core.render.shader.species
 			multiply(time.z, time.x, time.x);
 			
 			var offset:ShaderRegister = VT2;
-			var speedsAccels:ShaderRegister = VA3;
+			var speedsAccels:ShaderRegister = speedAccelsRegister;
 			
 			multiply(offset.xy, speedsAccels.xy, time.x);
 			
@@ -57,7 +72,7 @@ package molehill.core.render.shader.species
 			add(position.xy, position.xy, initialParams.xy);
 			add(position.xy, position.xy, offset.xy);
 			
-			multiply(VT3.xy, VA4.xy, time.yy);
+			multiply(VT3.xy, sizeAlphaRegister.xy, time.yy);
 			add(position.xy, position.xy, VT3.xy);
 			
 			multiplyVectorMatrix(position, position, VC0);
@@ -66,7 +81,7 @@ package molehill.core.render.shader.species
 			multiply(time.w, time.y, time.y);
 			move(V2, time);
 			
-			move(OP, position);
+			writeVertexOutput(position);
 		}
 		
 		override protected function prepareFragmentShader():void

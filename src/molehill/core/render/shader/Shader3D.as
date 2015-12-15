@@ -153,7 +153,13 @@ package molehill.core.render.shader
 			multiplyVectorMatrix(VT0, VA0, VC0);
 			move(V0, VA1);
 			move(V1, VA2);
-			move(OP, VT0);
+			
+			writeVertexOutput(VT0);
+		}
+		
+		protected function writeVertexOutput(vertexDataRegister:ShaderRegister):void
+		{
+			move(OP, vertexDataRegister);
 		}
 		
 		protected function prepareFragmentShader():void
@@ -377,6 +383,22 @@ package molehill.core.render.shader
 		protected function max(dest:*, arg1:*, arg2:*):void
 		{
 			_currentShaderCode += opcodeArgs2("max", dest, arg1, arg2) + "\n";
+		}
+		
+		/**
+		 * sin dest, arg1
+		 **/
+		protected function sin(dest:*, arg1:*):void
+		{
+			_currentShaderCode += opcodeArgs1("sin", dest, arg1) + "\n";
+		}
+		
+		/**
+		 * cos dest, arg1
+		 **/
+		protected function cos(dest:*, arg1:*):void
+		{
+			_currentShaderCode += opcodeArgs1("cos", dest, arg1) + "\n";
 		}
 		
 		public function prepareContext(context3D:Context3D):void

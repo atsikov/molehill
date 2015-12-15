@@ -160,18 +160,6 @@ package molehill.core.render.engine
 		
 		private var _currentTexture:Texture;
 		private var _textureManager:TextureManager;
-		public function bindTexture(textureAtlasID:String):void
-		{
-			if (textureAtlasID == null)
-			{
-				_currentTexture = null;
-			}
-			else
-			{
-				var texture:Texture = _textureManager.getTextureByAtlasID(textureAtlasID);
-				_currentTexture = texture;
-			}
-		}
 		
 		private var _clearA:Number = 1;
 		private var _clearR:Number = 0.5;

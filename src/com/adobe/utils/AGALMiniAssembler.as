@@ -90,7 +90,7 @@ package com.adobe.utils
 		{
 			var start:uint = getTimer();
 			
-			_agalcode							= new ByteArray();
+			_agalcode = new ByteArray();
 			_error = "";
 			
 			var isFrag:Boolean = false;
