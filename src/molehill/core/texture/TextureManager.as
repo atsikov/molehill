@@ -259,11 +259,11 @@ package molehill.core.texture
 			var atlas:TextureAtlasBitmapData;
 			var node:TextureAtlasDataNode;
 			
-			var hashCheckedBitmapTextures:Dictionary = new Dictionary();
 			for each (var value:Object in _hashAtlasBitmapByTextureID)
 			{
 				atlas = value as TextureAtlasBitmapData;
-				if (hashCheckedBitmapTextures[atlas])
+				
+				if (atlas.textureAtlasData is FontTextureData)
 				{
 					continue;
 				}
@@ -286,8 +286,6 @@ package molehill.core.texture
 				{
 					break;
 				}
-				
-				hashCheckedBitmapTextures[atlas] = true;
 			}
 			
 			if (isReady)
@@ -344,7 +342,48 @@ package molehill.core.texture
 			_hashAtlasDataByTextureID[textureID] = atlas.textureAtlasData;
 			_hashAtlasBitmapByTextureID[textureID] = atlas;
 			
+			if (_hashAtlasBitmapByAtlasID[atlas.textureAtlasData.atlasID] == null)
+			{
+				_hashAtlasBitmapByAtlasID[atlas.textureAtlasData.atlasID] = atlas;
+			}
+			
 			return null;//texture;
+		}
+		
+		public function addTextureToAtlas(bitmapData:BitmapData, textureID:String, atlasID:String):Boolean
+		{
+			var atlasBitmapData:TextureAtlasBitmapData = _hashAtlasBitmapByAtlasID[atlasID];
+			
+			if (atlasBitmapData.textureAtlasData.getTextureData(textureID) != null)
+			{
+				trace("TextureManager/createTextureFromBitmapData(): Texture with id " + textureID + " already created in atals " + atlasID + "!");
+				return false;
+			}
+			
+			var node:TextureAtlasDataNode;
+			node = atlasBitmapData.insert(bitmapData, textureID);
+			if (node == null)
+			{
+				trace ("Cannot fit texture " + textureID + " to atlas " + atlasID)
+				return false;
+			}
+			
+			if (_hashTexturesByAtlasBitmap[atlasBitmapData] != null)
+			{
+				var texture:Texture = _hashTexturesByAtlasBitmap[atlasBitmapData];
+				texture.uploadFromBitmapData(atlasBitmapData);
+			}
+			
+			if (bitmapData is SpriteSheet)
+			{
+				atlasBitmapData.textureAtlasData.getTextureData(textureID).spriteSheetData = (bitmapData as SpriteSheet).spriteSheetData;
+			}
+			
+			_hashAtlasIDByTextureID[textureID] = atlasBitmapData.textureAtlasData.atlasID;
+			_hashAtlasDataByTextureID[textureID] = atlasBitmapData.textureAtlasData;
+			_hashAtlasBitmapByTextureID[textureID] = atlasBitmapData;
+			
+			return true;
 		}
 		
 		public function createCompressedTextureFromARF(textureData:ARFTextureData):Texture
@@ -438,6 +477,8 @@ package molehill.core.texture
 					_hashAtlasBitmapByTextureID[textureID] = textureData;
 				}
 				
+				_hashAtlasBitmapByAtlasID[textureData.textureAtlasData.atlasID] = textureData;
+				
 				//_hashTextureTypeByTexture[texture] = false;
 			}
 			return null; //texture;
@@ -485,6 +526,7 @@ package molehill.core.texture
 					_hashAtlasBitmapByTextureID[textureID] = fontBitmap;
 				}
 				
+				_hashAtlasBitmapByAtlasID[fontBitmap.textureAtlasData.atlasID] = fontBitmap;
 				//_hashTextureTypeByTexture[texture] = false;
 			}
 			/*
@@ -538,6 +580,8 @@ package molehill.core.texture
 		// Dictionaries for restoring GCed textures
 		private var _hashAtlasBitmapByTextureID:Object;
 		private var _hashARFDataByTextureID:Object;
+		
+		private var _hashAtlasBitmapByAtlasID:Object;
 		
 		private var _notUsedTextures:Dictionary;
 		
@@ -845,6 +889,8 @@ package molehill.core.texture
 			
 			_hashAtlasBitmapByTextureID = new Object();
 			_hashARFDataByTextureID = new Object();
+			
+			_hashAtlasBitmapByAtlasID = new Object();
 		}
 	}
 }

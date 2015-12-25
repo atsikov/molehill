@@ -6,15 +6,20 @@ package molehill.core.text
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
+	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 	import flash.net.URLLoader;
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
+	import flash.text.TextField;
+	import flash.text.TextFormat;
 	import flash.utils.ByteArray;
 	
 	import molehill.core.events.Font3DManagerEvent;
 	import molehill.core.texture.FontARFTextureData;
 	import molehill.core.texture.FontBRFTextureData;
 	import molehill.core.texture.FontTextureData;
+	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
 	[Event(name="fontReady", type="molehill.core.events.Font3DManagerEvent")]
@@ -41,7 +46,8 @@ package molehill.core.text
 				throw new Error("Use Font3DManager::getInstance()");
 			}
 			
-			_hashLoadedFonts = new Object();
+			_hashFontBitmaps = new Object();
+			_hashFontAtlasDatas = new Object();
 		}
 		
 		public function loadARFFont(url:String):void
@@ -59,8 +65,9 @@ package molehill.core.text
 			var bytes:ByteArray = (event.currentTarget as URLLoader).data;
 			var fontTexture:FontARFTextureData = new FontARFTextureData(bytes);
 			
+			var fontName:String = (fontTexture.textureAtlasData as FontTextureData).fontName;
 			TextureManager.getInstance().createCompressedTextureFromARF(fontTexture);
-			_hashLoadedFonts[(fontTexture.textureAtlasData as FontTextureData).fontName] = fontTexture.textureAtlasData;
+			_hashFontAtlasDatas[fontName] = fontTexture.textureAtlasData;
 			
 			dispatchEvent(
 				new Font3DManagerEvent(Font3DManagerEvent.FONT_READY, (fontTexture.textureAtlasData as FontTextureData).fontName)
@@ -128,6 +135,7 @@ package molehill.core.text
 			new FontImageLoader(imageBytes, fontTextureData, onBitmapFontImageLoaded);
 		}
 		
+		private var _hashFontBitmaps:Object;
 		private function onBitmapFontImageLoaded(loader:FontImageLoader):void
 		{
 			var tm:TextureManager = TextureManager.getInstance();
@@ -136,7 +144,8 @@ package molehill.core.text
 			fontBitmap.textureAtlasData.atlasID = '__font__' + loader.fontTextureData.fontName;
 			TextureManager.getInstance().createFontTextureFromBitmapData(fontBitmap);
 			
-			_hashLoadedFonts[loader.fontTextureData.fontName] = loader.fontTextureData;
+			_hashFontAtlasDatas[loader.fontTextureData.fontName] = loader.fontTextureData;
+			_hashFontBitmaps[loader.fontTextureData.fontName] = fontBitmap;
 			
 			dispatchEvent(
 				new Font3DManagerEvent(Font3DManagerEvent.FONT_READY, loader.fontTextureData.fontName)
@@ -150,15 +159,15 @@ package molehill.core.text
 			);
 		}
 		
-		private var _hashLoadedFonts:Object;
+		private var _hashFontAtlasDatas:Object;
 		public function isFontLoaded(fontName:String):Boolean
 		{
-			return _hashLoadedFonts[fontName] != null;
+			return _hashFontAtlasDatas[fontName] != null;
 		}
 		
-		public function getFontTextureData(fontName:String):FontTextureData
+		public function getFontTextureAtlasData(fontName:String):FontTextureData
 		{
-			return _hashLoadedFonts[fontName];
+			return _hashFontAtlasDatas[fontName];
 		}
 		
 		public function getSuitableFontSize(fontName:String, size:int):int
@@ -168,7 +177,7 @@ package molehill.core.text
 				return -1;
 			}
 			
-			var fontTextureData:FontTextureData = _hashLoadedFonts[fontName];
+			var fontTextureData:FontTextureData = _hashFontAtlasDatas[fontName];
 			var listSizes:Array = fontTextureData.listSizes;
 			var i:int = 0;
 			while (i < listSizes.length && listSizes[i] < size)
@@ -177,6 +186,106 @@ package molehill.core.text
 			}
 			
 			return i < listSizes.length ? listSizes[i] : listSizes[i - 1];
+		}
+		
+		
+		private var _hashChars:Object = new Object();
+		private function getTextureIDForChar(font:String, size:uint, char:uint):String
+		{
+			var fontObject:Object = _hashChars[font];
+			if (fontObject == null)
+			{
+				fontObject = new Object();
+				_hashChars[font] = fontObject;
+			}
+			
+			var sizeObject:Object = fontObject[size];
+			if (sizeObject == null)
+			{
+				sizeObject = new Object();
+				fontObject[size] = sizeObject;
+			}
+			
+			var charTexture:String = sizeObject[char];
+			if (charTexture == null)
+			{
+				charTexture = font + "_" + size + "_" + char;
+				sizeObject[char] = charTexture;
+			}
+			
+			return charTexture;
+		}
+		
+		public function getTextureDataForChar(font:String, size:uint, char:uint, generateIfNeeded:Boolean = false):TextureData
+		{
+			var charTextureID:String = getTextureIDForChar(font, size, char);
+			var textureData:TextureData = (_hashFontAtlasDatas[font] as FontTextureData).getTextureData(charTextureID);
+			if (generateIfNeeded &&
+				textureData == null &&
+				_hashFontBitmaps[font] != null &&
+				_generateMissingGlyphs)
+			{
+				generateGlyph(font, size, char);
+				textureData = (_hashFontAtlasDatas[font] as FontTextureData).getTextureData(charTextureID);
+			}
+			return textureData;
+		}
+		
+		private var _generateMissingGlyphs:Boolean = false; 
+		public function get generateMissingGlyphs():Boolean
+		{
+			return _generateMissingGlyphs;
+		}
+		
+		public function set generateMissingGlyphs(value:Boolean):void
+		{
+			_generateMissingGlyphs = value;
+		}
+		
+		private var _tfGenerateGlyph:TextField;
+		private var _formatGenerateGlyph:TextFormat;
+		private var _matrixGenerateGlyph:Matrix;
+		private function generateGlyph(font:String, size:uint, char:uint):void
+		{
+			if (_tfGenerateGlyph == null)
+			{
+				_tfGenerateGlyph = new TextField();
+				_tfGenerateGlyph.embedFonts = false;
+			}
+			
+			if (_formatGenerateGlyph == null)
+			{
+				_formatGenerateGlyph = new TextFormat();
+				_formatGenerateGlyph.color = 0xFFFFFF;
+			}
+			
+			_formatGenerateGlyph.font = font;
+			_formatGenerateGlyph.size = size;
+			
+			_tfGenerateGlyph.defaultTextFormat = _formatGenerateGlyph;
+			
+			_tfGenerateGlyph.text = String.fromCharCode(char);
+			
+			var charRect:Rectangle = _tfGenerateGlyph.getCharBoundaries(0);
+			
+			var bitmapData:BitmapData = new BitmapData(Math.round(charRect.width), Math.round(charRect.height), true, 0x00000000);
+			
+			if (_matrixGenerateGlyph == null)
+			{
+				_matrixGenerateGlyph = new Matrix();
+			}
+			
+			_matrixGenerateGlyph.identity();
+			_matrixGenerateGlyph.translate(-charRect.x, -charRect.y);
+			bitmapData.draw(_tfGenerateGlyph, _matrixGenerateGlyph);
+			
+			TextureManager.getInstance().addTextureToAtlas(
+				bitmapData,
+				getTextureIDForChar(font, size, char),
+				(_hashFontAtlasDatas[font] as FontTextureData).atlasID
+			);
+			
+			bitmapData.dispose();
 		}
 	}
 }
