@@ -87,7 +87,7 @@ package molehill.easy.ui3d
 			_modalBGColor = value;
 		}
 		
-		private var _modalBGAlpha:Number = .5;
+		private var _modalBGAlpha:Number = .2;
 		
 		public function get modalBGAlpha():Number
 		{

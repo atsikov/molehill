@@ -93,6 +93,14 @@ package molehill.core.render
 		molehill_internal function setRenderEngine(value:RenderEngine):void
 		{
 			_renderEngine = value;
+			if (_renderEngine != null)
+			{
+				trace("render engine added");
+			}
+			else
+			{
+				trace("render engine removed");
+			}
 		}
 		
 		public function onContextRestored():void

@@ -248,6 +248,31 @@ package molehill.core
 			return bd;
 		}
 		
+		public function getSceneScreenshot(scene:Scene3D, scale:Number = 1):BitmapData
+		{
+			if (!_renderer.isReady || scene == null)
+			{
+				return null;
+			}
+			
+			_renderer.toBitmapData = true;
+			
+			var bd:BitmapData = new BitmapData(_renderer.getViewportWidth() * scale, _renderer.getViewportHeight() * scale, false, 0x00000000);
+			//doRender();
+			
+			_renderer.clear();
+			
+			scene.renderScene();
+			_renderer.drawScenes()
+			
+			_renderer.copyToBitmapData(bd);
+			_renderer.present();
+			
+			_renderer.toBitmapData = false;
+			
+			return bd;
+		}
+		
 		/**
 		 * Render cycle
 		 **/

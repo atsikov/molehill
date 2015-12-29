@@ -251,6 +251,53 @@ package molehill.core.texture
 			*/
 		}
 		
+		public function createUniqueTextureFromBitmapData(bitmapData:BitmapData, textureID:String):void
+		{
+			if (!isReady)
+			{
+				return;
+			}
+			
+			if (getAtlasDataByTextureID(textureID) != null)
+			{
+				var texture:Texture = getTextureByAtlasID(getAtlasDataByTextureID(textureID).atlasID);
+				
+				if (texture != null)
+				{
+					disposeTexture(texture);
+				}
+			}
+			
+			var atlasID:String = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
+			
+			var atlas:TextureAtlasBitmapData;
+			atlas = new TextureAtlasBitmapData(upperPowerOfTwo(bitmapData.width), upperPowerOfTwo(bitmapData.height));
+			atlas.textureAtlasData.atlasID = atlasID;
+			atlas.insert(bitmapData, textureID);
+			
+			_hashAtlasDataByAtlasID[atlas.textureAtlasData.atlasID] = atlas.textureAtlasData;
+			
+			_hashAtlasIDByTextureID[textureID] = atlas.textureAtlasData.atlasID;
+			_hashAtlasDataByTextureID[textureID] = atlas.textureAtlasData;
+			_hashAtlasBitmapByTextureID[textureID] = atlas;
+		}
+		
+		public static function upperPowerOfTwo(num:uint):uint
+		{
+			// if(num == 1) return 2;
+			
+			num--;
+			num |= num >> 1;
+			num |= num >> 2;
+			num |= num >> 4;
+			num |= num >> 8;
+			num |= num >> 16;
+			
+			num++;
+			
+			return num;
+		}
+		
 		private var _hashCompressedTexturesByARFData:Dictionary;
 		private var _textureWidth:int = 2048;
 		private var _textureHeight:int = 2048;
