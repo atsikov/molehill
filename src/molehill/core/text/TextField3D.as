@@ -234,7 +234,7 @@ package molehill.core.text
 					{
 						var lowerSize:int = _fontTextureSize - 1;
 						lowerSize = Font3DManager.getInstance().getSuitableFontSize(_fontName, lowerSize);
-						while (lowerSize != -1 && charTextureData == null)
+						while (lowerSize > -1 && charTextureData == null)
 						{
 							charTextureData = fm.getTextureDataForChar(_fontName, lowerSize, charCode);
 							if (charTextureData == null)

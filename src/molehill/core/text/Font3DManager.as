@@ -174,7 +174,7 @@ package molehill.core.text
 		{
 			if (!isFontLoaded(fontName))
 			{
-				return -1;
+				return size;
 			}
 			
 			var fontTextureData:FontTextureData = _hashFontAtlasDatas[fontName];
@@ -219,14 +219,17 @@ package molehill.core.text
 		public function getTextureDataForChar(font:String, size:uint, char:uint, generateIfNeeded:Boolean = false):TextureData
 		{
 			var charTextureID:String = getTextureIDForChar(font, size, char);
-			var textureData:TextureData = (_hashFontAtlasDatas[font] as FontTextureData).getTextureData(charTextureID);
+			var textureData:TextureData = _hashFontAtlasDatas[font] != null ? 
+				(_hashFontAtlasDatas[font] as FontTextureData).getTextureData(charTextureID) :
+				TextureManager.getInstance().getTextureDataByID(charTextureID);
 			if (generateIfNeeded &&
 				textureData == null &&
-				_hashFontBitmaps[font] != null &&
 				_generateMissingGlyphs)
 			{
 				generateGlyph(font, size, char);
-				textureData = (_hashFontAtlasDatas[font] as FontTextureData).getTextureData(charTextureID);
+				textureData = _hashFontAtlasDatas[font] != null ?
+					(_hashFontAtlasDatas[font] as FontTextureData).getTextureData(charTextureID) :
+					TextureManager.getInstance().getTextureDataByID(charTextureID);
 			}
 			return textureData;
 		}
@@ -250,7 +253,6 @@ package molehill.core.text
 			if (_tfGenerateGlyph == null)
 			{
 				_tfGenerateGlyph = new TextField();
-				_tfGenerateGlyph.embedFonts = false;
 			}
 			
 			if (_formatGenerateGlyph == null)
@@ -262,11 +264,23 @@ package molehill.core.text
 			_formatGenerateGlyph.font = font;
 			_formatGenerateGlyph.size = size;
 			
+			_tfGenerateGlyph.embedFonts = true;
 			_tfGenerateGlyph.defaultTextFormat = _formatGenerateGlyph;
-			
 			_tfGenerateGlyph.text = String.fromCharCode(char);
 			
 			var charRect:Rectangle = _tfGenerateGlyph.getCharBoundaries(0);
+			if (charRect == null || charRect.width == 0 || charRect.width)
+			{
+				_tfGenerateGlyph.embedFonts = false;
+				_formatGenerateGlyph.font = 'Arial';
+				_tfGenerateGlyph.setTextFormat(_formatGenerateGlyph, 0, 1);
+				charRect = _tfGenerateGlyph.getCharBoundaries(0);
+			}
+			
+			if (charRect == null || charRect.width == 0 || charRect.height == 0)
+			{
+				return;
+			}
 			
 			var bitmapData:BitmapData = new BitmapData(Math.round(charRect.width), Math.round(charRect.height), true, 0x00000000);
 			
@@ -279,11 +293,23 @@ package molehill.core.text
 			_matrixGenerateGlyph.translate(-charRect.x, -charRect.y);
 			bitmapData.draw(_tfGenerateGlyph, _matrixGenerateGlyph);
 			
-			TextureManager.getInstance().addTextureToAtlas(
-				bitmapData,
-				getTextureIDForChar(font, size, char),
-				(_hashFontAtlasDatas[font] as FontTextureData).atlasID
-			);
+			trace(String.fromCharCode(char) + ' size ' + size + ' generated');
+			
+			if (_hashFontAtlasDatas[font] != null)
+			{
+				TextureManager.getInstance().addTextureToAtlas(
+					bitmapData,
+					getTextureIDForChar(font, size, char),
+					(_hashFontAtlasDatas[font] as FontTextureData).atlasID
+				);
+			}
+			else
+			{
+				TextureManager.getInstance().createTextureFromBitmapData(
+					bitmapData,
+					getTextureIDForChar(font, size, char)
+				);
+			}
 			
 			bitmapData.dispose();
 		}

@@ -7,14 +7,10 @@ package molehill.core.texture
 
 	public class TextureAtlasBitmapData extends BitmapData
 	{
-		private var _root:TextureAtlasDataNode;
-		private var _maxWidth:int = 0;
-		private var _maxHeight:int = 0;
+		protected var _root:TextureAtlasDataNode;
 		protected var _atlasData:TextureAtlasData;
 		public function TextureAtlasBitmapData(maxWidth:int, maxHeight:int)
 		{
-			_maxWidth = maxWidth;
-			_maxHeight = maxHeight;
 			super(maxWidth, maxHeight, true, 0x00000000);
 			
 			_root = new TextureAtlasDataNode();
@@ -25,7 +21,7 @@ package molehill.core.texture
 			_hashNodesByTextureID = {};
 		}
 		
-		private var _hashNodesByTextureID:Object;
+		protected var _hashNodesByTextureID:Object;
 		public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, extrudeEdges:Boolean = false, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
 		{
 			if (nextNode == null)
