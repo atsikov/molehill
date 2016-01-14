@@ -136,9 +136,10 @@ package molehill.core.text
 
 		protected function updateLayout():void
 		{
+			var fm:Font3DManager = Font3DManager.getInstance();
 			var tm:TextureManager = TextureManager.getInstance();
 			
-			var spaceCharTextureData:TextureData = tm.getTextureDataByID(getTextureForChar(_fontName, _fontTextureSize, SPACE_CHARCODE));
+			var spaceCharTextureData:TextureData = fm.getTextureDataForChar(_fontName, _fontTextureSize, SPACE_CHARCODE);
 			_spaceWidth = spaceCharTextureData != null ? spaceCharTextureData.width : 5;
 			
 			var textLength:int = _text.length;
@@ -153,7 +154,6 @@ package molehill.core.text
 			
 			_lastChild = null;
 			
-			var charAtlasData:TextureAtlasData;
 			var childIndex:int = 0;
 			var numGlyphs:int = 0;
 			var lineStart:int = 0;
@@ -229,28 +229,27 @@ package molehill.core.text
 				if (charCode != 32)
 				{
 					var charScale:Number = 1;
-					var textureName:String = getTextureForChar(_fontName, _fontTextureSize, charCode);
-					if (charAtlasData == null)
-					{
-						charAtlasData = tm.getAtlasDataByTextureID(textureName);
-					}
-					
-					if (charAtlasData == null)
+					var charTextureData:TextureData = fm.getTextureDataForChar(_fontName, _fontTextureSize, charCode);
+					if (charTextureData == null)
 					{
 						var lowerSize:int = _fontTextureSize - 1;
 						lowerSize = Font3DManager.getInstance().getSuitableFontSize(_fontName, lowerSize);
-						while (lowerSize != -1 && charAtlasData == null)
+						while (lowerSize > -1 && charTextureData == null)
 						{
-							textureName = getTextureForChar(_fontName, lowerSize, charCode);
-							charAtlasData = tm.getAtlasDataByTextureID(textureName);
-							
-							if (charAtlasData == null)
+							charTextureData = fm.getTextureDataForChar(_fontName, lowerSize, charCode);
+							if (charTextureData == null)
 							{
 								lowerSize--;
 							}
 						}
 						
-						if (charAtlasData == null)
+						if (charTextureData == null)
+						{
+							charTextureData = fm.getTextureDataForChar(_fontName, _fontTextureSize, charCode, true);
+							lowerSize = _fontTextureSize;
+						}
+						
+						if (charTextureData == null)
 						{
 							charCode = 32;
 						}
@@ -275,19 +274,14 @@ package molehill.core.text
 				}
 				
 				
-				var charTextureData:TextureData = charAtlasData.getTextureData(textureName);
-				
 				if (charTextureData == null)
 				{
 					charCode = 32;
-					textureName = getTextureForChar(_fontName, _fontTextureSize, charCode);
-					
-					charTextureData = charAtlasData.getTextureData(textureName);
+					charTextureData = fm.getTextureDataForChar(_fontName, _fontTextureSize, charCode);
 				}
 				
 				if (charTextureData == null)
 				{
-					charAtlasData = null;
 					i--;
 					continue;
 				}
@@ -303,7 +297,7 @@ package molehill.core.text
 					super.addChild(child);
 				}
 				
-				child.setTexture(textureName);
+				child.setTexture(charTextureData.textureID);
 				child.setSize(charTextureData.width * scale * charScale, charTextureData.height * scale * charScale);
 				
 				lastLineWidth = lineWidth;
@@ -478,38 +472,6 @@ package molehill.core.text
 			{
 				_parent.updateDimensions(this, needUpdateParent);
 			}
-		}
-		
-		public function get hashChars():Object
-		{
-			return _hashChars;
-		}
-		
-		private static var _hashChars:Object = new Object();
-		private static function getTextureForChar(font:String, size:uint, char:uint):String
-		{
-			var fontObject:Object = _hashChars[font];
-			if (fontObject == null)
-			{
-				fontObject = new Object();
-				_hashChars[font] = fontObject;
-			}
-			
-			var sizeObject:Object = fontObject[size];
-			if (sizeObject == null)
-			{
-				sizeObject = new Object();
-				fontObject[size] = sizeObject;
-			}
-			
-			var charTexture:String = sizeObject[char];
-			if (charTexture == null)
-			{
-				charTexture = font + "_" + size + "_" + char;
-				sizeObject[char] = charTexture;
-			}
-			
-			return charTexture;
 		}
 		
 		private var _wordWrap:Boolean = false;

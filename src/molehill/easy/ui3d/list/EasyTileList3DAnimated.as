@@ -29,6 +29,9 @@ package molehill.easy.ui3d.list
 		private var _itemsContainer:UIComponent3D;
 		private var _itemsContainerCamera:CustomCamera;
 		private var _scrollingMask:InteractiveSprite3D;
+		
+		public static const SCROLL_MASK_TEXTURE_ID:String = "core_easy_scrolling_mask_texture";
+		
 		public function EasyTileList3DAnimated()
 		{
 			super();
@@ -38,15 +41,15 @@ package molehill.easy.ui3d.list
 			_scrollingMask = new InteractiveSprite3D();
 			_scrollingMask.mouseEnabled = true;
 			
-			if (!TextureManager.getInstance().isTextureCreated("core_easy_scrolling_mask_texture"))
+			if (!TextureManager.getInstance().isTextureCreated(SCROLL_MASK_TEXTURE_ID))
 			{
 				TextureManager.createTexture(
 					new BitmapData(1, 1, false, 0),
-					"core_easy_scrolling_mask_texture"
+					SCROLL_MASK_TEXTURE_ID
 				);
 			}
 				
-			_scrollingMask.setTexture("core_easy_scrolling_mask_texture");
+			_scrollingMask.setTexture(SCROLL_MASK_TEXTURE_ID);
 			addChild(_scrollingMask);
 			
 			_itemsContainerCamera = new CustomCamera();
