@@ -274,6 +274,7 @@ package molehill.core.texture
 			atlas = new TextureAtlasBitmapData(upperPowerOfTwo(bitmapData.width), upperPowerOfTwo(bitmapData.height));
 			atlas.textureAtlasData.atlasID = atlasID;
 			atlas.insert(bitmapData, textureID);
+			atlas.locked = true;
 			
 			_hashAtlasDataByAtlasID[atlas.textureAtlasData.atlasID] = atlas.textureAtlasData;
 			
