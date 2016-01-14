@@ -293,8 +293,6 @@ package molehill.core.text
 			_matrixGenerateGlyph.translate(-charRect.x, -charRect.y);
 			bitmapData.draw(_tfGenerateGlyph, _matrixGenerateGlyph);
 			
-			trace(String.fromCharCode(char) + ' size ' + size + ' generated');
-			
 			if (_hashFontAtlasDatas[font] != null)
 			{
 				TextureManager.getInstance().addTextureToAtlas(

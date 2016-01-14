@@ -46,7 +46,11 @@ package molehill.core.texture
 			
 			var firstTexture:TextureData = _listTexturesByPosition[0][0];
 			var gap:int = 0;
-			var nearestTexture:TextureData = _listTexturesByPosition[1][0];
+			var neighborTextureCoords:Point = getNeighborXPoint(new Point());
+			if (neighborTextureCoords != null)
+			{
+				var nearestTexture:TextureData = _listTexturesByPosition[neighborTextureCoords.x][neighborTextureCoords.y];
+			}
 			if (nearestTexture != null)
 			{
 				gap = nearestTexture.textureRect.left - firstTexture.textureRect.right;
@@ -80,6 +84,11 @@ package molehill.core.texture
 			var textureData:TextureData = _listTexturesByPosition[point.x][point.y];
 			var rect:Rectangle = textureData.textureRect;
 			var textureID:String = textureData.textureID;
+			
+			if (_hashNodesByTextureID[textureID] != null)
+			{
+				return null;
+			}
 			
 			var newNode:TextureAtlasDataNode;
 			if (nextNode.textureID == "")
