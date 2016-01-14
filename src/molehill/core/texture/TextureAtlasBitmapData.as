@@ -29,7 +29,6 @@ package molehill.core.texture
 			_locked = value;
 		}
 		
-		private var _hashNodesByTextureID:Object;
 		public function insert(bitmapData:BitmapData, textureID:String, textureGap:int = 1, extrudeEdges:Boolean = false, nextNode:TextureAtlasDataNode = null):TextureAtlasDataNode
 		{
 			if (_locked)
