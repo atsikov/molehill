@@ -50,6 +50,17 @@ package molehill.core.text
 			_hashFontAtlasDatas = new Object();
 		}
 		
+		private var _defaultSystemFont:String = "Arial";
+		public function get defaultSystemFont():String
+		{
+			return _defaultSystemFont;
+		}
+		
+		public function set defaultSystemFont(value:String):void
+		{
+			_defaultSystemFont = value;
+		}
+		
 		public function loadARFFont(url:String):void
 		{
 			var loader:URLLoader = new URLLoader();
@@ -272,7 +283,7 @@ package molehill.core.text
 			if (charRect == null || charRect.width == 0 || charRect.width)
 			{
 				_tfGenerateGlyph.embedFonts = false;
-				_formatGenerateGlyph.font = 'Arial';
+				_formatGenerateGlyph.font = _defaultSystemFont;
 				_tfGenerateGlyph.setTextFormat(_formatGenerateGlyph, 0, 1);
 				charRect = _tfGenerateGlyph.getCharBoundaries(0);
 			}
