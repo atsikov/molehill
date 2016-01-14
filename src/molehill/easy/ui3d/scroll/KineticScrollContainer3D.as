@@ -17,6 +17,7 @@ package molehill.easy.ui3d.scroll
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
+	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
 	import molehill.easy.ui3d.scroll.events.KineticScrollContainer3DEvent;
 	
 	import org.goasap.interfaces.IPlayable;
@@ -44,15 +45,15 @@ package molehill.easy.ui3d.scroll
 			_scrollingMask = new InteractiveSprite3D();
 			_scrollingMask.mouseEnabled = true;
 			
-			if (!TextureManager.getInstance().isTextureCreated("core_easy_scrolling_mask_texture"))
+			if (!TextureManager.getInstance().isTextureCreated(EasyTileList3DAnimated.SCROLL_MASK_TEXTURE_ID))
 			{
 				TextureManager.createTexture(
 					new BitmapData(1, 1, false, 0),
-					"core_easy_scrolling_mask_texture"
+					EasyTileList3DAnimated.SCROLL_MASK_TEXTURE_ID
 				);
 			}
 			
-			_scrollingMask.setTexture("core_easy_scrolling_mask_texture");
+			_scrollingMask.setTexture(EasyTileList3DAnimated.SCROLL_MASK_TEXTURE_ID);
 			addChild(_scrollingMask);
 			
 			_containerCamera = new CustomCamera();

@@ -5,6 +5,7 @@ package molehill.core.render.shader
 	import flash.display3D.Context3DCompareMode;
 	import flash.display3D.Context3DTriangleFace;
 	import flash.display3D.Program3D;
+	import flash.utils.getQualifiedClassName;
 
 	public class Shader3D
 	{
@@ -423,6 +424,17 @@ package molehill.core.render.shader
 		internal function setAssembledProgram(value:Program3D):void
 		{
 			_assembledProgram = value;
+		}
+		
+		public function toString():String
+		{
+			var fullClassName:String = getQualifiedClassName(this);
+			var matchesClassName:Array = fullClassName.match(/.*\:\:(.*)/)[1];
+			return (matchesClassName != null && matchesClassName.length > 0 ? matchesClassName[1] : fullClassName) +
+				"; premultAlpha: " +
+				premultAlpha +
+				"; textureReadParams: " +
+				textureReadParams;
 		}
 	}
 }

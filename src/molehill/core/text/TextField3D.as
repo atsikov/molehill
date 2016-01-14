@@ -246,6 +246,7 @@ package molehill.core.text
 						if (charTextureData == null)
 						{
 							charTextureData = fm.getTextureDataForChar(_fontName, _fontTextureSize, charCode, true);
+							lowerSize = _fontTextureSize;
 						}
 						
 						if (charTextureData == null)

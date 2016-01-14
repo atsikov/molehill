@@ -14,6 +14,8 @@ package molehill.core.texture
 	import flash.utils.Timer;
 	
 	import molehill.core.errors.TextureManagerError;
+	
+	import utils.FrameExecutorUtil;
 
 	public class TextureManager extends EventDispatcher
 	{
@@ -252,6 +254,7 @@ package molehill.core.texture
 		}
 		
 		private var _hashCompressedTexturesByARFData:Dictionary;
+		private var _hashTexturesToUpload:Dictionary;
 		private var _textureWidth:int = 2048;
 		private var _textureHeight:int = 2048;
 		public function createTextureFromBitmapData(bitmapData:BitmapData, textureID:String, width:int = 0, height:int = 0):Texture
@@ -314,7 +317,7 @@ package molehill.core.texture
 				if (_hashTexturesByAtlasBitmap[atlas] != null)
 				{
 					var texture:Texture = _hashTexturesByAtlasBitmap[atlas];
-					texture.uploadFromBitmapData(atlas as TextureAtlasBitmapData);
+					uploadBitmapTexure(texture, atlas as TextureAtlasBitmapData);
 				}
 				//texture.uploadFromBitmapData(atlas as TextureAtlasBitmapData);
 			}
@@ -371,7 +374,7 @@ package molehill.core.texture
 			if (_hashTexturesByAtlasBitmap[atlasBitmapData] != null)
 			{
 				var texture:Texture = _hashTexturesByAtlasBitmap[atlasBitmapData];
-				texture.uploadFromBitmapData(atlasBitmapData);
+				uploadBitmapTexure(texture, atlasBitmapData);
 			}
 			
 			if (bitmapData is SpriteSheet)
@@ -384,6 +387,55 @@ package molehill.core.texture
 			_hashAtlasBitmapByTextureID[textureID] = atlasBitmapData;
 			
 			return true;
+		}
+		
+		private function uploadBitmapTexure(texture:Texture, bitmapData:BitmapData):void
+		{
+			if (_hashTexturesToUpload == null)
+			{
+				_hashTexturesToUpload = new Dictionary();
+			}
+			
+			_hashTexturesToUpload[texture] = bitmapData;
+			
+			FrameExecutorUtil.getInstance().addNextFrameHandler(doUploadTextures);
+		}
+		
+		private function doUploadTextures():void
+		{
+			for (var texture:* in _hashTexturesToUpload)
+			{
+				var bitmapData:BitmapData = _hashTexturesToUpload[texture];
+				(texture as Texture).uploadFromBitmapData(_hashTexturesToUpload[texture], 0);
+				
+				if (bitmapData is FontBRFTextureData)
+				{
+					var mipWidth:int = bitmapData.width / 2;
+					var mipHeight:int = bitmapData.height / 2;
+					
+					var scaleTransform:Matrix = new Matrix();
+					scaleTransform.scale(0.5, 0.5);
+					
+					var mipLevel:int = 1;
+					
+					while (mipWidth > 0 && mipHeight > 0)
+					{
+						var mipImage:BitmapData = new BitmapData(mipWidth, mipHeight, true, 0x00000000);
+						
+						mipImage.draw(bitmapData, scaleTransform, null, null, null, true);
+						texture.uploadFromBitmapData(mipImage, mipLevel);
+						
+						scaleTransform.scale(0.5, 0.5);
+						mipLevel++;
+						mipWidth >>= 1;
+						mipHeight >>= 1;
+						
+						mipImage.dispose();
+					}
+				}
+			}
+			
+			_hashTexturesToUpload = null;
 		}
 		
 		public function createCompressedTextureFromARF(textureData:ARFTextureData):Texture
