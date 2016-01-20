@@ -1,6 +1,9 @@
 package molehill.core.render.camera
 {
+	import flash.display.Sprite;
 	import flash.geom.Rectangle;
+	
+	import molehill.core.sprite.Sprite3D;
 
 	public class CustomCamera
 	{
@@ -58,6 +61,17 @@ package molehill.core.render.camera
 			_scrollY = 0;
 			_scale = 1;
 			_scissorRect = null;
+		}
+		
+		private var _owner:Sprite3D;
+		public function get owner():Sprite3D
+		{
+			return _owner;
+		}
+		
+		public function set owner(value:Sprite3D):void
+		{
+			_owner = value;
 		}
 		
 		public function copyValues(camera:CustomCamera):void

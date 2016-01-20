@@ -259,12 +259,12 @@ package molehill.core.sprite
 			
 			_alpha = value;
 			
-			_colorChanged = true;
+			colorChanged = true;
 			
 			markChanged(true);
 		}
 		
-		molehill_internal var _colorChanged:Boolean = true;
+		molehill_internal var colorChanged:Boolean = true;
 		
 		private var _darkenColor:uint = 0xFFFFFF;
 		public function get darkenColor():uint
@@ -280,7 +280,7 @@ package molehill.core.sprite
 			_greenMultiplier = ((value & 0xFFFF) >>> 8) / 0xFF;
 			_blueMultiplier = (value & 0xFF) / 0xFF;
 			
-			_colorChanged = true;
+			colorChanged = true;
 			
 			markChanged(true);
 		}
@@ -304,7 +304,7 @@ package molehill.core.sprite
 			}
 			
 			_redMultiplier = value;
-			_colorChanged = true;
+			colorChanged = true;
 			
 			_darkenColor = (uint(0xFF * _redMultiplier) << 16) + (uint(0xFF * _greenMultiplier) << 8) + uint(0xFF * _blueMultiplier);
 			
@@ -330,7 +330,7 @@ package molehill.core.sprite
 			}
 			
 			_greenMultiplier = value;
-			_colorChanged = true;
+			colorChanged = true;
 			
 			_darkenColor = (uint(0xFF * _redMultiplier) << 16) + (uint(0xFF * _greenMultiplier) << 8) + uint(0xFF * _blueMultiplier);
 			
@@ -356,7 +356,7 @@ package molehill.core.sprite
 			}
 			
 			_blueMultiplier = value;
-			_colorChanged = true;
+			colorChanged = true;
 			
 			_darkenColor = (uint(0xFF * _redMultiplier) << 16) + (uint(0xFF * _greenMultiplier) << 8) + uint(0xFF * _blueMultiplier);
 			
@@ -374,16 +374,16 @@ package molehill.core.sprite
 			return _textureID != "" && _textureID != null;
 		}
 		
-		molehill_internal var currentAtlasData:TextureAtlasData;
+		molehill_internal var textureAtlasData:TextureAtlasData;
 		public function setTexture(value:String):void
 		{
-			if (_textureID != value || currentAtlasData == null)
+			if (_textureID != value || textureAtlasData == null)
 			{
 				var newAtlasData:TextureAtlasData = TEXTURE_MANAGER.getAtlasDataByTextureID(value);
 				
 				_textureID = value;
 				
-				if (_parent != null && currentAtlasData !== newAtlasData)
+				if (_parent != null && textureAtlasData !== newAtlasData)
 				{
 					_parent.textureAtlasChanged = true;
 					if (_scene != null)
@@ -392,22 +392,22 @@ package molehill.core.sprite
 					}
 				}
 				
-				currentAtlasData = newAtlasData;
+				textureAtlasData = newAtlasData;
 			}
 			
-			if (currentAtlasData == null)
+			if (textureAtlasData == null)
 			{
 				this.textureRegion = null;
 				return;
 			}
 			
-			var textureData:TextureData = currentAtlasData.getTextureData(_textureID);
+			var textureData:TextureData = textureAtlasData.getTextureData(_textureID);
 			if (textureData == null)
 			{
 				return;
 			}
 			
-			var textureRegion:Rectangle = currentAtlasData.getTextureRegion(_textureID);
+			var textureRegion:Rectangle = textureAtlasData.getTextureRegion(_textureID);
 			this.textureRegion = textureRegion;
 			
 			_blankOffsetX = textureData.blankOffsetX;
@@ -478,28 +478,28 @@ package molehill.core.sprite
 		molehill_internal function set parentRed(value:Number):void
 		{
 			_parentRed = value;
-			_colorChanged = true;
+			colorChanged = true;
 		}
 
 		molehill_internal var _parentGreen:Number = 1;
 		molehill_internal function set parentGreen(value:Number):void
 		{
 			_parentGreen = value;
-			_colorChanged = true;
+			colorChanged = true;
 		}
 		
 		molehill_internal var _parentBlue:Number = 1;
 		molehill_internal function set parentBlue(value:Number):void
 		{
 			_parentBlue = value;
-			_colorChanged = true;
+			colorChanged = true;
 		}
 		
 		molehill_internal var _parentAlpha:Number = 1;
 		molehill_internal function set parentAlpha(value:Number):void
 		{
 			_parentAlpha = value;
-			_colorChanged = true;
+			colorChanged = true;
 		}
 		
 		molehill_internal var _parentRotation:Number = 0;
@@ -799,8 +799,8 @@ package molehill.core.sprite
 			
 			_visibilityChanged ||= currentVisibility != visible;
 			
-			_colorChanged &&= _visible;
-			_textureChanged &&= _visible;
+			colorChanged &&= _visible;
+			textureChanged &&= _visible;
 			_hasChanged &&= _visible;
 		}
 		
@@ -957,7 +957,7 @@ package molehill.core.sprite
 			//_notifyParentOnChange = true;
 			
 			_textureRegion = null;
-			currentAtlasData = null;
+			textureAtlasData = null;
 		}
 		
 		/**
@@ -1037,7 +1037,7 @@ package molehill.core.sprite
 			_croppedWidth = _width;
 			_croppedHeight = _height;
 			
-			_textureChanged = true;
+			textureChanged = true;
 		}
 		
 		/**
@@ -1054,7 +1054,7 @@ package molehill.core.sprite
 			_textureU3 = x4;
 			_textureW3 = y4;
 			
-			_textureChanged = true;
+			textureChanged = true;
 		}
 		/*
 		public function moveVertex(vertexID:int, x:int, y:int, z:int = 0):void
@@ -1288,12 +1288,12 @@ package molehill.core.sprite
 			dx = dx0 * cos - dy0 * sin;
 			dy = dx0 * sin + dy0 * cos;
 			
-			if (currentAtlasData == null)
+			if (textureAtlasData == null)
 			{
 				return dx < 0 || dy < 0 || dx > _width || dy > _height;
 			}
 			
-			var textureData:TextureData = currentAtlasData.getTextureData(textureID);
+			var textureData:TextureData = textureAtlasData.getTextureData(textureID);
 			if (dx < textureData.blankOffsetX ||
 				dy < textureData.blankOffsetY ||
 				dx > textureData.blankOffsetX + textureData.croppedWidth ||
@@ -1319,7 +1319,45 @@ package molehill.core.sprite
 			return !alphaData.hitTestPoint(dx, dy);
 		}
 		
-		molehill_internal var _textureChanged:Boolean = false;
+		// to be inherited in container
+		molehill_internal var _textureAtlasChanged:Boolean = false;
+		molehill_internal var _treeStructureChanged:Boolean = true;
+		molehill_internal function get textureAtlasChanged():Boolean
+		{
+			return _textureAtlasChanged;
+		}
+		
+		molehill_internal function set textureAtlasChanged(value:Boolean):void
+		{
+			if (value && _parent != null)
+			{
+				_parent.textureAtlasChanged = value;
+			}
+			
+			_textureAtlasChanged = value;
+		}
+		
+		molehill_internal function get treeStructureChanged():Boolean
+		{
+			return _treeStructureChanged;
+		}
+		
+		molehill_internal function set treeStructureChanged(value:Boolean):void
+		{
+			if (value && _parent != null)
+			{
+				_parent.treeStructureChanged = value;
+			}
+			
+			_treeStructureChanged = value;
+		}
+		
+		molehill_internal function get needUpdateBatcher():Boolean
+		{
+			return textureAtlasChanged || treeStructureChanged;
+		}
+		
+		molehill_internal var textureChanged:Boolean = false;
 		
 		molehill_internal var _visibilityChanged:Boolean = true;
 		molehill_internal function resetVisibilityChanged():void
@@ -1535,7 +1573,9 @@ package molehill.core.sprite
 		{
 			if (_camera == null)
 			{
-				_camera = value;
+				_camera = new CustomCamera();
+				_camera.copyValues(value);
+				_camera.owner = this;
 				if (_scene != null)
 				{
 					cameraChanged = true;
@@ -1553,9 +1593,7 @@ package molehill.core.sprite
 			}
 			else
 			{
-				_camera.scale = value.scale;
-				_camera.scrollX = value.scrollX;
-				_camera.scrollY = value.scrollY;
+				_camera.copyValues(value);
 			}
 		}
 		
