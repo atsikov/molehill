@@ -270,7 +270,7 @@ package molehill.core.texture
 				}
 			}
 			
-			var atlasID:String = "atlas" + uint(Math.random() * uint.MAX_VALUE).toString();
+			var atlasID:String = "atlas_unique_" + uint(Math.random() * uint.MAX_VALUE).toString();
 			
 			var atlas:TextureAtlasBitmapData;
 			atlas = new TextureAtlasBitmapData(upperPowerOfTwo(bitmapData.width), upperPowerOfTwo(bitmapData.height));
