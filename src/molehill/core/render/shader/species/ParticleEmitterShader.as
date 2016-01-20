@@ -14,7 +14,7 @@ package molehill.core.render.shader.species
 		{
 			super();
 			
-			_vc4 = new <Number>[0, 1000, 2, 0.5];
+			_vc4 = new <Number>[0, 1000, 2, 1];
 			_vc4.fixed = true;
 		}
 		
@@ -109,7 +109,7 @@ package molehill.core.render.shader.species
 			}
 		}
 		
-		private var _vc4:Vector.<Number>;
+		protected var _vc4:Vector.<Number>;
 		override public function prepareContext(context3D:Context3D):void
 		{
 			super.prepareContext(context3D);

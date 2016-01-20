@@ -59,7 +59,7 @@ package molehill.core.render
 		{
 			if (value != null && TextureManager.getInstance().getAtlasDataByID(value) == null)
 			{
-				throw new Error("Bad atlas id!");
+				throw new Error("Bad texture atlas id!");
 			}
 			_textureAtlasID = value;
 		}
@@ -433,7 +433,7 @@ package molehill.core.render
 				while (cursor != null)
 				{
 					sprite = cursor.data as Sprite3D;
-					if (sprite.hasChanged || sprite._colorChanged || sprite._textureChanged)
+					if (sprite.hasChanged || sprite.colorChanged || sprite.textureChanged)
 					{
 						hasChanges = true;
 					}
@@ -484,8 +484,8 @@ package molehill.core.render
 				if (!sprite.visible)
 				{
 					sprite.markChanged(false);
-					sprite._textureChanged = false;
-					sprite._colorChanged = false;
+					sprite.textureChanged = false;
+					sprite.colorChanged = false;
 				}
 				else
 				{
@@ -561,7 +561,7 @@ package molehill.core.render
 						_needUploadVertexData = true;
 					}
 					
-					if (sprite._colorChanged || _needUpdateBuffers)
+					if (sprite.colorChanged || _needUpdateBuffers)
 					{
 						position = _numVisibleSprites * 16;
 						_vertexBufferColorData[position++] = sprite._redMultiplier * sprite._parentRed;
@@ -584,12 +584,12 @@ package molehill.core.render
 						_vertexBufferColorData[position++] = sprite._blueMultiplier * sprite._parentBlue;
 						_vertexBufferColorData[position++] = sprite._alpha * sprite._parentAlpha;
 						
-						sprite._colorChanged = false;
+						sprite.colorChanged = false;
 						
 						_needUploadColorData = true;
 					}
 					
-					if (sprite._textureChanged || _needUpdateBuffers)
+					if (sprite.textureChanged || _needUpdateBuffers)
 					{
 						position = _numVisibleSprites * 8;
 						_vertexBufferTextureData[position++] = sprite._textureU0;
@@ -604,7 +604,7 @@ package molehill.core.render
 						_vertexBufferTextureData[position++] = sprite._textureU3;
 						_vertexBufferTextureData[position++] = sprite._textureW3;
 						
-						sprite._textureChanged = false;
+						sprite.textureChanged = false;
 						
 						_needUploadTextureData = true;
 					}
@@ -884,6 +884,19 @@ package molehill.core.render
 		{
 			clearBatcher();
 			CacheSpriteBatcherBuffers.clearCache();
+		}
+		
+		public function isSpriteCompatible(sprite:Sprite3D):Boolean
+		{
+			var spriteShader:Shader3D = sprite.shader;
+			var spriteTextureAtlasData:TextureAtlasData = sprite.textureAtlasData;
+			return spriteShader == _shader &&
+				spriteShader.premultAlpha == _shader.premultAlpha &&
+				spriteShader.textureReadParams == _shader.textureReadParams &&
+				sprite.blendMode == _blendMode &&
+				(spriteTextureAtlasData == null && _textureAtlasID == null ||
+				 spriteTextureAtlasData.atlasID == _textureAtlasID) &&
+				sprite.camera.owner == _cameraOwner;
 		}
 		
 		public function toString():String
