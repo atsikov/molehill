@@ -93,14 +93,6 @@ package molehill.core.render
 		molehill_internal function setRenderEngine(value:RenderEngine):void
 		{
 			_renderEngine = value;
-			if (_renderEngine != null)
-			{
-				trace("render engine added");
-			}
-			else
-			{
-				trace("render engine removed");
-			}
 		}
 		
 		public function onContextRestored():void
@@ -245,10 +237,7 @@ package molehill.core.render
 				// sprite was added to render and doesn't exists in batching
 				else
 				{
-					newSpriteBatcher = pushToSuitableSpriteBacther(
-						_lastBatcher as SpriteBatcher,
-						renderSprite
-					);
+					newSpriteBatcher = pushToSuitableSpriteBacther(_lastBatcher, renderSprite);
 				}
 				
 				if (isRenderableSprite && batchingInfo.batcher == null)
@@ -259,10 +248,7 @@ package molehill.core.render
 					}
 					else
 					{
-						batchingInfo.batcher = pushToSuitableSpriteBacther(
-							_lastBatcher as SpriteBatcher,
-							renderSprite
-						);
+						batchingInfo.batcher = 
 					}
 				}
 				
