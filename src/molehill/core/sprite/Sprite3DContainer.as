@@ -704,38 +704,6 @@ package molehill.core.sprite
 			}
 		}
 		
-		molehill_internal var _textureAtlasChanged:Boolean = false;
-		molehill_internal function get textureAtlasChanged():Boolean
-		{
-			return _textureAtlasChanged;
-		}
-
-		molehill_internal function set textureAtlasChanged(value:Boolean):void
-		{
-			if (value && _parent != null)
-			{
-				_parent.textureAtlasChanged = value;
-			}
-			
-			_textureAtlasChanged = value;
-		}
-
-		molehill_internal var _treeStructureChanged:Boolean = true;
-		molehill_internal function get treeStructureChanged():Boolean
-		{
-			return _treeStructureChanged;
-		}
-		
-		molehill_internal function set treeStructureChanged(value:Boolean):void
-		{
-			if (value && _parent != null)
-			{
-				_parent.treeStructureChanged = value;
-			}
-			
-			_treeStructureChanged = value;
-		}
-		
 		override public function hitTestPoint(point:Point):Boolean
 		{
 			var pointX:Number = point.x;

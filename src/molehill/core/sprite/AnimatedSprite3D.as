@@ -120,7 +120,7 @@ package molehill.core.sprite
 				_currentTimelineFrame = 0;
 			}
 			
-			_textureChanged = true;
+			textureChanged = true;
 		}
 		
 		protected function updateFrame():void
