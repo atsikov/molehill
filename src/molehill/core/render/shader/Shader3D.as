@@ -429,7 +429,7 @@ package molehill.core.render.shader
 		public function toString():String
 		{
 			var fullClassName:String = getQualifiedClassName(this);
-			var matchesClassName:Array = fullClassName.match(/.*\:\:(.*)/)[1];
+			var matchesClassName:Array = fullClassName.match(/.*\:\:(.*)/);
 			return (matchesClassName != null && matchesClassName.length > 0 ? matchesClassName[1] : fullClassName) +
 				"; premultAlpha: " +
 				premultAlpha +
