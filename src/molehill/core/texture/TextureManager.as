@@ -16,6 +16,7 @@ package molehill.core.texture
 	import molehill.core.errors.TextureManagerError;
 	
 	import utils.FrameExecutorUtil;
+	import utils.MathUtils;
 
 	public class TextureManager extends EventDispatcher
 	{
@@ -253,6 +254,7 @@ package molehill.core.texture
 			*/
 		}
 		
+		private static const ATLAS_UNIQUE_PREFIX:String = "atlas_unique_";
 		public function createUniqueTextureFromBitmapData(bitmapData:BitmapData, textureID:String):void
 		{
 			if (!isReady)
@@ -270,10 +272,10 @@ package molehill.core.texture
 				}
 			}
 			
-			var atlasID:String = "atlas_unique_" + uint(Math.random() * uint.MAX_VALUE).toString();
+			var atlasID:String = ATLAS_UNIQUE_PREFIX + uint(Math.random() * uint.MAX_VALUE).toString();
 			
 			var atlas:TextureAtlasBitmapData;
-			atlas = new TextureAtlasBitmapData(upperPowerOfTwo(bitmapData.width), upperPowerOfTwo(bitmapData.height));
+			atlas = new TextureAtlasBitmapData(MathUtils.upperPowerOfTwo(bitmapData.width), MathUtils.upperPowerOfTwo(bitmapData.height));
 			atlas.textureAtlasData.atlasID = atlasID;
 			atlas.insert(bitmapData, textureID);
 			atlas.locked = true;
@@ -283,22 +285,6 @@ package molehill.core.texture
 			_hashAtlasIDByTextureID[textureID] = atlas.textureAtlasData.atlasID;
 			_hashAtlasDataByTextureID[textureID] = atlas.textureAtlasData;
 			_hashAtlasBitmapByTextureID[textureID] = atlas;
-		}
-		
-		public static function upperPowerOfTwo(num:uint):uint
-		{
-			// if(num == 1) return 2;
-			
-			num--;
-			num |= num >> 1;
-			num |= num >> 2;
-			num |= num >> 4;
-			num |= num >> 8;
-			num |= num >> 16;
-			
-			num++;
-			
-			return num;
 		}
 		
 		private var _hashCompressedTexturesByARFData:Dictionary;
