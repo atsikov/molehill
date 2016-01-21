@@ -886,17 +886,21 @@ package molehill.core.render
 			CacheSpriteBatcherBuffers.clearCache();
 		}
 		
-		public function isSpriteCompatible(sprite:Sprite3D):Boolean
+		public function isSpriteCompatible(sprite:Sprite3D, cameraOwner:Sprite3D):Boolean
 		{
 			var spriteShader:Shader3D = sprite.shader;
+			var spriteCamera:CustomCamera = sprite.camera;
 			var spriteTextureAtlasData:TextureAtlasData = sprite.textureAtlasData;
-			return spriteShader == _shader &&
-				spriteShader.premultAlpha == _shader.premultAlpha &&
-				spriteShader.textureReadParams == _shader.textureReadParams &&
+			return (spriteShader == null && _shader == null ||
+				 spriteShader != null && _shader != null &&
+				 spriteShader == _shader &&
+				 spriteShader.premultAlpha == _shader.premultAlpha &&
+				 spriteShader.textureReadParams == _shader.textureReadParams) &&
 				sprite.blendMode == _blendMode &&
 				(spriteTextureAtlasData == null && _textureAtlasID == null ||
+				 spriteTextureAtlasData != null &&
 				 spriteTextureAtlasData.atlasID == _textureAtlasID) &&
-				sprite.camera.owner == _cameraOwner;
+				cameraOwner == _cameraOwner;
 		}
 		
 		public function toString():String

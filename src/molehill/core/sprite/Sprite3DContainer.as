@@ -147,7 +147,7 @@ package molehill.core.sprite
 			
 			if (_scene != null)
 			{
-				_scene._needUpdateBatchers = true;
+				_scene.needUpdateBatchers = true;
 			}
 			
 			updateDimensions(child, true);
@@ -218,7 +218,7 @@ package molehill.core.sprite
 			
 			if (_scene != null)
 			{
-				_scene._needUpdateBatchers = true;
+				_scene.needUpdateBatchers = true;
 			}
 			
 			updateDimensions(child, true);
@@ -546,7 +546,7 @@ package molehill.core.sprite
 			
 			if (_scene != null)
 			{
-				_scene._needUpdateBatchers = true;
+				_scene.needUpdateBatchers = true;
 			}
 			
 			delete _hashNodesByChild[child];
@@ -613,7 +613,7 @@ package molehill.core.sprite
 			
 			if (_scene != null)
 			{
-				_scene._needUpdateBatchers = true;
+				_scene.needUpdateBatchers = true;
 			}
 			
 			delete _hashNodesByChild[child];
