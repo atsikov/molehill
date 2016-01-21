@@ -458,7 +458,7 @@ package molehill.core.render
 			{
 				var batchingInfo:BatchingInfo = batchingTreeNode.value;
 				_lastBatchedChild = batchingInfo.child;
-				if (_lastBatcher !== batchingInfo.batcher)
+				if (batchingInfo.batcher != null && _lastBatcher !== batchingInfo.batcher)
 				{
 					_lastBatcher = batchingInfo.batcher;
 					_batcherInsertPosition++;
