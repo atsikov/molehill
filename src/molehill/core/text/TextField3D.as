@@ -666,5 +666,10 @@ package molehill.core.text
 		{
 			return false;
 		}
+		
+		override public function toString():String
+		{
+			return super.toString() + '; text = ' + text;
+		}
 	}
 }
