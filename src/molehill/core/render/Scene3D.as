@@ -210,35 +210,70 @@ package molehill.core.render
 					cameraOwner = renderSprite;
 				}
 				
+				if (_debug)
+				{
+					log('Compairing ' + renderSprite  + ' against ' + batchingSprite); 
+				}
+				
 				// sprites are equal
 				if (renderSprite === batchingSprite)
 				{
 					// sprite's properties changed
 					if (currentSpriteBatcher != null && !currentSpriteBatcher.isSpriteCompatible(renderSprite, cameraOwner))
 					{
-						var newSpriteBatcher:SpriteBatcher = currentSpriteBatcher.splitAfterChild(renderSprite);
-						if (newSpriteBatcher != null && newSpriteBatcher.numSprites > 0)
+						if (_debug)
 						{
+							log('Properties changed'); 
+						}
+						
+						if (renderSprite != currentSpriteBatcher.getFirstChild() &&
+							renderSprite != currentSpriteBatcher.getLastChild())
+						{
+							var newSpriteBatcher:SpriteBatcher = currentSpriteBatcher.splitAfterChild(renderSprite);
+							if (newSpriteBatcher == null)
+							{
+								if (_debug)
+								{
+									log('!!! new batcher is null !!!');
+									log('!!! Sprite ' + renderSprite + ' not found in batcher ' + currentSpriteBatcher);
+								}
+							}
+							
 							updateSlicedBatcher(batchingTree, currentSpriteBatcher, newSpriteBatcher);
 							_listSpriteBatchers.splice(
 								_batcherInsertPosition,
 								0,
 								newSpriteBatcher
 							);
+							
+							if (_debug)
+							{
+								log('Splitting batchers; inserting new on index ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length); 
+							}
+						}
+						else if (renderSprite == currentSpriteBatcher.getFirstChild())
+						{
+							_batcherInsertPosition--;
 						}
 						
 						removeSpriteFromBatcher(currentSpriteBatcher, renderSprite);
 						if (currentSpriteBatcher.numSprites == 0)
 						{
+							var currentBatcherIndex:int = _listSpriteBatchers.indexOf(currentSpriteBatcher);
 							currentSpriteBatcher.clearBatcher();
 							_listSpriteBatchers.splice(
-								_listSpriteBatchers.indexOf(currentSpriteBatcher),
+								currentBatcherIndex,
 								1
 							);
 							_batcherInsertPosition--;
 							_lastBatcher = _batcherInsertPosition > 0 ? _listSpriteBatchers[_batcherInsertPosition - 1] : null;
 							_lastBatchedChild = _lastBatcher != null && _lastBatcher is SpriteBatcher ?
 								(_lastBatcher as SpriteBatcher).getLastChild() : null;
+							
+							if (_debug)
+							{
+								log('Current batcher is empty; removing from index index ' + currentBatcherIndex + ' (' + _batcherInsertPosition + ') / ' + _listSpriteBatchers.length); 
+							}
 						}
 						
 						batchingInfo.batcher = null;
@@ -392,9 +427,18 @@ package molehill.core.render
 		private function removeSpriteFromBatcher(batcher:SpriteBatcher, sprite:Sprite3D):void
 		{
 			batcher.removeChild(sprite);
+			if (_debug)
+			{
+				log('Removing sprite ' + sprite + ' from batcher ' + batcher); 
+			}
 			if (batcher.numSprites == 0)
 			{
 				var batcherIndex:int = _listSpriteBatchers.indexOf(batcher);
+				if (_debug)
+				{
+					log('Removing empty batcher from list ' + batcherIndex + ' / ' + _listSpriteBatchers.length);
+				}
+				
 				var prevBatcherIndex:int = batcherIndex - 1;
 				_listSpriteBatchers.splice(batcherIndex, 1);
 				batcher.clearBatcher();
@@ -424,6 +468,11 @@ package molehill.core.render
 					}
 					else
 					{
+						if (_debug)
+						{
+							log('Sprite ' + batchingTree.value.child + ' moved ' + oldBatcher + ' --> ' + newBatcher);
+						}
+						
 						batchingTree.value.batcher = newBatcher;
 					}
 				}
@@ -432,14 +481,9 @@ package molehill.core.render
 				{
 					batchingTree = batchingTree.firstChild;
 				}
-				else
+				else if (batchingTree.nextSibling == null)
 				{
-					batchingTree = batchingTree.nextSibling;
-				}
-				
-				if (batchingTree == null)
-				{
-					while (batchingTree != null && batchingTree.parent.nextSibling != null)
+					while (batchingTree != null && batchingTree.nextSibling == null)
 					{
 						batchingTree = batchingTree.parent;
 					}
@@ -448,6 +492,10 @@ package molehill.core.render
 					{
 						batchingTree = batchingTree.nextSibling;
 					}
+				}
+				else
+				{
+					batchingTree = batchingTree.nextSibling;
 				}
 			}
 		}
@@ -475,6 +523,22 @@ package molehill.core.render
 		
 		private function removeNodeReferences(node:TreeNode):void
 		{
+			while (node != null)
+			{
+				var batchingInfo:BatchingInfo = node.value;
+				_lastBatchedChild = batchingInfo.child;
+				if (batchingInfo.batcher != null)
+				{
+					removeSpriteFromBatcher(batchingInfo.batcher as SpriteBatcher, batchingInfo.child);
+				}
+				
+				if (node.hasChildren)
+				{
+					removeNodeReferences(node.firstChild);
+				}
+				
+				node = node.nextSibling;
+			}
 		}
 		
 		private var _doBatching:Boolean = false;
@@ -519,7 +583,7 @@ package molehill.core.render
 			{
 				if (_debug)
 				{
-					log(child + ' added to batcher ' + StringUtils.getObjectAddress(candidateBatcher) + ' after ' + _lastBatchedChild); 
+					log('Sprite ' + child + ' added to batcher ' + StringUtils.getObjectAddress(candidateBatcher) + ' after ' + _lastBatchedChild); 
 				}
 				candidateBatcher.addChildAfter(_lastBatchedChild, child);
 			}
@@ -527,7 +591,7 @@ package molehill.core.render
 			{
 				if (_debug)
 				{
-					log(child + ' added to batcher ' + StringUtils.getObjectAddress(candidateBatcher)); 
+					log('Sprite ' + child + ' added to batcher ' + StringUtils.getObjectAddress(candidateBatcher)); 
 				}
 				candidateBatcher.addChild(child);
 			}
@@ -540,6 +604,12 @@ package molehill.core.render
 					0,
 					candidateBatcher
 				);
+				
+				if (_debug)
+				{
+					log('Batcher ' + candidateBatcher + ' added to ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length);
+				}
+				
 				_lastBatcher = candidateBatcher;
 				_batcherInsertPosition++;
 			}
@@ -689,7 +759,7 @@ package molehill.core.render
 		
 		private var _lastTexture:Texture;
 		
-		private var _debug:Boolean = false;
+		private var _debug:Boolean = true;
 		private var _log:String;
 		private function log(entry:String):void
 		{
