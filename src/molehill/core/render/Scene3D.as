@@ -2,20 +2,16 @@ package molehill.core.render
 {
 	import easy.collections.TreeNode;
 	
-	import flash.display.BitmapData;
 	import flash.display3D.textures.Texture;
 	import flash.utils.ByteArray;
-	import flash.utils.Dictionary;
 	import flash.utils.getTimer;
 	
-	import molehill.core.errors.Scene3DError;
 	import molehill.core.events.Input3DMouseEvent;
 	import molehill.core.focus.IFocusable;
 	import molehill.core.molehill_internal;
 	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
-	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureManager;
 	
 	import utils.CachingFactory;
@@ -138,23 +134,21 @@ package molehill.core.render
 		public var globalTraceString:String = "";
 		public function traceTrees():void
 		{
-			/*
 			globalTraceString = "";
 			globalTraceString += getTimer()/ 1000 + "\n\n";
 			globalTraceString += ObjectUtils.traceTree(localRenderTree);
 			globalTraceString += '\n-----------------\n';
 			globalTraceString += ObjectUtils.traceTree(_batchingTree);
 			globalTraceString += '\n-----------------\n';
-			*/
+			
 			for (var i:int = 0; i < _listSpriteBatchers.length; i++)
 			{
 				globalTraceString += "[" + i + "]  " + _listSpriteBatchers[i] + "\n";
-				/*
+				
 				if (_listSpriteBatchers[i] is SpriteBatcher)
 				{
 					globalTraceString += (_listSpriteBatchers[i] as SpriteBatcher).traceChildren() + "\n\n";
 				}
-				*/
 			}
 			
 			globalTraceString += '\n================================\n\n';
@@ -172,7 +166,6 @@ package molehill.core.render
 		{
 			var batchingInfo:BatchingInfo = _cacheBatchingInfo.newInstance();
 			batchingInfo.child = child;
-			batchingInfo.batcher = null;
 			
 			var treeNode:TreeNode = _cacheBatchingTreeNodes.newInstance();
 			treeNode.value = batchingInfo;
@@ -299,6 +292,7 @@ package molehill.core.render
 				{
 					if (batchingTree.nextSibling == null)
 					{
+						// seems that child was moved, copy will be deleted later 
 						batchingTree.parent.addNode(
 							getNewBatchingNode(renderSprite)
 						);
@@ -314,7 +308,7 @@ package molehill.core.render
 					var newNode:TreeNode = getNewBatchingNode(
 						renderSprite
 					);
-
+					
 					if (batchingTree.prevSibling != null)
 					{
 						batchingTree.parent.insertNodeAfter(
@@ -330,6 +324,11 @@ package molehill.core.render
 					}
 					
 					batchingTree = newNode;
+					
+					if (_debug)
+					{
+						log('Node for sprite ' + renderSprite + ' added'); 
+					}
 					
 					continue;
 				}
@@ -384,6 +383,11 @@ package molehill.core.render
 							batchingTree.addNode(
 								getNewBatchingNode(containerRenderTree.firstChild.value)
 							);
+							
+							if (_debug)
+							{
+								log('Node for sprite ' + containerRenderTree.firstChild.value + ' added'); 
+							}
 						}
 						
 						checkBatchingTree(containerRenderTree.firstChild, batchingTree.firstChild, cameraOwner);
@@ -393,6 +397,10 @@ package molehill.core.render
 					}
 					else
 					{
+						if (_debug)
+						{
+							log('Skipping unchanged container ' + renderSprite);
+						}
 						skipUnchangedContainer(batchingTree.firstChild);
 					}
 				}
@@ -407,6 +415,11 @@ package molehill.core.render
 					batchingTree.parent.addNode(
 						getNewBatchingNode(renderTree.nextSibling.value)
 					);
+					
+					if (_debug)
+					{
+						log('Node for sprite ' + renderTree.nextSibling.value + ' added'); 
+					}
 				}
 				
 				if (batchingTree.value.batcher != null)
@@ -414,8 +427,15 @@ package molehill.core.render
 					_lastBatchedChild = renderSprite;
 				}
 				
+				renderSprite.addedToScene = true;
+				
 				renderTree = renderTree.nextSibling;
 				batchingTree = batchingTree.nextSibling;
+			}
+			
+			if (batchingTree != null && _debug)
+			{
+				log('Removing unused sprites from batching');
 			}
 			
 			while (batchingTree != null)
@@ -441,7 +461,9 @@ package molehill.core.render
 			var nextNode:TreeNode = node.nextSibling;
 			node.parent.removeNode(node);
 			
+			node.value.reset();
 			_cacheBatchingInfo.storeInstance(node.value);
+			node.reset();
 			_cacheBatchingTreeNodes.storeInstance(node);
 			
 			return nextNode;
@@ -449,7 +471,7 @@ package molehill.core.render
 		
 		private function removeSpriteFromBatcher(batcher:SpriteBatcher, sprite:Sprite3D):void
 		{
-			batcher.removeChild(sprite);
+			batcher.removeChild(sprite, _lastBatchedChild);
 			if (_debug)
 			{
 				log('Removing sprite ' + sprite + ' from batcher ' + batcher); 
@@ -557,11 +579,11 @@ package molehill.core.render
 			while (node != null)
 			{
 				var batchingInfo:BatchingInfo = node.value;
-				_lastBatchedChild = batchingInfo.child;
 				if (batchingInfo.batcher != null)
 				{
 					removeSpriteFromBatcher(batchingInfo.batcher as SpriteBatcher, batchingInfo.child);
 				}
+				batchingInfo.child.addedToScene = false;
 				
 				if (node.hasChildren)
 				{
@@ -626,7 +648,6 @@ package molehill.core.render
 				}
 				candidateBatcher.addChild(child);
 			}
-			child.addedToScene = true;
 			
 			if (batcherCreated)
 			{
@@ -725,16 +746,25 @@ package molehill.core.render
 				//traceTrees();
 				
 				//trace('==============================');
-				checkBatchingTree(localRenderTree, _batchingTree);
-				
-				//traceTrees();
-				
-				if (_debug)
+				try
+				{
+					checkBatchingTree(localRenderTree, _batchingTree);
+					
+					if (_debug)
+					{
+						saveLog();
+						
+						//traceTrees();
+					}
+				}
+				catch (e:Error)
 				{
 					saveLog();
 					
 					traceTrees();
 				}
+				
+				//traceTrees();
 			}
 			_needUpdateBatchers = false;
 			

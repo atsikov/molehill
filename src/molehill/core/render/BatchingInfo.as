@@ -32,6 +32,12 @@ package molehill.core.render
 			_batcher = batcher;
 		}
 		
+		public function reset():void
+		{
+			_child = null;
+			_batcher = null;
+		}
+		
 		public function toString():String
 		{
 			return _child.toString();
