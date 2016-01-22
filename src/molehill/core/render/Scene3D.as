@@ -138,20 +138,23 @@ package molehill.core.render
 		public var globalTraceString:String = "";
 		public function traceTrees():void
 		{
+			/*
 			globalTraceString = "";
 			globalTraceString += getTimer()/ 1000 + "\n\n";
 			globalTraceString += ObjectUtils.traceTree(localRenderTree);
 			globalTraceString += '\n-----------------\n';
 			globalTraceString += ObjectUtils.traceTree(_batchingTree);
 			globalTraceString += '\n-----------------\n';
-			
+			*/
 			for (var i:int = 0; i < _listSpriteBatchers.length; i++)
 			{
 				globalTraceString += "[" + i + "]  " + _listSpriteBatchers[i] + "\n";
+				/*
 				if (_listSpriteBatchers[i] is SpriteBatcher)
 				{
 					globalTraceString += (_listSpriteBatchers[i] as SpriteBatcher).traceChildren() + "\n\n";
 				}
+				*/
 			}
 			
 			globalTraceString += '\n================================\n\n';
@@ -200,6 +203,10 @@ package molehill.core.render
 					{
 						_lastBatcher = currentBatcher;
 						_batcherInsertPosition++;
+						if (_debug)
+						{
+							log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+						}
 					}
 				}
 				
@@ -254,6 +261,10 @@ package molehill.core.render
 						else if (renderSprite == currentSpriteBatcher.getFirstChild())
 						{
 							_batcherInsertPosition--;
+							if (_debug)
+							{
+								log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+							}
 						}
 						
 						removeSpriteFromBatcher(currentSpriteBatcher, renderSprite);
@@ -266,6 +277,10 @@ package molehill.core.render
 								1
 							);
 							_batcherInsertPosition--;
+							if (_debug)
+							{
+								log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+							}
 							_lastBatcher = _batcherInsertPosition > 0 ? _listSpriteBatchers[_batcherInsertPosition - 1] : null;
 							_lastBatchedChild = _lastBatcher != null && _lastBatcher is SpriteBatcher ?
 								(_lastBatcher as SpriteBatcher).getLastChild() : null;
@@ -330,7 +345,15 @@ package molehill.core.render
 							0,
 							renderSprite as IVertexBatcher
 						);
+						if (_debug)
+						{
+							log('Batcher ' + renderSprite + ' added to ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length);
+						}
 						_batcherInsertPosition++;
+						if (_debug)
+						{
+							log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+						}
 					}
 					else
 					{
@@ -343,19 +366,19 @@ package molehill.core.render
 					}
 				}
 				
-				if (renderTree.hasChildren)
+				if (renderSprite is UIComponent3D)
+				{
+					(renderSprite as UIComponent3D).updateFlattnedTree();
+				}
+				
+				var containerRenderTree:TreeNode = renderSprite is UIComponent3D ?
+					(renderSprite as UIComponent3D).flattenedRenderTree :
+					renderTree;
+				
+				if (containerRenderTree.hasChildren)
 				{
 					if (renderSprite.needUpdateBatcher)
 					{
-						if (renderSprite is UIComponent3D)
-						{
-							(renderSprite as UIComponent3D).updateFlattnedTree();
-						}
-						
-						var containerRenderTree:TreeNode = renderSprite is UIComponent3D ?
-							(renderSprite as UIComponent3D).flattenedRenderTree :
-							renderTree;
-						
 						if (!batchingTree.hasChildren)
 						{
 							batchingTree.addNode(
@@ -451,6 +474,10 @@ package molehill.core.render
 					{
 						_batcherInsertPosition--;
 						_lastBatchedChild = lastSpriteBatcher.getLastChild();
+						if (_debug)
+						{
+							log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+						}
 					}
 				}
 			}
@@ -510,6 +537,10 @@ package molehill.core.render
 				{
 					_lastBatcher = batchingInfo.batcher;
 					_batcherInsertPosition++;
+					if (_debug)
+					{
+						log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+					}
 				}
 				
 				if (batchingTreeNode.hasChildren)
@@ -612,6 +643,10 @@ package molehill.core.render
 				
 				_lastBatcher = candidateBatcher;
 				_batcherInsertPosition++;
+				if (_debug)
+				{
+					log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+				}
 			}
 			
 			return candidateBatcher;
