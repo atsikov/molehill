@@ -383,9 +383,9 @@ package molehill.core.sprite
 				
 				_textureID = value;
 				
-				if (_parent != null && textureAtlasData !== newAtlasData)
+				if (textureAtlasData !== newAtlasData)
 				{
-					_parent.textureAtlasChanged = true;
+					textureAtlasChanged = true;
 					if (_scene != null)
 					{
 						_scene.needUpdateBatchers = true;
@@ -1321,7 +1321,6 @@ package molehill.core.sprite
 		
 		// to be inherited in container
 		molehill_internal var _textureAtlasChanged:Boolean = false;
-		molehill_internal var _treeStructureChanged:Boolean = true;
 		molehill_internal function get textureAtlasChanged():Boolean
 		{
 			return _textureAtlasChanged;
@@ -1337,6 +1336,7 @@ package molehill.core.sprite
 			_textureAtlasChanged = value;
 		}
 		
+		molehill_internal var _treeStructureChanged:Boolean = true;
 		molehill_internal function get treeStructureChanged():Boolean
 		{
 			return _treeStructureChanged;

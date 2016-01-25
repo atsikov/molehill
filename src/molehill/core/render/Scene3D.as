@@ -317,6 +317,7 @@ package molehill.core.render
 					(renderSprite as UIComponent3D).flattenedRenderTree :
 					renderTree;
 				
+				
 				if (containerRenderTree.hasChildren)
 				{
 					if (renderSprite.needUpdateBatcher)
@@ -335,8 +336,8 @@ package molehill.core.render
 						
 						checkBatchingTree(containerRenderTree.firstChild, batchingTree.firstChild, cameraOwner);
 						
-						renderSprite.treeStructureChanged = false;
-						renderSprite.textureAtlasChanged = false;
+						//renderSprite.treeStructureChanged = false;
+						//renderSprite.textureAtlasChanged = false;
 					}
 					else
 					{
@@ -373,7 +374,7 @@ package molehill.core.render
 						_batcherInsertPosition++;
 						if (_debug)
 						{
-							log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length);
+							log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
 							log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
 						}
 					}
@@ -394,26 +395,19 @@ package molehill.core.render
 			
 			while (batchingTree != null)
 			{
-				nextNode = batchingTree.nextSibling;
-				batchingTree.parent.removeNode(batchingTree);
-				removeNodeReferences(batchingTree);
-				batchingTree = nextNode;
+				batchingTree = removeBatchingNode(batchingTree);
 			}
 		}
 		
+		/**
+		 * @private
+		 * Removes node and its children from batching tree and sprites from batchers
+		 **/
 		private function removeBatchingNode(node:TreeNode):TreeNode
 		{
-			var batchingInfo:BatchingInfo = node.value;
-			var batcher:IVertexBatcher = batchingInfo.batcher;
-			var sprite:Sprite3D = batchingInfo.child;
-			var spriteBatcher:SpriteBatcher = batcher as SpriteBatcher;
-			if (spriteBatcher != null) 
-			{
-				removeSpriteFromBatcher(spriteBatcher, sprite);
-			}
-			
 			var nextNode:TreeNode = node.nextSibling;
 			node.parent.removeNode(node);
+			removeNodeReferences(node);
 			
 			node.value.reset();
 			_cacheBatchingInfo.storeInstance(node.value);
@@ -448,7 +442,7 @@ package molehill.core.render
 					_batcherInsertPosition--;
 					if (_debug)
 					{
-						log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length);
+						log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
 						log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
 					}
 					var lastSpriteBatcher:SpriteBatcher = _lastBatcher as SpriteBatcher;
@@ -519,7 +513,7 @@ package molehill.core.render
 					_batcherInsertPosition++;
 					if (_debug)
 					{
-						log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length);
+						log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
 						log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
 					}
 				}
@@ -538,11 +532,14 @@ package molehill.core.render
 			while (node != null)
 			{
 				var batchingInfo:BatchingInfo = node.value;
-				if (batchingInfo.batcher != null)
+				var batcher:IVertexBatcher = batchingInfo.batcher;
+				var sprite:Sprite3D = batchingInfo.child;
+				var spriteBatcher:SpriteBatcher = batcher as SpriteBatcher;
+				if (spriteBatcher != null) 
 				{
-					removeSpriteFromBatcher(batchingInfo.batcher as SpriteBatcher, batchingInfo.child);
+					removeSpriteFromBatcher(spriteBatcher, sprite);
 				}
-				batchingInfo.child.addedToScene = false;
+				sprite.addedToScene = false;
 				
 				if (node.hasChildren)
 				{
@@ -681,24 +678,23 @@ package molehill.core.render
 			}
 		}
 		
-		private function resetChangeFlags(treeNode:TreeNode):void
+		private function resetRenderChangeFlags(treeNode:TreeNode):void
 		{
 			treeNode = treeNode.firstChild;
 			
 			while (treeNode != null)
 			{
-				if (treeNode.value is IVertexBatcher)
+				if (treeNode.value.needUpdateBatcher)
 				{
-					treeNode = treeNode.nextSibling;
-					continue;
-				}
-				
-				if (treeNode.hasChildren)
-				{
-					var container:Sprite3DContainer = treeNode.value as Sprite3DContainer;
-					container.treeStructureChanged = false;
-					container.textureAtlasChanged = false;
-					resetChangeFlags(treeNode);
+					if (treeNode.hasChildren)
+					{
+						resetRenderChangeFlags(treeNode.firstChild);
+					}
+					else
+					{
+						treeNode.value.treeStructureChanged = false;
+						treeNode.value.textureAtlasChanged = false;
+					}
 				}
 				
 				treeNode = treeNode.nextSibling;
@@ -736,6 +732,7 @@ package molehill.core.render
 				
 				//trace('==============================');
 				checkBatchingTree(localRenderTree, _batchingTree);
+				resetRenderChangeFlags(localRenderTree);
 					
 				if (_debug)
 				{
@@ -804,7 +801,7 @@ package molehill.core.render
 		
 		private var _lastTexture:Texture;
 		
-		private var _debug:Boolean = false;
+		private var _debug:Boolean = true;
 		private var _log:String;
 		private function log(entry:String):void
 		{
