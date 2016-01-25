@@ -348,6 +348,13 @@ package molehill.core.render
 						skipUnchangedContainer(batchingTree.firstChild);
 					}
 				}
+				else if (batchingTree.hasChildren)
+				{
+					while (batchingTree.hasChildren)
+					{
+						removeBatchingNode(batchingTree.firstChild);
+					}
+				}
 				
 				if (cameraOwner === renderSprite)
 				{
@@ -408,11 +415,6 @@ package molehill.core.render
 			var nextNode:TreeNode = node.nextSibling;
 			node.parent.removeNode(node);
 			removeNodeReferences(node);
-			
-			node.value.reset();
-			_cacheBatchingInfo.storeInstance(node.value);
-			node.reset();
-			_cacheBatchingTreeNodes.storeInstance(node);
 			
 			return nextNode;
 		}
@@ -531,6 +533,11 @@ package molehill.core.render
 		{
 			while (node != null)
 			{
+				if (node.hasChildren)
+				{
+					removeNodeReferences(node.firstChild);
+				}
+				
 				var batchingInfo:BatchingInfo = node.value;
 				var batcher:IVertexBatcher = batchingInfo.batcher;
 				var sprite:Sprite3D = batchingInfo.child;
@@ -541,12 +548,14 @@ package molehill.core.render
 				}
 				sprite.addedToScene = false;
 				
-				if (node.hasChildren)
-				{
-					removeNodeReferences(node.firstChild);
-				}
+				var next:TreeNode = node.nextSibling;
 				
-				node = node.nextSibling;
+				node.value.reset();
+				_cacheBatchingInfo.storeInstance(node.value);
+				node.reset();
+				_cacheBatchingTreeNodes.storeInstance(node);
+				
+				node = next;
 			}
 		}
 		
@@ -686,14 +695,12 @@ package molehill.core.render
 			{
 				if (treeNode.value.needUpdateBatcher)
 				{
+					treeNode.value.treeStructureChanged = false;
+					treeNode.value.textureAtlasChanged = false;
+					
 					if (treeNode.hasChildren)
 					{
 						resetRenderChangeFlags(treeNode.firstChild);
-					}
-					else
-					{
-						treeNode.value.treeStructureChanged = false;
-						treeNode.value.textureAtlasChanged = false;
 					}
 				}
 				
@@ -801,7 +808,7 @@ package molehill.core.render
 		
 		private var _lastTexture:Texture;
 		
-		private var _debug:Boolean = true;
+		private var _debug:Boolean = false;
 		private var _log:String;
 		private function log(entry:String):void
 		{
