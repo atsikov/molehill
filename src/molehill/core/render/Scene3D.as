@@ -320,7 +320,7 @@ package molehill.core.render
 				
 				if (containerRenderTree.hasChildren)
 				{
-					if (renderSprite.needUpdateBatcher)
+					if (renderSprite.needUpdateBatcher || !renderSprite.addedToScene)
 					{
 						if (!batchingTree.hasChildren)
 						{
@@ -335,13 +335,14 @@ package molehill.core.render
 						}
 						
 						checkBatchingTree(containerRenderTree.firstChild, batchingTree.firstChild, cameraOwner);
+						resetRenderChangeFlags(containerRenderTree.firstChild);
 						
 						//renderSprite.treeStructureChanged = false;
 						//renderSprite.textureAtlasChanged = false;
 					}
 					else
 					{
-						if (_debug)
+						if (_debug)	
 						{
 							log('Skipping unchanged container ' + renderSprite);
 						}
@@ -470,7 +471,7 @@ package molehill.core.render
 					{
 						if (_debug)
 						{
-							log('Sprite ' + batchingTree.value.child + ' moved ' + oldBatcher + ' --> ' + newBatcher);
+							log('Sprite ' + batchingTree.value.child + ' moved\n\t' + oldBatcher + '\n\t-->\n\t' + newBatcher);
 						}
 						
 						batchingTree.value.batcher = newBatcher;
@@ -689,19 +690,17 @@ package molehill.core.render
 		
 		private function resetRenderChangeFlags(treeNode:TreeNode):void
 		{
-			treeNode = treeNode.firstChild;
-			
 			while (treeNode != null)
 			{
 				if (treeNode.value.needUpdateBatcher)
 				{
-					treeNode.value.treeStructureChanged = false;
-					treeNode.value.textureAtlasChanged = false;
-					
 					if (treeNode.hasChildren)
 					{
 						resetRenderChangeFlags(treeNode.firstChild);
 					}
+					
+					treeNode.value.treeStructureChanged = false;
+					treeNode.value.textureAtlasChanged = false;
 				}
 				
 				treeNode = treeNode.nextSibling;
