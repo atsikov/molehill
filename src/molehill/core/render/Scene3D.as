@@ -192,11 +192,6 @@ package molehill.core.render
 				var currentBatcher:IVertexBatcher = batchingInfo.batcher;
 				var currentSpriteBatcher:SpriteBatcher = currentBatcher as SpriteBatcher;
 				
-				if (renderSprite.camera != null)
-				{
-					cameraOwner = renderSprite;
-				}
-				
 				if (_debug)
 				{
 					log('Compairing ' + renderSprite  + ' against ' + batchingSprite); 
@@ -205,6 +200,11 @@ package molehill.core.render
 				// sprites are equal
 				if (renderSprite === batchingSprite)
 				{
+					if (renderSprite.cameraChanged)
+					{
+						updateCameraOwner(batchingTree, renderSprite);
+					}
+					
 					// sprite's properties changed
 					if (currentSpriteBatcher != null && !currentSpriteBatcher.isSpriteCompatible(renderSprite, cameraOwner))
 					{
@@ -334,7 +334,11 @@ package molehill.core.render
 							}
 						}
 						
-						checkBatchingTree(containerRenderTree.firstChild, batchingTree.firstChild, cameraOwner);
+						checkBatchingTree(
+							containerRenderTree.firstChild, 
+							batchingTree.firstChild,
+							renderSprite.camera != null ? renderSprite : cameraOwner
+						);
 						resetRenderChangeFlags(containerRenderTree.firstChild);
 						
 						//renderSprite.treeStructureChanged = false;
@@ -355,11 +359,6 @@ package molehill.core.render
 					{
 						removeBatchingNode(batchingTree.firstChild);
 					}
-				}
-				
-				if (cameraOwner === renderSprite)
-				{
-					cameraOwner = null;
 				}
 				
 				if (renderTree.nextSibling != null && batchingTree.nextSibling == null)
@@ -670,18 +669,22 @@ package molehill.core.render
 		}
 		
 		private var _cameraOwner:Sprite3DContainer;
-		private function setCameraOwner(node:TreeNode, cameraOwner:Sprite3D):void
+		private function updateCameraOwner(node:TreeNode, cameraOwner:Sprite3D):void
 		{
 			while (node != null)
 			{
 				var batchingInfo:BatchingInfo = node.value as BatchingInfo;
 				if (node.hasChildren && batchingInfo.child.camera == null)
 				{
-					setCameraOwner(node.firstChild, cameraOwner);
+					updateCameraOwner(node.firstChild, cameraOwner);
 				}
-				else if (!node.hasChildren && batchingInfo.batcher != null)
+				else if (batchingInfo.batcher != null)
 				{
 					batchingInfo.batcher.cameraOwner = cameraOwner;
+					if (_debug)
+					{
+						log('Camera owner set to ' + cameraOwner + ' for sprite ' + batchingInfo.child);
+					}
 				}
 				
 				node = node.nextSibling;
