@@ -1328,7 +1328,7 @@ package molehill.core.sprite
 		
 		molehill_internal function set textureAtlasChanged(value:Boolean):void
 		{
-			if (value && _parent != null)
+			if (value && _parent != null && !_parent.textureAtlasChanged)
 			{
 				_parent.textureAtlasChanged = value;
 			}
@@ -1344,7 +1344,7 @@ package molehill.core.sprite
 		
 		molehill_internal function set treeStructureChanged(value:Boolean):void
 		{
-			if (value && _parent != null)
+			if (value && _parent != null && !_parent.treeStructureChanged)
 			{
 				_parent.treeStructureChanged = value;
 			}
