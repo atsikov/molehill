@@ -56,13 +56,13 @@ package molehill.easy.ui3d.scroll
 			_scrollingMask.setTexture(EasyTileList3DAnimated.SCROLL_MASK_TEXTURE_ID);
 			addChild(_scrollingMask);
 			
-			_containerCamera = new CustomCamera();
-			
 			_container = new UIComponent3D();
-			_container.camera = _containerCamera;
+			_container.camera = new CustomCamera();
 			addChild(_container);
 			
 			_container.mask = _scrollingMask;
+			
+			_containerCamera = _container.camera;
 			
 			_viewPort = new Rectangle();
 		}

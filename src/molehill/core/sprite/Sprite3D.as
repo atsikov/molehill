@@ -1560,15 +1560,16 @@ package molehill.core.sprite
 		molehill_internal var parentMaxYNode:BinarySearchTreeNode;
 		
 		private var _camera:CustomCamera = null;
+		molehill_internal var cameraChanged:Boolean = false;
 		/**
-		 * Scale factor applyed while rendering sprite
+		 * Setting new camera creates a new CustomCamera instance to avoid using same camera in different objects.<br>
+		 * <b>Use reference from camera getter and not the value passed here.</b>
 		 **/
 		public function get camera():CustomCamera
 		{
 			return _camera;
 		}
 		
-		molehill_internal var cameraChanged:Boolean = false;
 		public function set camera(value:CustomCamera):void
 		{
 			if (_camera == null)
