@@ -454,7 +454,7 @@ package molehill.core.render
 				}
 				// [/DEBUG ONLY]
 				
-				if (batcherIndex <= _batcherInsertPosition)
+				if (batcherIndex < _batcherInsertPosition)
 				{
 					_batcherInsertPosition--;
 					// [DEBUG ONLY]
@@ -577,10 +577,10 @@ package molehill.core.render
 				{
 					removeSpriteFromBatcher(spriteBatcher, sprite);
 				}
-				else
+				else if (batcher != null)
 				{
 					var batcherIndex:int = _listSpriteBatchers.indexOf(batcher);
-					if (batcherIndex <= _batcherInsertPosition)
+					if (batcherIndex < _batcherInsertPosition)
 					{
 						_batcherInsertPosition--;
 					}
@@ -777,7 +777,9 @@ package molehill.core.render
 				_lastBatcher = null;
 				_batcherInsertPosition = 0;
 				
+				// [DEBUG ONLY]
 				_log = null;
+				// [/DEBUG ONLY]
 				
 				if (_batchingTree == null)
 				{
