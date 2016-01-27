@@ -281,37 +281,11 @@ package molehill.core.render
 				
 				if (isRenderableSprite && batchingInfo.batcher == null)
 				{
-					if (renderSprite is IVertexBatcher)
-					{
-						batchingInfo.batcher = renderSprite as IVertexBatcher;
-						_listSpriteBatchers.splice(
-							_batcherInsertPosition,
-							0,
-							renderSprite as IVertexBatcher
-						);
-						(renderSprite as IVertexBatcher).cameraOwner = renderSprite.camera != null ? renderSprite : cameraOwner;
-						// [DEBUG ONLY]
-						if (_debug)
-						{
-							log('Batcher ' + renderSprite + ' added to ' + _batcherInsertPosition + ' / ' + _listSpriteBatchers.length);
-						}
-						// [/DEBUG ONLY]
-						
-						// [DEBUG ONLY]
-						if (_debug)
-						{
-							log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
-						}
-						// [/DEBUG ONLY]
-					}
-					else
-					{
-						pushToSuitableSpriteBacther(
-							batchingTree,
-							renderSprite,
-							cameraOwner
-						);
-					}
+					pushToSuitableSpriteBacther(
+						batchingTree,
+						renderSprite,
+						cameraOwner
+					);
 				}
 				
 				if (renderSprite is UIComponent3D)
@@ -618,49 +592,56 @@ package molehill.core.render
 		/**
 		 * Adding sprite to proper batcher either passed or new one
 		 **/
-		private function pushToSuitableSpriteBacther(batchingTree:TreeNode, child:Sprite3D, cameraOwner:Sprite3D):SpriteBatcher
+		private function pushToSuitableSpriteBacther(batchingTree:TreeNode, child:Sprite3D, cameraOwner:Sprite3D):IVertexBatcher
 		{
-			var batcherCreated:Boolean = false;
-			var suitableBatcher:SpriteBatcher = _lastBatcher as SpriteBatcher;
-			if (suitableBatcher != null &&
-				(!suitableBatcher.isSpriteCompatible(child, cameraOwner) ||
-				 suitableBatcher.numSprites >= MAX_SPRITES_PER_BATCHER))
+			var suitableBatcher:IVertexBatcher = child is IVertexBatcher ?
+				child as IVertexBatcher :
+				_lastBatcher;
+			var suitableSpriteBatcher:SpriteBatcher = suitableBatcher as SpriteBatcher;
+			if (suitableSpriteBatcher != null &&
+				(!suitableSpriteBatcher.isSpriteCompatible(child, cameraOwner) ||
+				 suitableSpriteBatcher.numSprites >= MAX_SPRITES_PER_BATCHER))
 			{
 				suitableBatcher = null;
+				suitableSpriteBatcher = null;
 			}
 			
-			if (suitableBatcher == null)
+			if (!(child is IVertexBatcher) &&
+				suitableSpriteBatcher == null)
 			{
-				suitableBatcher = new SpriteBatcher(this);
-				suitableBatcher.shader = child.shader;
-				suitableBatcher.blendMode = child._blendMode;
-				suitableBatcher.textureAtlasID = child.textureAtlasData == null ? null : child.textureAtlasData.atlasID;
-				suitableBatcher.cameraOwner = cameraOwner;
-				batcherCreated = true;
+				suitableSpriteBatcher = new SpriteBatcher(this);
+				suitableSpriteBatcher.shader = child.shader;
+				suitableSpriteBatcher.blendMode = child._blendMode;
+				suitableSpriteBatcher.textureAtlasID = child.textureAtlasData == null ? null : child.textureAtlasData.atlasID;
+				suitableSpriteBatcher.cameraOwner = cameraOwner;
+				suitableBatcher = suitableSpriteBatcher;
 			}
 			
-			if (!batcherCreated && _lastBatchedChild != null)
+			if (suitableSpriteBatcher != null)
 			{
-				// [DEBUG ONLY]
-				if (_debug)
+				if (suitableBatcher == _lastBatcher)
 				{
-					log('Sprite ' + child + ' added to batcher ' + StringUtils.getObjectAddress(suitableBatcher) + ' after ' + _lastBatchedChild); 
+					// [DEBUG ONLY]
+					if (_debug)
+					{
+						log('Sprite ' + child + ' added to batcher ' + StringUtils.getObjectAddress(suitableSpriteBatcher) + ' after ' + _lastBatchedChild); 
+					}
+					// [/DEBUG ONLY]
+					suitableSpriteBatcher.addChildAfter(_lastBatchedChild, child);
 				}
-				// [/DEBUG ONLY]
-				suitableBatcher.addChildAfter(_lastBatchedChild, child);
-			}
-			else
-			{
-				// [DEBUG ONLY]
-				if (_debug)
+				else
 				{
-					log('Sprite ' + child + ' added to batcher ' + StringUtils.getObjectAddress(suitableBatcher)); 
+					// [DEBUG ONLY]
+					if (_debug)
+					{
+						log('Sprite ' + child + ' added to batcher ' + StringUtils.getObjectAddress(suitableSpriteBatcher)); 
+					}
+					// [/DEBUG ONLY]
+					suitableSpriteBatcher.addChild(child);
 				}
-				// [/DEBUG ONLY]
-				suitableBatcher.addChild(child);
 			}
 			
-			if (batcherCreated)
+			if (suitableBatcher !== _lastBatcher)
 			{
 				var lastSpriteBatcher:SpriteBatcher = _lastBatcher as SpriteBatcher;
 				if (lastSpriteBatcher != null &&
@@ -668,16 +649,17 @@ package molehill.core.render
 					_lastBatchedChild != lastSpriteBatcher.getLastChild())
 				{
 					var splittedBatcher:SpriteBatcher = lastSpriteBatcher.splitAfterChild(_lastBatchedChild);
+					
+					// [DEBUG ONLY]
 					if (splittedBatcher == null)
 					{
-						// [DEBUG ONLY]
 						if (_debug)
 						{
 							log('!!! new batcher is null !!!');
 							log('!!! Sprite ' + _lastBatchedChild + ' not found in batcher ' + lastSpriteBatcher);
 						}
-						// [/DEBUG ONLY]
 					}
+					// [/DEBUG ONLY]
 					
 					updateSlicedBatcher(batchingTree, lastSpriteBatcher, splittedBatcher);
 					_listSpriteBatchers.splice(
@@ -700,10 +682,7 @@ package molehill.core.render
 					suitableBatcher
 				);
 				
-				if (suitableBatcher == null)
-				{
-					trace('null');
-				}
+				suitableBatcher.cameraOwner = cameraOwner;
 				
 				// [DEBUG ONLY]
 				if (_debug)
@@ -803,6 +782,9 @@ package molehill.core.render
 					saveLog();
 					
 					//traceTrees();
+					DebugLogger.writeExternalLog(
+						ObjectUtils.traceTree(_batchingTree)
+					);
 				}
 				// [/DEBUG ONLY]
 			}

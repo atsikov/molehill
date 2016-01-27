@@ -1,7 +1,8 @@
 package molehill.core.render
 {
-	import utils.StringUtils;
 	import molehill.core.sprite.Sprite3D;
+	
+	import utils.StringUtils;
 
 	internal final class BatchingInfo
 	{
@@ -40,7 +41,7 @@ package molehill.core.render
 		
 		public function toString():String
 		{
-			return _child.toString();
+			return _child.toString() + " Batcher " + StringUtils.getObjectAddress(_batcher);
 		}
 	}
 }
