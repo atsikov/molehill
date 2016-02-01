@@ -1763,23 +1763,57 @@ package molehill.core.sprite
 			_localPointY = globalY;
 		}
 		
+		private static var _onScreenTotalCamera:CustomCamera = new CustomCamera();
 		molehill_internal function get isOnScreen():Boolean
 		{
 			var renderEngine:RenderEngine = Scene3DManager.getInstance().renderEngine;
 			
-			globalToLocalCoords(0, 0);
-			if (_localPointX > width || _localPointY > height)
+//			globalToLocalCoords(0, 0);
+//			if (_localPointX > width || _localPointY > height)
+//			{
+//				return false;
+//			}
+//			
+//			globalToLocalCoords(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
+//			if (_localPointX < 0 || _localPointY < 0)
+//			{
+//				return false;
+//			}
+			
+			if (_camera != null)
 			{
-				return false;
+				_onScreenTotalCamera.copyValues(_camera);
+			}
+			else
+			{
+				_onScreenTotalCamera.reset();
 			}
 			
-			globalToLocalCoords(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
-			if (_localPointX < 0 || _localPointY < 0)
+			var parent:Sprite3DContainer = this.parent;
+			while (parent != null)
 			{
-				return false;
+				var parentCamera:CustomCamera = parent.camera;
+				if (parentCamera != null)
+				{
+					_onScreenTotalCamera.scrollX += parentCamera.scrollX;
+					_onScreenTotalCamera.scrollY += parentCamera.scrollY;
+					_onScreenTotalCamera.scale *= parentCamera.scale;
+				}
+				
+				parent = parent.parent;
 			}
 			
-			return true;
+			var viewportWidth:uint = renderEngine.getViewportWidth() / _onScreenTotalCamera.scale;
+			var viewportHeight:uint = renderEngine.getViewportHeight() / _onScreenTotalCamera.scale;
+			var viewportX0:uint = _onScreenTotalCamera.scrollX / _onScreenTotalCamera.scale;
+			var viewportY0:uint = _onScreenTotalCamera.scrollY / _onScreenTotalCamera.scale;
+			var viewportX1:uint = viewportX0 + viewportWidth;
+			var viewportY1:uint = viewportY0 + viewportHeight;
+			
+			return !(_x0 > viewportX1 ||
+				_x3 < viewportX0 ||
+				_y0 > viewportY1 ||
+				_y3 < viewportY0);
 		}
 	}
 }

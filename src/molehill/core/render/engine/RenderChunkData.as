@@ -21,5 +21,8 @@ package molehill.core.render.engine
 		public var additionalVertexBuffers:Vector.<OrderedVertexBuffer>;
 		public var programConstantsData:Vector.<ProgramConstantsData>;
 		public var customIndexBuffer:IndexBuffer3D;
+		// [DEBUG ONLY]
+		public var textureAtlasID:String;
+		// [/DEBUG ONLY]
 	}
 }

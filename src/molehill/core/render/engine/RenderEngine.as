@@ -280,6 +280,9 @@ package molehill.core.render.engine
 				chunkData.additionalVertexBuffers = batcherAdditionalVertexBufers;
 				chunkData.programConstantsData = programConstantsData
 				chunkData.customIndexBuffer = batcherIndexBuffer;
+				// [DEBUG ONLY]
+				chunkData.textureAtlasID = batcher.textureAtlasID;
+				// [/DEBUG ONLY]
 				
 				_listRenderChunks.enqueue(chunkData);
 				

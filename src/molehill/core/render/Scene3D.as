@@ -334,7 +334,7 @@ package molehill.core.render
 							log('Skipping unchanged container ' + renderSprite);
 						}
 						// [/DEBUG ONLY]
-						skipUnchangedContainer(batchingTree.firstChild);
+						skipUnchangedContainer(batchingTree.lastChild);
 					}
 				}
 				else if (batchingTree.hasChildren)
@@ -503,35 +503,60 @@ package molehill.core.render
 			}
 		}
 		
-		private function skipUnchangedContainer(batchingTreeNode:TreeNode):void
+		private function skipUnchangedContainer(batchingTreeNode:TreeNode):Boolean
 		{
 			while (batchingTreeNode != null)
 			{
+				if (batchingTreeNode.hasChildren)
+				{
+					if (skipUnchangedContainer(batchingTreeNode.lastChild))
+					{
+						return true;
+					}
+				}
+				
 				var batchingInfo:BatchingInfo = batchingTreeNode.value;
 				if (batchingInfo.batcher != null)
 				{
 					_lastBatchedChild = batchingInfo.child;
-				}
-				if (batchingInfo.batcher != null && _lastBatcher !== batchingInfo.batcher)
-				{
-					_lastBatcher = batchingInfo.batcher;
-					_batcherInsertPosition++;
-					// [DEBUG ONLY]
-					if (_debug)
+					if (_lastBatcher !== batchingInfo.batcher)
 					{
-						log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
-						log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+						_lastBatcher = batchingInfo.batcher;
+						_batcherInsertPosition = _listSpriteBatchers.indexOf(_lastBatcher) + 1;
+						
+						if (_batcherInsertPosition == 0)
+						{
+							if (_debug)
+							{
+								log('!!! Batcher ' + _lastBatcher + ' not found in _listBatchers !!!');
+							}
+						}
+						
+						// [DEBUG ONLY]
+						if (_debug)
+						{
+							log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
+							log('Next new batcher will be inserted to index ' + _batcherInsertPosition);
+						}
+						// [/DEBUG ONLY]
+					}
+					// [DEBUG ONLY]
+					else
+					{
+						if (_debug)
+						{
+							log('Last batcher unchanged: ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
+						}
 					}
 					// [/DEBUG ONLY]
+					
+					return true;
 				}
 				
-				if (batchingTreeNode.hasChildren)
-				{
-					skipUnchangedContainer(batchingTreeNode.firstChild);
-				}
-				
-				batchingTreeNode = batchingTreeNode.nextSibling;
+				batchingTreeNode = batchingTreeNode.prevSibling;
 			}
+			
+			return false;
 		}
 		
 		private function removeNodeReferences(node:TreeNode):void
@@ -782,9 +807,9 @@ package molehill.core.render
 					saveLog();
 					
 					//traceTrees();
-					DebugLogger.writeExternalLog(
-						ObjectUtils.traceTree(_batchingTree)
-					);
+					//DebugLogger.writeExternalLog(
+					//	ObjectUtils.traceTree(_batchingTree)
+					//);
 				}
 				// [/DEBUG ONLY]
 			}
