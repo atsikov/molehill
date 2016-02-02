@@ -524,6 +524,7 @@ package molehill.core.render
 						_lastBatcher = batchingInfo.batcher;
 						_batcherInsertPosition = _listSpriteBatchers.indexOf(_lastBatcher) + 1;
 						
+						// [DEBUG ONLY]
 						if (_batcherInsertPosition == 0)
 						{
 							if (_debug)
@@ -532,7 +533,6 @@ package molehill.core.render
 							}
 						}
 						
-						// [DEBUG ONLY]
 						if (_debug)
 						{
 							log('Last batcher is ' + _lastBatcher + ' (' + _listSpriteBatchers.indexOf(_lastBatcher) + ' / ' + _listSpriteBatchers.length + ')');
