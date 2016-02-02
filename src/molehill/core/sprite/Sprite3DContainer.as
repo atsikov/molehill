@@ -1273,7 +1273,6 @@ package molehill.core.sprite
 		}
 		
 		// Special properties for UIComponent3D
-		
 		private var _uiHasDynamicTexture:Boolean = false;
 		/**
 		 * 
@@ -1290,6 +1289,10 @@ package molehill.core.sprite
 		
 		public function set uiHasDynamicTexture(value:Boolean):void
 		{
+			if (_uiHasDynamicTexture != value)
+			{
+				treeStructureChanged = true;
+			}
 			_uiHasDynamicTexture = value;
 		}
 		
@@ -1309,6 +1312,10 @@ package molehill.core.sprite
 		
 		public function set uiMoveToForeground(value:Boolean):void
 		{
+			if (_uiMoveToForeground != value)
+			{
+				treeStructureChanged = true;
+			}
 			_uiMoveToForeground = value;
 		}
 	}

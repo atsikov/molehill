@@ -614,6 +614,8 @@ package molehill.core.render
 			_enableTextureCreatedCheck = value;
 		}
 		
+		
+		// TODO: add children to sliced max-sized batcher if compatible
 		/**
 		 * Adding sprite to proper batcher either passed or new one
 		 **/
@@ -806,7 +808,7 @@ package molehill.core.render
 				{
 					saveLog();
 					
-					//traceTrees();
+					traceTrees();
 					//DebugLogger.writeExternalLog(
 					//	ObjectUtils.traceTree(_batchingTree)
 					//);
