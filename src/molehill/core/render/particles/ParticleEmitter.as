@@ -19,12 +19,14 @@ package molehill.core.render.particles
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 	
+	import molehill.core.Scene3DManager;
 	import molehill.core.molehill_internal;
 	import molehill.core.render.IVertexBatcher;
 	import molehill.core.render.OrderedVertexBuffer;
 	import molehill.core.render.ProgramConstantsData;
 	import molehill.core.render.Scene3D;
 	import molehill.core.render.camera.CustomCamera;
+	import molehill.core.render.engine.RenderEngine;
 	import molehill.core.render.shader.Shader3DFactory;
 	import molehill.core.render.shader.species.ParticleEmitterShader;
 	import molehill.core.sprite.Sprite3D;
@@ -609,6 +611,47 @@ package molehill.core.render.particles
 		public function get bottom():Number
 		{
 			return _y1 + _yRadius;
+		}
+		
+		override public function get isOnScreen():Boolean
+		{
+			var renderEngine:RenderEngine = Scene3DManager.getInstance().renderEngine;
+			
+			var onScreenCamera:CustomCamera = Sprite3D._onScreenTotalCamera;
+			if (_cameraOwner != null)
+			{
+				onScreenCamera.copyValues(_cameraOwner.camera);
+			}
+			else
+			{
+				onScreenCamera.reset();
+			}
+			
+			var parent:Sprite3DContainer = _cameraOwner != null ? _cameraOwner.parent : this.parent;
+			while (parent != null)
+			{
+				var parentCamera:CustomCamera = parent.camera;
+				if (parentCamera != null)
+				{
+					onScreenCamera.scrollX += parentCamera.scrollX;
+					onScreenCamera.scrollY += parentCamera.scrollY;
+					onScreenCamera.scale *= parentCamera.scale;
+				}
+				
+				parent = parent.parent;
+			}
+			
+			var viewportWidth:uint = renderEngine.getViewportWidth() / onScreenCamera.scale;
+			var viewportHeight:uint = renderEngine.getViewportHeight() / onScreenCamera.scale;
+			var viewportX0:uint = onScreenCamera.scrollX / onScreenCamera.scale;
+			var viewportY0:uint = onScreenCamera.scrollY / onScreenCamera.scale;
+			var viewportX1:uint = viewportX0 + viewportWidth;
+			var viewportY1:uint = viewportY0 + viewportHeight;
+			
+			return !(left > viewportX1 ||
+				right < viewportX0 ||
+				top > viewportY1 ||
+				bottom < viewportY0);
 		}
 		
 		private static const NUM_VERTEX_DATA_COMPONENTS:uint = 4;

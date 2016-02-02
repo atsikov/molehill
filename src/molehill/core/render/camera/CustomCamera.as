@@ -76,6 +76,12 @@ package molehill.core.render.camera
 		
 		public function copyValues(camera:CustomCamera):void
 		{
+			if (camera == null)
+			{
+				reset();
+				return;
+			}
+			
 			_scrollX = camera._scrollX;
 			_scrollY = camera._scrollY;
 			_scale = camera._scale;

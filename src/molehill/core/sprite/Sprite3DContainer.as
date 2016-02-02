@@ -1259,6 +1259,19 @@ package molehill.core.sprite
 			}
 		}
 		
+		override public function get isOnScreen():Boolean
+		{
+			for each (var child:Sprite3D in _listChildren)
+			{
+				if (child.isOnScreen)
+				{
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
 		// Special properties for UIComponent3D
 		
 		private var _uiHasDynamicTexture:Boolean = false;

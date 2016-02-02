@@ -1763,31 +1763,12 @@ package molehill.core.sprite
 			_localPointY = globalY;
 		}
 		
-		private static var _onScreenTotalCamera:CustomCamera = new CustomCamera();
-		molehill_internal function get isOnScreen():Boolean
+		molehill_internal static var _onScreenTotalCamera:CustomCamera = new CustomCamera();
+		public function get isOnScreen():Boolean
 		{
 			var renderEngine:RenderEngine = Scene3DManager.getInstance().renderEngine;
 			
-//			globalToLocalCoords(0, 0);
-//			if (_localPointX > width || _localPointY > height)
-//			{
-//				return false;
-//			}
-//			
-//			globalToLocalCoords(renderEngine.getViewportWidth(), renderEngine.getViewportHeight());
-//			if (_localPointX < 0 || _localPointY < 0)
-//			{
-//				return false;
-//			}
-			
-			if (_camera != null)
-			{
-				_onScreenTotalCamera.copyValues(_camera);
-			}
-			else
-			{
-				_onScreenTotalCamera.reset();
-			}
+			_onScreenTotalCamera.copyValues(_camera);
 			
 			var parent:Sprite3DContainer = this.parent;
 			while (parent != null)
