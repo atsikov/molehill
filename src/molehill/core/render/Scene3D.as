@@ -302,26 +302,27 @@ package molehill.core.render
 				{
 					if (renderSprite.needUpdateBatcher || !renderSprite.addedToScene)
 					{
+						var renderTreeFirstChild:TreeNode = containerRenderTree.firstChild;
 						if (!batchingTree.hasChildren)
 						{
 							batchingTree.addNode(
-								getNewBatchingNode(containerRenderTree.firstChild.value)
+								getNewBatchingNode(renderTreeFirstChild.value)
 							);
 							
 							// [DEBUG ONLY]
 							if (_debug)
 							{
-								log('Node for sprite ' + containerRenderTree.firstChild.value + ' added'); 
+								log('Node for sprite ' + renderTreeFirstChild.value + ' added'); 
 							}
 							// [/DEBUG ONLY]
 						}
 						
 						checkBatchingTree(
-							containerRenderTree.firstChild, 
+							renderTreeFirstChild, 
 							batchingTree.firstChild,
 							renderSprite.camera != null ? renderSprite : cameraOwner
 						);
-						resetRenderChangeFlags(containerRenderTree.firstChild);
+						resetRenderChangeFlags(renderTreeFirstChild);
 						
 						//renderSprite.treeStructureChanged = false;
 						//renderSprite.textureAtlasChanged = false;
@@ -345,25 +346,29 @@ package molehill.core.render
 					}
 				}
 				
-				if (renderTree.nextSibling != null && batchingTree.nextSibling == null)
+				var renderTreeNextSibling:TreeNode = renderTree.nextSibling;
+				var batchingTreeNextSibling:TreeNode = batchingTree.nextSibling;
+				if (renderTreeNextSibling != null && batchingTreeNextSibling == null)
 				{
 					batchingTree.parent.addNode(
-						getNewBatchingNode(renderTree.nextSibling.value)
+						getNewBatchingNode(renderTreeNextSibling.value)
 					);
+					batchingTreeNextSibling = batchingTree.nextSibling;
 					
 					// [DEBUG ONLY]
 					if (_debug)
 					{
-						log('Node for sprite ' + renderTree.nextSibling.value + ' added'); 
+						log('Node for sprite ' + renderTreeNextSibling.value + ' added'); 
 					}
 					// [/DEBUG ONLY]
 				}
 				
+				currentBatcher = batchingTree.value.batcher;
 				if (batchingTree.value.batcher != null)
 				{
-					if (_lastBatcher !== batchingTree.value.batcher)
+					if (_lastBatcher !== currentBatcher)
 					{
-						_lastBatcher = batchingTree.value.batcher;
+						_lastBatcher = currentBatcher;
 						_batcherInsertPosition++;
 						// [DEBUG ONLY]
 						if (_debug)
@@ -379,8 +384,8 @@ package molehill.core.render
 				
 				renderSprite.addedToScene = true;
 				
-				renderTree = renderTree.nextSibling;
-				batchingTree = batchingTree.nextSibling;
+				renderTree = renderTreeNextSibling;
+				batchingTree = batchingTreeNextSibling;
 			}
 			
 			// [DEBUG ONLY]
