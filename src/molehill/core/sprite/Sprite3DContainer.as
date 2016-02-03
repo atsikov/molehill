@@ -154,6 +154,11 @@ package molehill.core.sprite
 			
 			child.setScene(_scene);
 			
+			if (hasChanged)
+			{
+				child.markChanged(true);
+			}
+			
 			return child;
 		}
 		
