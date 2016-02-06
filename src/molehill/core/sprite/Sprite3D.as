@@ -21,6 +21,7 @@ package molehill.core.sprite
 	import molehill.core.render.shader.species.mask.MaskAlphaCutoutShader;
 	import molehill.core.render.shader.species.mask.MaskedObjectShader;
 	import molehill.core.sort.IZSortDisplayObject;
+	import molehill.core.sort.ZSortEvent;
 	import molehill.core.texture.NormalizedAlphaChannel;
 	import molehill.core.texture.TextureAtlasData;
 	import molehill.core.texture.TextureData;
@@ -183,9 +184,21 @@ package molehill.core.sprite
 		
 		public function set x(value:Number):void
 		{
+			if (_shiftX == value)
+			{
+				return;
+			}
+			
 			_shiftX = value;
 			
 			markChanged(true);
+			
+			if (hasEventListener(ZSortEvent.MOVE))
+			{
+				dispatchEvent(
+					new ZSortEvent(ZSortEvent.MOVE)
+				);
+			}
 		}
 		
 		public function get y():Number
@@ -195,9 +208,21 @@ package molehill.core.sprite
 		
 		public function set y(value:Number):void
 		{
+			if (_shiftY == value)
+			{
+				return;
+			}
+			
 			_shiftY = value;
 			
 			markChanged(true);
+			
+			if (hasEventListener(ZSortEvent.MOVE))
+			{
+				dispatchEvent(
+					new ZSortEvent(ZSortEvent.MOVE)
+				);
+			}
 		}
 		
 		public function get z():Number
@@ -213,7 +238,19 @@ package molehill.core.sprite
 		
 		public function set layerIndex(value:int):void
 		{
+			if (_layerIndex == value)
+			{
+				return;
+			}
+			
 			_layerIndex = value;
+			
+			if (hasEventListener(ZSortEvent.MOVE))
+			{
+				dispatchEvent(
+					new ZSortEvent(ZSortEvent.MOVE)
+				);
+			}
 		}
 		
 		private var _snapToPixels:Boolean = false;
@@ -677,6 +714,13 @@ package molehill.core.sprite
 			_shiftZ = z;
 			
 			markChanged(true);
+			
+			if (hasEventListener(ZSortEvent.MOVE))
+			{
+				dispatchEvent(
+					new ZSortEvent(ZSortEvent.MOVE)
+				);
+			}
 		}
 		
 		molehill_internal var _rotation:Number = 0;

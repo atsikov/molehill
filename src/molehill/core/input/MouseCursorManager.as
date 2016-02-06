@@ -1,5 +1,7 @@
 package molehill.core.input
 {
+	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.ui.Mouse;
 	import flash.ui.MouseCursor;
 	
@@ -27,9 +29,13 @@ package molehill.core.input
 			{
 				throw new Error("Use MouseCursorManager::getInstance()");
 			}
+			
+			_eventDispatcher = new Sprite();
 		}
 		
+		private var _eventDispatcher:Sprite;
 		private var _cursorCandidate:String = "";
+		private var _currentCursor:String = "";
 		public function setCursor(cursor:String):void
 		{
 			if (_cursorCandidate == MouseCursor.BUTTON)
@@ -39,19 +45,31 @@ package molehill.core.input
 			
 			_cursorCandidate = cursor;
 			
-			FrameExecutorUtil.getInstance().addNextFrameHandler(doSetCursor);
+			_eventDispatcher.addEventListener(Event.EXIT_FRAME, onExitFrame);
+		}
+		
+		protected function onExitFrame(event:Event):void
+		{
+			doSetCursor();
+			
+			_eventDispatcher.removeEventListener(Event.EXIT_FRAME, onExitFrame);
 		}
 		
 		private function doSetCursor():void
 		{
-			try
+			if (_currentCursor != _cursorCandidate)
 			{
-				Mouse.cursor = _cursorCandidate;
+				try
+				{
+					Mouse.cursor = _cursorCandidate;
+					_currentCursor = _cursorCandidate;
+				}
+				catch (e:Error)
+				{
+					//nothing
+				}
 			}
-			catch (e:Error)
-			{
-				//nothing
-			}
+			
 			_cursorCandidate = "";
 		}
 	}
