@@ -416,13 +416,14 @@ package molehill.core.render
 		
 		private function removeSpriteFromBatcher(batcher:SpriteBatcher, sprite:Sprite3D):void
 		{
-			batcher.removeChild(sprite, _lastBatchedChild);
+			var removeAfterChild:Sprite3D = _lastBatcher === batcher ? _lastBatchedChild : null;
 			// [DEBUG ONLY]
 			if (_debug)
 			{
-				log('Removing sprite ' + sprite + ' from batcher ' + batcher); 
+				log('Removing sprite ' + sprite + ' from batcher ' + batcher + '; search after ' + removeAfterChild); 
 			}
 			// [/DEBUG ONLY]
+			batcher.removeChild(sprite, removeAfterChild);
 			if (batcher.numSprites == 0)
 			{
 				var batcherIndex:int = _listSpriteBatchers.indexOf(batcher);
