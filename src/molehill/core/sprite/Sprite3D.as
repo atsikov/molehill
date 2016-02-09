@@ -1396,6 +1396,11 @@ package molehill.core.sprite
 			_treeStructureChanged = value;
 		}
 		
+		molehill_internal function markTreeStructureChanged():void
+		{
+			_treeStructureChanged = true;
+		}
+		
 		molehill_internal function get needUpdateBatcher():Boolean
 		{
 			return textureAtlasChanged || treeStructureChanged;
@@ -1837,8 +1842,8 @@ package molehill.core.sprite
 			
 			return !(_x0 > viewportX1 ||
 				_x3 < viewportX0 ||
-				_y0 > viewportY1 ||
-				_y3 < viewportY0);
+				_y1 > viewportY1 ||
+				_y0 < viewportY0);
 		}
 	}
 }

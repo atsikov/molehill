@@ -204,7 +204,7 @@ package molehill.core.render
 				{
 					if (renderSprite.cameraChanged)
 					{
-						updateCameraOwner(batchingTree, renderSprite);
+						updateCameraOwner(batchingTree, cameraOwner);
 					}
 					
 					// sprite's properties changed

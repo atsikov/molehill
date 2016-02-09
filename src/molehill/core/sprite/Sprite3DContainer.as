@@ -117,6 +117,8 @@ package molehill.core.sprite
 			updateChildParentValues(child);
 			child.updateValues();
 			
+			child.markTreeStructureChanged();
+			
 			if (_blendMode != null)
 			{
 				child.blendMode = _blendMode;
@@ -184,6 +186,8 @@ package molehill.core.sprite
 			child._parent = this;
 			updateChildParentValues(child);
 			child.updateValues();
+			
+			child.markTreeStructureChanged();
 			
 			if (_blendMode != null)
 			{
@@ -483,6 +487,16 @@ package molehill.core.sprite
 			}
 			
 			return dimensionsChanged;
+		}
+		
+		override molehill_internal function markTreeStructureChanged():void
+		{
+			super.markTreeStructureChanged();
+			
+			for (var i:int = 0; i < _listChildren.length; i++)
+			{
+				_listChildren[i].markTreeStructureChanged();
+			}
 		}
 		
 		public function getChildAt(index:int):Sprite3D
