@@ -74,7 +74,7 @@ package molehill.core.animation
 		private var _listCustomAnimations:Vector.<CustomAnimatedSprite3D> = new Vector.<CustomAnimatedSprite3D>();
 		molehill_internal function addAnimation(value:AnimatedSprite3D):void
 		{
-			if (_listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value) != -1)
+			if (_listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value as CustomAnimatedSprite3D) != -1)
 			{
 				return;
 			}
@@ -93,19 +93,19 @@ package molehill.core.animation
 		
 		molehill_internal function hasAnimation(value:AnimatedSprite3D):Boolean
 		{
-			return _listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value) != -1;
+			return _listAnimations.indexOf(value) != -1 || _listCustomAnimations.indexOf(value as CustomAnimatedSprite3D) != -1;
 		}
 		
 		molehill_internal function removeAnimation(value:AnimatedSprite3D):void
 		{
-			if (_listAnimations.indexOf(value) == -1 || _listCustomAnimations.indexOf(value) == -1)
+			if (_listAnimations.indexOf(value) == -1 || _listCustomAnimations.indexOf(value as CustomAnimatedSprite3D) == -1)
 			{
 				return;
 			}
 			
 			if (value is CustomAnimatedSprite3D)
 			{
-				_listCustomAnimations.splice(_listCustomAnimations.indexOf(value), 1);
+				_listCustomAnimations.splice(_listCustomAnimations.indexOf(value as CustomAnimatedSprite3D), 1);
 			}
 			else
 			{
