@@ -57,34 +57,46 @@ package molehill.core.render.shader
 		private var _cacheAssembledShaders:Object;
 		public function registerShader(shaderClassName:String, premultAlpha:Boolean, textureParams:uint):Shader3D
 		{
+			var shader:Shader3D;
 			var premultAlphaIndex:int = premultAlpha ? 1 : 0;
-			if (_cacheAssembledShaders[shaderClassName] != null &&
-				_cacheAssembledShaders[shaderClassName][premultAlphaIndex] != null &&
-				_cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams] != null)
+			var shaderAlphaByClass:Object = _cacheAssembledShaders[shaderClassName];
+			if (shaderAlphaByClass != null)
 			{
-				return _cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams];
+				var shaderParamsByAlpha:Object = shaderAlphaByClass[premultAlphaIndex];
+				if (shaderParamsByAlpha != null)
+				{
+					shader = shaderParamsByAlpha[textureParams];
+					
+					if (shader != null)
+					{
+						return shader;
+					}
+				}
 			}
 			
-			var shaderClass:Class = getDefinitionByName(shaderClassName) as Class;
-			var shader:Shader3D = new shaderClass();
-			shader.premultAlpha = premultAlpha;
-			shader.textureReadParams = textureParams;
-			
-			if (_cacheAssembledShaders[shaderClassName] == null)
+			if (shader == null)
 			{
-				_cacheAssembledShaders[shaderClassName] = new Array();
-			}
-			if (_cacheAssembledShaders[shaderClassName][premultAlphaIndex] == null)
-			{
-				_cacheAssembledShaders[shaderClassName][premultAlphaIndex] = new Array();
-			}
-			_cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams] = shader;
-			
-			if (_context3D != null)
-			{
-				shader.setAssembledProgram(
-					_assembler.assemble2(_context3D, 1, shader.vertexShaderCode, shader.fragmentShaderCode)
-				);
+				var shaderClass:Class = getDefinitionByName(shaderClassName) as Class;
+				shader = new shaderClass();
+				shader.premultAlpha = premultAlpha;
+				shader.textureReadParams = textureParams;
+				
+				if (_cacheAssembledShaders[shaderClassName] == null)
+				{
+					_cacheAssembledShaders[shaderClassName] = new Array();
+				}
+				if (_cacheAssembledShaders[shaderClassName][premultAlphaIndex] == null)
+				{
+					_cacheAssembledShaders[shaderClassName][premultAlphaIndex] = new Array();
+				}
+				_cacheAssembledShaders[shaderClassName][premultAlphaIndex][textureParams] = shader;
+				
+				if (_context3D != null)
+				{
+					shader.setAssembledProgram(
+						_assembler.assemble2(_context3D, 1, shader.vertexShaderCode, shader.fragmentShaderCode)
+					);
+				}
 			}
 			
 			return shader;
