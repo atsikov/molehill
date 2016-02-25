@@ -46,6 +46,11 @@ package molehill.easy.ui3d
 			_shadow.moveTo(value.x, value.y);
 		}
 		
+		public function set shadowAlpha(value:Number):void
+		{
+			_shadow.alpha = value;
+		}
+		
 		override public function set defaultTextFormat(value:TextField3DFormat):void
 		{
 			super.defaultTextFormat = value;
