@@ -505,7 +505,7 @@ package molehill.core.texture
 							throw new TextureManagerError("TextureManager/createCompressedTextureFromARF(): Loading atlas '" + textureData.textureAtlasData.atlasID + "' failed! Texture '" + textureID + "' already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
 						}
 						
-						trace("TextureManager/createCompressedTextureFromARF(): Loading atlas '" + textureData.textureAtlasData.atlasID + "' failed! Texture '" + textureID + "' already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
+						trace("TextureManager/createCompressedTextureFromARF(): Warning! Atlas '" + textureData.textureAtlasData.atlasID + "' has texture '" + textureID + "' that already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
 						continue;
 					}
 					
@@ -553,7 +553,7 @@ package molehill.core.texture
 							throw new TextureManagerError("TextureManager/createTextureFromBRF(): Loading atlas '" + textureData.textureAtlasData.atlasID + "' failed! Texture '" + textureID + "' already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
 						}
 						
-						trace("TextureManager/createTextureFromBRF(): Loading atlas '" + textureData.textureAtlasData.atlasID + "' failed! Texture '" + textureID + "' already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
+						trace("TextureManager/createTextureFromBRF(): Warning! Atlas '" + textureData.textureAtlasData.atlasID + "' has texture '" + textureID + "' that already exists in atlas '" + _hashAtlasIDByTextureID[textureID] + "'!");
 						continue;
 					}
 					
