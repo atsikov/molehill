@@ -127,6 +127,7 @@ package molehill.core.render.particles
 			else
 			{
 				//_enterFrameListener.removeEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+				onContextRestored();
 			}
 		}
 		
