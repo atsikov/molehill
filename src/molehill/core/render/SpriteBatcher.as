@@ -481,7 +481,7 @@ package molehill.core.render
 				
 				var isOnScreen:Boolean = true;
 				var spriteChanged:Boolean = sprite.hasChanged;
-				if (!sprite.visible)
+				if (!sprite.visibleWithParent)
 				{
 					sprite.markChanged(false);
 					sprite.textureChanged = false;

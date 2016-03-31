@@ -8,10 +8,13 @@ package molehill.core.render
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
 	
+	import molehill.core.molehill_internal;
 	import molehill.core.render.camera.CustomCamera;
 	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
+	
+	use namespace molehill_internal;
 
 	public class Mesh extends Sprite3D implements IVertexBatcher
 	{
@@ -238,7 +241,7 @@ package molehill.core.render
 		
 		public function get numTriangles():uint
 		{
-			return visible ? _listIndices.length / 3 / 2 : 0;
+			return visibleWithParent ? _listIndices.length / 3 / 2 : 0;
 		}
 		
 		private var _textureAtlasID:String;

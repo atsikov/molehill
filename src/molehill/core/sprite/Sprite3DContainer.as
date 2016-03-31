@@ -319,7 +319,7 @@ package molehill.core.sprite
 			
 			child.parentShaderChanged = true;
 			
-			child.parentVisible = visible;
+			child.parentVisible = visibleWithParent;
 			
 			if (!child.updateOnRenderChanged)
 			{
@@ -677,7 +677,7 @@ package molehill.core.sprite
 		{
 			super.visible = value;
 			
-			var currentVisibility:Boolean = visible;
+			var currentVisibility:Boolean = visibleWithParent;
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
@@ -691,7 +691,7 @@ package molehill.core.sprite
 		{
 			super.parentVisible = value;
 			
-			var currentVisibility:Boolean = visible;
+			var currentVisibility:Boolean = visibleWithParent;
 			
 			for each (var child:Sprite3D in _listChildren)
 			{
@@ -802,7 +802,7 @@ package molehill.core.sprite
 					continue;
 				}
 				
-				if (!child.visible)
+				if (!child.visibleWithParent)
 				{
 					continue;
 				}
@@ -848,7 +848,7 @@ package molehill.core.sprite
 						continue;
 					}
 					
-					if (!container.visible)
+					if (!container.visibleWithParent)
 					{
 						if (childCamera != null)
 						{
@@ -866,7 +866,7 @@ package molehill.core.sprite
 				}
 				else if (child.hitTestPoint(point))
 				{
-					if (!child.visible)
+					if (!child.visibleWithParent)
 					{
 						if (childCamera != null)
 						{

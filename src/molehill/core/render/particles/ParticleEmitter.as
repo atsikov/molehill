@@ -506,7 +506,7 @@ package molehill.core.render.particles
 		
 		public function get numTriangles():uint
 		{
-			if (!visible)
+			if (!visibleWithParent)
 			{
 				return 0;
 			}

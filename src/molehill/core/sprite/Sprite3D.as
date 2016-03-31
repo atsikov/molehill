@@ -821,14 +821,19 @@ package molehill.core.sprite
 		molehill_internal var _parentVisible:Boolean = true;
 		molehill_internal function set parentVisible(value:Boolean):void
 		{
-			var currentVisibility:Boolean = visible;
+			var currentVisibility:Boolean = visibleWithParent;
 			_parentVisible = value;
-			_visibilityChanged ||= currentVisibility != visible;
+			_visibilityChanged ||= currentVisibility != visibleWithParent;
+		}
+		
+		molehill_internal function get visibleWithParent():Boolean 
+		{
+			return _visible && _parentVisible;
 		}
 		
 		public function get visible():Boolean 
 		{
-			return _visible && _parentVisible;
+			return _visible;
 		}
 		
 		public function set visible(value:Boolean):void 
@@ -838,10 +843,10 @@ package molehill.core.sprite
 				return;
 			}
 			
-			var currentVisibility:Boolean = visible;
+			var currentVisibility:Boolean = visibleWithParent;
 			_visible = value;
 			
-			_visibilityChanged ||= currentVisibility != visible;
+			_visibilityChanged ||= currentVisibility != visibleWithParent;
 			
 			colorChanged &&= _visible;
 			textureChanged &&= _visible;
