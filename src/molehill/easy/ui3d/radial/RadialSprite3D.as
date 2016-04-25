@@ -83,6 +83,11 @@ package molehill.easy.ui3d.radial
 			}
 		}
 		
+		override protected function onRemovedFromScene():void
+		{
+			onContextRestored();
+		}
+		
 		/*
 		
 		0 and 9 - fixed
