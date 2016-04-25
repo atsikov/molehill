@@ -1,8 +1,10 @@
 package molehill.core.render
 {
+	import debug.DebugLogger;
+	import debug.LogLevel;
+	
 	import easy.collections.TreeNode;
 	
-	import flash.display3D.textures.Texture;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
 	
@@ -15,7 +17,6 @@ package molehill.core.render
 	import molehill.core.texture.TextureManager;
 	
 	import utils.CachingFactory;
-	import utils.DebugLogger;
 	import utils.ObjectUtils;
 	import utils.StringUtils;
 	
@@ -153,7 +154,7 @@ package molehill.core.render
 			
 			globalTraceString += '\n================================\n\n';
 			
-			DebugLogger.writeExternalLog(globalTraceString);
+			DebugLogger.writeExternalLog(globalTraceString,	LogLevel.DEBUG_DEV);
 		}
 		
 		molehill_internal var _needUpdateBatchers:Boolean = false;
@@ -174,11 +175,27 @@ package molehill.core.render
 		}
 		
 		/**
-		 * Main method to build batchers on current render tree
+		 * @private
+		 * Last checked batcher. Used to make insertions into.
 		 **/
 		private var _lastBatcher:IVertexBatcher;
+		
+		/**
+		 * @private
+		 * Last checked child. New child will be inserted after.
+		 **/
 		private var _lastBatchedChild:Sprite3D;
+		
+		/**
+		 * @private
+		 * Index that will be used to insert new sprite batcher if child cannot be added to <b>_lastBatcher</b>.
+		 **/
 		private var _batcherInsertPosition:uint;
+		
+		/**
+		 * @private
+		 * Main method to build batchers on current render tree
+		 **/
 		private function checkBatchingTree(renderTree:TreeNode, batchingTree:TreeNode, cameraOwner:Sprite3D = null):void
 		{
 			var nextNode:TreeNode;
@@ -236,7 +253,8 @@ package molehill.core.render
 				{
 					if (batchingTree.nextSibling == null)
 					{
-						// seems that child was moved, copy will be deleted later 
+						// seems that child was moved
+						// adding child to proper place, old copy will be deleted later 
 						batchingTree.parent.addNode(
 							getNewBatchingNode(renderSprite)
 						);
@@ -247,6 +265,7 @@ package molehill.core.render
 					continue;
 				}
 				// sprite was added to render and doesn't exists in batching
+				// adding child to proper batcher
 				else
 				{
 					var newNode:TreeNode = getNewBatchingNode(
@@ -297,9 +316,10 @@ package molehill.core.render
 					(renderSprite as UIComponent3D).flattenedRenderTree :
 					renderTree;
 				
-				
+				// check subtree
 				if (containerRenderTree.hasChildren)
 				{
+					// if subtree changed or was newly added to render
 					if (renderSprite.needUpdateBatcher || !renderSprite.addedToScene)
 					{
 						var renderTreeFirstChild:TreeNode = containerRenderTree.firstChild;
@@ -348,6 +368,8 @@ package molehill.core.render
 				
 				var renderTreeNextSibling:TreeNode = renderTree.nextSibling;
 				var batchingTreeNextSibling:TreeNode = batchingTree.nextSibling;
+				// current render container still has children, but nothing was added to batching
+				// creating new batchong node
 				if (renderTreeNextSibling != null && batchingTreeNextSibling == null)
 				{
 					batchingTree.parent.addNode(
@@ -364,6 +386,7 @@ package molehill.core.render
 				}
 				
 				currentBatcher = batchingTree.value.batcher;
+				// last batcher, used to insert child into, was changed
 				if (batchingTree.value.batcher != null)
 				{
 					if (_lastBatcher !== currentBatcher)
@@ -395,6 +418,7 @@ package molehill.core.render
 			}
 			// [/DEBUG ONLY]
 			
+			// cleaning up batched children which were removed from render  
 			while (batchingTree != null)
 			{
 				batchingTree = removeBatchingNode(batchingTree);
@@ -414,6 +438,11 @@ package molehill.core.render
 			return nextNode;
 		}
 		
+		/**
+		 * @private
+		 * Removes sprite from batcher cleaning up batcher if empty.<br>
+		 * <b>_lastBatcher</b> and <b>_batcherInsertPosition</b> will be updated if needed.
+		 **/
 		private function removeSpriteFromBatcher(batcher:SpriteBatcher, sprite:Sprite3D):void
 		{
 			var removeAfterChild:Sprite3D = _lastBatcher === batcher ? _lastBatchedChild : null;
@@ -463,6 +492,10 @@ package molehill.core.render
 			}
 		}
 		
+		/**
+		 * @private
+		 * Updates batcher values in subtree for sliced part after sprite insertion. 
+		 **/
 		private function updateSlicedBatcher(batchingTree:TreeNode, oldBatcher:IVertexBatcher, newBatcher:IVertexBatcher):void
 		{
 			while (batchingTree != null)
@@ -509,6 +542,11 @@ package molehill.core.render
 			}
 		}
 		
+		/**
+		 * @private
+		 * Updates <b>_lastBatcher</b>, <b>_lastBatchedChild</b>, <b>_batcherInsertPosition</b> values
+		 * for unchanged subtree. 
+		 **/
 		private function skipUnchangedContainer(batchingTreeNode:TreeNode):Boolean
 		{
 			while (batchingTreeNode != null)
@@ -565,6 +603,11 @@ package molehill.core.render
 			return false;
 		}
 		
+		/**
+		 * @private
+		 * Removes node from batching tree, cleaning up linked batchers and
+		 * caching tree nodes.   
+		 **/
 		private function removeNodeReferences(node:TreeNode):void
 		{
 			while (node != null)
@@ -755,6 +798,10 @@ package molehill.core.render
 			}
 		}
 		
+		/**
+		 * @private
+		 * Marks all rendered sprites as unchanged.
+		 **/
 		private function resetRenderChangeFlags(treeNode:TreeNode):void
 		{
 			while (treeNode != null)
@@ -830,19 +877,23 @@ package molehill.core.render
 			{
 				var batcher:IVertexBatcher = _listSpriteBatchers[i];
 				var verticesData:ByteArray = batcher.getVerticesData();
+				
+				// skip skip empty bacther
 				if (batcher.numTriangles == 0)
 				{
 					continue;
 				}
 				
-				// can be sprite with flat fill
-				if (batcher.textureAtlasID != null && !tm.isAtlasCreated(batcher.textureAtlasID))
+				// skip batcher if it sprites need texture but parent atlas created yet
+				if (batcher.textureAtlasID != null &&
+					!tm.isAtlasCreated(batcher.textureAtlasID))
 				{
 					continue;
 				}
 				
 				spriteBatcher = batcher as SpriteBatcher;
 				
+				// check if batcher is inside screen
 				var left:int = 0;
 				var top:int = 0;
 				
@@ -870,6 +921,7 @@ package molehill.core.render
 					batcher.bottom < top ||
 					batcher.top > bottom)
 				{
+					// batcher if off-screen, skip it
 					continue;
 				}
 				
@@ -877,9 +929,24 @@ package molehill.core.render
 			}
 		}
 		
-		private var _lastTexture:Texture;
+		/**
+		 * Debugging section
+		 **/
 		
 		// [DEBUG ONLY]
+		/**
+		 * @private
+		 * Flag to enable full debug info.
+		 * 
+		 * !CAUTION!
+		 * This flag causes great performance decrease because
+		 * lots of strings are being allocated while logging.
+		 * 
+		 * The resulting log has very large size so it can take some time
+		 * to be passed to ExternalLogger due to LocalConnection limitations.
+		 * 			 
+		 * Use this flag in emergency cases only!
+		 **/
 		private var _debug:Boolean = false;
 		// [/DEBUG ONLY]
 		private var _log:String;
@@ -897,7 +964,7 @@ package molehill.core.render
 		
 		private function saveLog():void
 		{
-			DebugLogger.writeExternalLog(_log + '\n\n');
+			DebugLogger.writeExternalLog(_log + '\n\n',	LogLevel.DEBUG_DEV);
 		}
 	}
 }

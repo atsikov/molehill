@@ -9,13 +9,9 @@ package molehill.core.render.particles
 	import flash.display3D.Context3DVertexBufferFormat;
 	import flash.display3D.IndexBuffer3D;
 	import flash.display3D.VertexBuffer3D;
-	import flash.display3D.textures.Texture;
 	import flash.events.Event;
-	import flash.events.TimerEvent;
-	import flash.geom.Rectangle;
 	import flash.utils.ByteArray;
 	import flash.utils.Endian;
-	import flash.utils.Timer;
 	import flash.utils.getQualifiedClassName;
 	import flash.utils.getTimer;
 	
@@ -36,7 +32,6 @@ package molehill.core.render.particles
 	import molehill.core.texture.TextureManager;
 	
 	import utils.CachingFactory;
-	import utils.DebugLogger;
 	
 	use namespace molehill_internal;
 

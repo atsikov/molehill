@@ -14,7 +14,6 @@ package molehill.easy.ui3d.scroll
 	import molehill.core.render.InteractiveSprite3D;
 	import molehill.core.render.UIComponent3D;
 	import molehill.core.render.camera.CustomCamera;
-	import molehill.core.sprite.Sprite3D;
 	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureManager;
 	import molehill.easy.ui3d.list.EasyTileList3DAnimated;
@@ -22,8 +21,6 @@ package molehill.easy.ui3d.scroll
 	
 	import org.goasap.interfaces.IPlayable;
 	import org.opentween.OpenTween;
-	
-	import utils.DebugLogger;
 	
 	[Event(name="scrollCompleted", type="molehill.easy.ui3d.scroll.events.KineticScrollContainer3DEvent")]
 	public class KineticScrollContainer3D extends Sprite3DContainer
