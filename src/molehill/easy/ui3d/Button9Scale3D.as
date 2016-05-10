@@ -1,8 +1,5 @@
 package molehill.easy.ui3d
 {
-	import appbase.model.AppConfig;
-	
-	import flash.events.Event;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.ui.MouseCursor;
@@ -29,10 +26,19 @@ package molehill.easy.ui3d
 		protected var _downState:Sprite3D9Scale;
 		protected var _disabledState:Sprite3D9Scale;
 		
-		private static var _soundClick:String;
-		public static function set soundClick(value:String):void
+		private static var _defaultSoundClick:String;
+		public static function set defaultSoundClick(value:String):void
 		{
-			_soundClick = value;
+			_defaultSoundClick = value;
+		}
+		
+		private static var _playSoundCallback:Function;
+		/**
+		 * need to accept sound id as string parameter
+		 */
+		public static function set playSoundCallback(value:Function):void
+		{
+			_playSoundCallback = value;
 		}
 		
 		public function Button9Scale3D(
@@ -84,6 +90,12 @@ package molehill.easy.ui3d
 			addEventListener(Input3DMouseEvent.CLICK, onSpriteClick);
 		}
 		
+		private var _soundClick:String;
+		public function set soundClick(value:String):void
+		{
+			_soundClick = value;
+		}
+		
 		private function onSpriteClick(event:Input3DMouseEvent):void
 		{
 			if (!_enabled)
@@ -91,11 +103,11 @@ package molehill.easy.ui3d
 				event.stopImmediatePropagation();
 			}
 			
-			if (_soundClick != null && _soundClick != "")
+			var soundClick:String = _soundClick == null ? _defaultSoundClick : _soundClick;
+			
+			if (_playSoundCallback != null && soundClick != null && soundClick != "")
 			{
-				AppConfig.eventSoundManager.playOnce(
-					_soundClick
-				);
+				_playSoundCallback(_defaultSoundClick);
 			}
 		}
 		

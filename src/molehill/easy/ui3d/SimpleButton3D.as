@@ -1,11 +1,5 @@
 package molehill.easy.ui3d
 {
-	import appbase.model.AppConfig;
-	
-	import flash.display.Bitmap;
-	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.ui.MouseCursor;
 	import flash.utils.clearInterval;
@@ -15,8 +9,6 @@ package molehill.easy.ui3d
 	import molehill.core.input.InputManager;
 	import molehill.core.input.MouseCursorManager;
 	import molehill.core.render.InteractiveSprite3D;
-	import molehill.core.sprite.Sprite3D;
-	import molehill.core.sprite.Sprite3DContainer;
 	import molehill.core.texture.TextureData;
 	import molehill.core.texture.TextureManager;
 	
@@ -34,10 +26,19 @@ package molehill.easy.ui3d
 		protected var _downTextureData:TextureData;
 		protected var _disabledTextureData:TextureData;
 		
-		private static var _soundClick:String;
-		public static function set soundClick(value:String):void
+		private static var _defaultSoundClick:String;
+		public static function set defaultSoundClick(value:String):void
 		{
-			_soundClick = value;
+			_defaultSoundClick = value;
+		}
+		
+		private static var _playSoundCallback:Function;
+		/**
+		 * need to accept sound id as string parameter
+		 */
+		public static function set playSoundCallback(value:Function):void
+		{
+			_playSoundCallback = value;
 		}
 
 		
@@ -69,6 +70,12 @@ package molehill.easy.ui3d
 			addEventListener(Input3DMouseEvent.CLICK, onSpriteClick);
 		}
 		
+		private var _soundClick:String;
+		public function set soundClick(value:String):void
+		{
+			_soundClick = value;
+		}
+
 		private function onSpriteClick(event:Input3DMouseEvent):void
 		{
 			if (!_enabled)
@@ -76,11 +83,11 @@ package molehill.easy.ui3d
 				event.stopImmediatePropagation();
 			}
 			
-			if (_soundClick != null && _soundClick != "")
+			var soundClick:String = _soundClick == null ? _defaultSoundClick : _soundClick;
+			
+			if (_playSoundCallback != null && soundClick != null && soundClick != "")
 			{
-				AppConfig.eventSoundManager.playOnce(
-					_soundClick
-				);
+				_playSoundCallback(_defaultSoundClick);
 			}
 		}
 		
