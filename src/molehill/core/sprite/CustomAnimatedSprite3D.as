@@ -35,7 +35,7 @@ package molehill.core.sprite
 				frame = customAnimationData.listFrames.length - 1;
 			}
 				
-			_currentFrameIndex = frame == -1 ? 0 : (frame >= customAnimationData.listFrames.length ? customAnimationData.listFrames.length - 1 : frame);
+			_currentFrameIndex = frame == -1 ? _currentFrameIndex : (frame >= customAnimationData.listFrames.length ? customAnimationData.listFrames.length - 1 : frame);
 			_currentFrameRepeated = 0;
 			_isReversed = false;
 			

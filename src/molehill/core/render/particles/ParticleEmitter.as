@@ -60,13 +60,36 @@ package molehill.core.render.particles
 			//_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
 		}
 		
+		private var _enabled:Boolean = true;
+		public function get enabled():Boolean
+		{
+			return _enabled;
+		}
+		
+		public function set enabled(value:Boolean):void
+		{
+			_enabled = value;
+			
+			if (!value)
+			{
+				_enterFrameListener.removeEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+			}
+			else
+			{
+				_enterFrameListener.addEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+			}
+		}
+		
 		private var _lastGenerationTime:uint = 0;
 		private var _listGenerationTimes:Vector.<uint>;
 		private function onNeedUpdateParticles(event:Event):void
 		{
 			var timer:uint = getTimer();
 			
-			if (_appearInterval == 0 || textureID == null)
+			if (_appearInterval == 0 ||
+				textureID == null ||
+				_scene == null ||
+				!_enabled)
 			{
 				return;
 			}
