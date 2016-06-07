@@ -173,5 +173,46 @@ package molehill.core.utils
 			rect.setSize(width, height);
 			return rect;
 		}
+		
+		public function cloneParticleEmitter(source:ParticleEmitter):ParticleEmitter
+		{
+			var result:ParticleEmitter = new ParticleEmitter();
+			result.alpha = source.alpha;
+			result.startAlpha = source.startAlpha;
+			result.endAlpha = source.endAlpha;
+			result.accelerationX = source.accelerationX;
+			result.accelerationXDeviation = source.accelerationXDeviation;
+			result.accelerationY = source.accelerationY;
+			result.accelerationYDeviation = source.accelerationYDeviation;
+			result.appearCount = source.appearCount;
+			result.appearInterval = source.appearInterval;
+			result.blendMode = source.blendMode;
+			result.redMultiplier = source.redMultiplier;
+			result.greenMultiplier = source.greenMultiplier;
+			result.blueMultiplier = source.blueMultiplier;
+			result.endRedMultiplier = source.endRedMultiplier;
+			result.endGreenMultiplier = source.endGreenMultiplier;
+			result.endBlueMultiplier = source.endBlueMultiplier;
+			result.darkenColor = source.darkenColor;
+			result.emitterShape = source.emitterShape;
+			result.startScale = source.startScale;
+			result.startScaleDeviation = source.startScaleDeviation;
+			result.endScale = source.endScale;
+			result.endScaleDeviation = source.endScaleDeviation;
+			result.lifeTime = source.lifeTime;
+			result.rotation = source.rotation;
+			result.scaleX = source.scaleX;
+			result.scaleY = source.scaleY;
+			result.shader = source.shader;
+			result.speedX = source.speedX;
+			result.speedXDeviation = source.speedXDeviation;
+			result.speedY = source.speedY;
+			result.speedYDeviation = source.speedYDeviation;
+			result.xRadius = source.xRadius;
+			result.yRadius = source.yRadius;
+			result.setTexture(source.textureID);
+			
+			return result;
+		}
 	}
 }
