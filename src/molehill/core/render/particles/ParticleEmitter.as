@@ -73,6 +73,11 @@ package molehill.core.render.particles
 			if (!value)
 			{
 				_enterFrameListener.removeEventListener(Event.ENTER_FRAME, onNeedUpdateParticles);
+				if (_listGenerationTimes == null)
+				{
+					_listGenerationTimes = new Vector.<uint>();
+				}
+				_lastGenerationTime = 0;
 			}
 			else
 			{
