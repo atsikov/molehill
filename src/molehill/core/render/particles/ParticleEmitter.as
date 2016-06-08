@@ -109,7 +109,6 @@ package molehill.core.render.particles
 			while (_scene != null && (_lastGenerationTime == 0 || timer - _lastGenerationTime > _appearInterval))
 			{
 				//trace('Generating new particles. timer = ' + timer + '; lastGenerationTime = ' + _lastGenerationTime + '; num generations: ' + _listGenerationTimes.length);
-				generateParticles();
 				if (_lastGenerationTime == 0)
 				{
 					_lastGenerationTime = timer;
@@ -118,6 +117,7 @@ package molehill.core.render.particles
 				{
 					_lastGenerationTime += _appearInterval;
 				}
+				generateParticles(_lastGenerationTime);
 				_listGenerationTimes.push(_lastGenerationTime);
 			}
 			
@@ -166,9 +166,8 @@ package molehill.core.render.particles
 			return _cacheParticleData.newInstance();
 		}
 		
-		private function generateParticles():void
+		private function generateParticles(timer:uint):void
 		{
-			var timer:uint = getTimer();
 			for (var i:int = 0; i < _appearCount; i++)
 			{
 				var particle:ParticleData = getParticleData();
@@ -216,12 +215,10 @@ package molehill.core.render.particles
 			var cursor:LinkedListElement = _listParticles.head;
 			var next:LinkedListElement;
 			
-			var i:int = 0;
-			
 			var time:uint = getTimer();
 			var maxGeneratedTime:int = time - _lifeTime;
 			
-			while (i < _appearCount && cursor != null)
+			while (cursor != null)
 			{
 				var particleData:ParticleData = cursor.data as ParticleData;
 				next = cursor.next;
