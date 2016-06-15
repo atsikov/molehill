@@ -43,7 +43,8 @@ package molehill.easy.ui3d
 		
 		protected function createLabel(label:String = ""):void
 		{
-			//MUST OVERRIDE
+			_label = new TextField3D();
+			_label.text = label;
 		}
 		
 		override public function set width(value:Number):void
