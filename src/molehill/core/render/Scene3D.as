@@ -248,7 +248,7 @@ package molehill.core.render
 						);
 					}
 				}
-				// some sprites were removed from render but persists in batching
+				// some sprites were removed from render but persist in batching
 				else if (renderSprite.addedToScene)
 				{
 					if (batchingTree.nextSibling == null)

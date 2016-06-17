@@ -1485,8 +1485,11 @@ package molehill.core.sprite
 			}
 		}
 		
+		// flag indicates if this sprite was added to render
 		molehill_internal var addedToScene:Boolean = false;
+		// flag indicates if this sprite was processed in UIComponent3D
 		molehill_internal var syncedInUIComponent:Boolean = false;
+		
 		molehill_internal var _parentShaderChanged:Boolean = false;
 		molehill_internal function set parentShaderChanged(value:Boolean):void
 		{

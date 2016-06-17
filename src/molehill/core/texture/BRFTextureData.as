@@ -38,7 +38,7 @@ package molehill.core.texture
 						_rawImageData = chunkData;
 						break;
 					
-					case 'IAD': // Image Alpha Data bytes
+					case 'IAD': // Image Alpha Data (PNG with alpha) bytes
 						chunkData.writeBytes(rawData, rawData.position, chunkSize);
 						_rawImageAlphaData = chunkData;
 						break;

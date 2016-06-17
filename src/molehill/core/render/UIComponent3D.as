@@ -632,6 +632,7 @@ package molehill.core.render
 					
 					targetNode = node;
 				}
+				// child is already in UI tree, was reordered or flags changed
 				else if (child.syncedInUIComponent)
 				{
 					if (firstChild != null)

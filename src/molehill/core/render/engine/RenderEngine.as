@@ -527,11 +527,6 @@ package molehill.core.render.engine
 							null
 						);
 					}
-					
-					// in case additional buffers were placed in streams 0-2
-					//_context3D.setVertexBufferAt(0, _vertexBuffer, _verticesOffset, Context3DVertexBufferFormat.FLOAT_3);
-					//_context3D.setVertexBufferAt(1, _vertexBuffer, _colorOffset, Context3DVertexBufferFormat.FLOAT_4);
-					//_context3D.setVertexBufferAt(2, _vertexBuffer, _textureOffset, Context3DVertexBufferFormat.FLOAT_2);
 				}
 				
 				chunkData.blendMode = null;
