@@ -745,15 +745,15 @@ package molehill.core.render.particles
 				
 				var firstAddedParticle:LinkedListElement = cursor;
 				
-				var centerX:Number = _parentShiftX + _shiftX;
-				var centerY:Number = _parentShiftY + _shiftY;
-				var width2:Number = Math.abs((_x2 - _x0) / 2);
-				var height2:Number = Math.abs((_y2 - _y0) / 2);
+				var centerX:Number = _parentShiftX + _shiftX * _parentScaleX;
+				var centerY:Number = _parentShiftY + _shiftY * _parentScaleY;
+				var width2:Number = Math.abs((_x2 - _x0) / 2) * _parentScaleX;
+				var height2:Number = Math.abs((_y2 - _y0) / 2) * _parentScaleY;
 				
-				var offsetLeft:int = width2 - textureData.blankOffsetX;
-				var offsetRight:int = width2 - (textureData.width - textureData.blankOffsetX - textureData.croppedWidth);
-				var offsetTop:int = height2 - textureData.blankOffsetY;
-				var offsetBottom:int = height2 - (textureData.height - textureData.blankOffsetY - textureData.croppedHeight);
+				var offsetLeft:int = width2 - textureData.blankOffsetX * _parentScaleX;
+				var offsetRight:int = width2 - (textureData.width - textureData.blankOffsetX - textureData.croppedWidth) * _parentScaleX;
+				var offsetTop:int = height2 - textureData.blankOffsetY * _parentScaleY;
+				var offsetBottom:int = height2 - (textureData.height - textureData.blankOffsetY - textureData.croppedHeight) * _parentScaleY;
 				
 				_vertexData.length = numParticles * bytesPerParticle;
 				
