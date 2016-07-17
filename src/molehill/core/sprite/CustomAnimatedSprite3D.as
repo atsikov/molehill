@@ -18,6 +18,7 @@ package molehill.core.sprite
 		}
 		
 		private var _isPlaying:Boolean = false;
+		
 		override public function play(frame:int=-1):void
 		{
 			if (frame < -1)
@@ -155,6 +156,10 @@ package molehill.core.sprite
 				{
 					switch (_customAnimationData.playMode)
 					{
+						case AnimationPlayMode.ONCE:
+							stop(0);
+							return;
+							
 						case AnimationPlayMode.LOOP:
 							_currentFrameIndex = 0;
 							break;
@@ -189,6 +194,15 @@ package molehill.core.sprite
 				}
 				_currentFrameRepeated++;
 			}
+			else
+			{
+				_currentFrameIndex = _currentTimelineFrame;
+				
+				if (_currentFrameIndex >= numAnimationFrames || _currentFrameIndex < 0)
+				{
+					_currentFrameIndex = 0;
+				}
+			}
 			
 			if (_currentFrameIndex < numAnimationFrames)
 			{
@@ -215,7 +229,7 @@ package molehill.core.sprite
 		
 		private function updateSprite():void
 		{
-			setTexture(_activeFrame.textureName);
+			setTexture(_activeFrame == null ? null : _activeFrame.textureName);
 		}
 	}
 }

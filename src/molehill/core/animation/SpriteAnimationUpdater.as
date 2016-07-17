@@ -98,7 +98,7 @@ package molehill.core.animation
 		
 		molehill_internal function removeAnimation(value:AnimatedSprite3D):void
 		{
-			if (_listAnimations.indexOf(value) == -1 || _listCustomAnimations.indexOf(value as CustomAnimatedSprite3D) == -1)
+			if (_listAnimations.indexOf(value) == -1 && _listCustomAnimations.indexOf(value as CustomAnimatedSprite3D) == -1)
 			{
 				return;
 			}
