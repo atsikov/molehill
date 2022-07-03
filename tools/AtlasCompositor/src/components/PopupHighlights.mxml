@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="780" height="380"
+		 title="Select images to create highlights">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Scroller id="scrListImages" left="10" right="10" top="10" bottom="10">
+		<s:TileGroup id="tgListImages" width="100%" height="100%" columnWidth="300"
+					 rowHeight="100">
+		</s:TileGroup>
+	</s:Scroller>
+	<s:Button id="btnHighlightsOK" y="-27" right="78" label="OK"/>
+	<s:Button id="btnHighlightsCancel" y="-27" right="4" label="Cancel"/>
+</s:Panel>

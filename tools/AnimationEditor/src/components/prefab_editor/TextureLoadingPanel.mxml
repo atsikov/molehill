@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="spark.components.*" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300">
+	
+	<fx:Script>
+		<![CDATA[
+			import model.Model;
+			
+			import molehill.core.events.Font3DManagerEvent;
+			import molehill.core.text.Font3DManager;
+			import molehill.core.texture.ARFTextureData;
+			import molehill.core.texture.BRFTextureData;
+			import molehill.core.texture.TextureManager;
+			
+			private var _fileTextures:File;
+			private var _fileFont:File;
+			private var _fileTypeFiler:Array;
+			private var _fontFileTypeFiler:Array;
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				if (_fileTypeFiler == null)
+				{
+					_fileTypeFiler = [
+						new FileFilter("Molehill Compatible Textures", "*.arf;*.brf;*.png;*.jpg;*.bmp;*.atf", "*.arf;*.brf;*.png;*.jpg;*.bmp;*.atf"),
+						new FileFilter("ARF Compressed Package", "*.arf", "*.arf"),
+						new FileFilter("BRF Lossless Package", "*.brf", "*.brf"),
+						new FileFilter("Bitmap Image", "*.png;*.jpg;*.bmp", "*.png;*.jpg;*.bmp"),
+						new FileFilter("ATF Texture", "*.atf", "*.atf"),
+					]; 
+				}
+				
+				if (_fileTextures == null)
+				{
+					var so:SharedObject = SharedObject.getLocal("PrefabEditorSettings");
+					var lastPath:String = so.data.lastTexturePath;
+					
+					_fileTextures = new File(lastPath);
+					_fileTextures.addEventListener(FileListEvent.SELECT_MULTIPLE, onTextureSelected);
+				}
+				_fileTextures.browseForOpenMultiple("Select texture files", _fileTypeFiler);
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				if (_fontFileTypeFiler == null)
+				{
+					_fontFileTypeFiler = [
+						new FileFilter("BFF Font File", "*.bff", "*.bff")
+					]; 
+				}
+				
+				if (_fileFont == null)
+				{
+					var so:SharedObject = SharedObject.getLocal("PrefabEditorSettings");
+					var lastPath:String = so.data.lastTexturePath;
+					
+					_fileFont = new File(lastPath);
+					_fileFont.addEventListener(Event.SELECT, onFontSelected);
+				}
+				_fileFont.browseForOpen("Select font file", _fontFileTypeFiler);
+			}
+			
+			protected function onTextureSelected(event:FileListEvent):void
+			{
+				if (_listFiles == null)
+				{
+					_listFiles = event.files;
+				}
+				else
+				{
+					_listFiles = _listFiles.concat(event.files);
+				}
+				
+				var so:SharedObject = SharedObject.getLocal("PrefabEditorSettings");
+				so.data.lastTexturePath = event.files[0].parent.nativePath;
+				so.flush();
+				
+				processFiles();
+			}
+			
+			private var _listFiles:Array;
+			private var _currentTextureFile:File;
+			private function processFiles():void
+			{
+				if (_listFiles == null || _listFiles.length == 0)
+				{
+					dispatchEvent(
+						new Event(Event.COMPLETE)
+					);
+					
+					return;
+				}
+				
+				if (_currentTextureFile != null)
+				{
+					return;
+				}
+				
+				loadTextureFromFile(
+					_listFiles.shift()
+				);
+			}
+			
+			private function loadTextureFromFile(file:File):void
+			{
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(file, FileMode.READ);
+				
+				var bytes:ByteArray = new ByteArray();
+				fileStream.readBytes(bytes, 0, file.size);
+				fileStream.close();
+				
+				if (file.extension == 'png' || file.extension == 'jpg' || file.extension == 'bmp')
+				{
+					_currentTextureFile = file;
+					
+					var loader:Loader = new Loader();
+					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageReady);
+					loader.loadBytes(bytes);
+				}
+				else
+				{
+					if (file.extension == 'atf')
+					{
+						var arfTextureData:ARFTextureData = new ARFTextureData(bytes, file.name);
+						arfTextureData.textureAtlasData.atlasID = file.name;
+						TextureManager.createTexture(arfTextureData);
+					}
+					else if (file.extension == 'arf')
+					{
+						arfTextureData = new ARFTextureData(bytes);
+						arfTextureData.textureAtlasData.atlasID = file.name;
+						TextureManager.createTexture(arfTextureData);
+					}
+					else if (file.extension == 'brf')
+					{
+						var brfTextureData:BRFTextureData = new BRFTextureData(bytes);
+						brfTextureData.textureAtlasData.atlasID = file.name;
+						TextureManager.createTexture(brfTextureData);
+					}
+					
+					_currentTextureFile = null;
+					processFiles();
+				}
+			}
+			
+			protected function onFontSelected(event:Event):void
+			{
+				var so:SharedObject = SharedObject.getLocal("PrefabEditorSettings");
+				so.data.lastTexturePath = _fileFont.parent.nativePath;
+				so.flush();
+				
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(_fileFont, FileMode.READ);
+				
+				var bytes:ByteArray = new ByteArray();
+				fileStream.readBytes(bytes, 0, _fileFont.size);
+				fileStream.close();
+				
+				Font3DManager.getInstance().addEventListener(Font3DManagerEvent.FONT_READY, onFontLoaded);
+				Font3DManager.getInstance().loadBitmapFontFromByteArray(bytes);
+			}
+			
+			protected function onImageReady(event:Event):void
+			{
+				TextureManager.createTexture((event.target as LoaderInfo).loader.content, _currentTextureFile.name.substr(0, _currentTextureFile.name.lastIndexOf('.')));
+				
+				dispatchEvent(
+					new Event(Event.COMPLETE)
+				);
+				
+				_currentTextureFile = null;
+				processFiles();
+			}
+			
+			protected function onFontLoaded(event:Event):void
+			{
+				Font3DManager.getInstance().removeEventListener(Font3DManagerEvent.FONT_READY, onFontLoaded);
+				
+				dispatchEvent(
+					new Event(Event.COMPLETE)
+				);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="complete", type="flash.events.Event")]
+	</fx:Metadata>
+	
+	<s:Button top="10" label="Load texture" click="button1_clickHandler(event)" horizontalCenter="0"/>
+	<s:Button top="39" label="Load font" click="button2_clickHandler(event)" horizontalCenter="0"/>
+</s:Group>

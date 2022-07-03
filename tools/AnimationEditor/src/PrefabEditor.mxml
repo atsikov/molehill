@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="spark.components.*"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   xmlns:components="components.*"
+					   width="800" height="600"
+					   addedToStage="windowedapplication1_addedToStageHandler(event)"
+					   backgroundAlpha="0.0" backgroundColor="#FFFFFF"
+					   showStatusBar="false">
+	<fx:Script>
+		<![CDATA[
+			import components.prefab_editor.PrefabExporter;
+			
+			import flash.display3D.Context3D;
+			
+			import model.events.SceneStructureEvent;
+			
+			import molehill.core.Scene3DManager;
+			import molehill.core.render.Scene3D;
+			import molehill.core.sprite.Sprite3D;
+			import molehill.core.sprite.Sprite3DContainer;
+			import molehill.core.texture.TextureManager;
+			import molehill.core.utils.Sprite3DUtils;
+			
+			import mx.core.IVisualElement;
+			import mx.events.AIREvent;
+			import mx.events.FlexEvent;
+			import mx.events.FlexNativeWindowBoundsEvent;
+			
+			import spark.components.DropDownList;
+			import spark.events.IndexChangeEvent;
+			
+			protected function windowedapplication1_addedToStageHandler(event:Event):void
+			{
+				Scene3DManager.getInstance().initContext(
+					stage,
+					onContext3DReady,
+					null,
+					false,
+					true
+				);
+			}
+			
+			private function onContext3DReady(context:Context3D):void
+			{
+				Scene3DManager.getInstance().renderEngine.setClearColor(0x00CCCCCC);
+				prefabEditor.updateViewportSize();
+			}
+			
+			protected function tabbar1_changeHandler(event:IndexChangeEvent):void
+			{
+				var sceneManager:Scene3DManager = Scene3DManager.getInstance();
+				
+				switch (viewstack1.selectedIndex)
+				{
+					case 0:
+						var index:int = animationEditor != null ? sceneManager.getSceneIndex(animationEditor.scene) : -1;
+						if (index != -1)
+						{
+							sceneManager.removeScene(animationEditor.scene);
+						}
+						index = particleEditor != null ? sceneManager.getSceneIndex(particleEditor.scene) : -1;
+						if (index != -1)
+						{
+							sceneManager.removeScene(particleEditor.scene);
+						}
+						if (prefabEditor != null)
+						{
+							prefabEditor.updateViewportSize();
+							sceneManager.addScene(prefabEditor.scene);
+						}
+						break;
+					case 1:
+						index = prefabEditor != null ? sceneManager.getSceneIndex(prefabEditor.scene) : -1;
+						if (index != -1)
+						{
+							sceneManager.removeScene(prefabEditor.scene);
+						}
+						index = particleEditor != null ? sceneManager.getSceneIndex(particleEditor.scene) : -1;
+						if (index != -1)
+						{
+							sceneManager.removeScene(particleEditor.scene);
+						}
+						if (animationEditor != null)
+						{
+							animationEditor.updateViewportSize();
+							sceneManager.addScene(animationEditor.scene);
+						}
+						break;
+					case 2:
+						index = prefabEditor != null ? sceneManager.getSceneIndex(prefabEditor.scene) : -1;
+						if (index != -1)
+						{
+							sceneManager.removeScene(prefabEditor.scene);
+						}
+						index = animationEditor != null ? sceneManager.getSceneIndex(animationEditor.scene) : -1;
+						if (index != -1)
+						{
+							sceneManager.removeScene(animationEditor.scene);
+						}
+						if (particleEditor != null)
+						{
+							particleEditor.updateViewportSize();
+							sceneManager.addScene(particleEditor.scene);
+						}
+						break;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:BorderContainer left="0" right="0" top="0" height="30" borderVisible="false" borderWeight="1"></s:BorderContainer>
+	<s:TabBar x="10" y="6" change="tabbar1_changeHandler(event)" dataProvider="{viewstack1}"/>
+	<mx:ViewStack id="viewstack1" left="0" right="0" top="30" bottom="0">
+		<s:NavigatorContent width="100%" height="100%" label="Prefab Editor">
+			<components:PrefabEditorComponent id="prefabEditor" x="0" y="0" width="100%"
+											  height="100%">
+			</components:PrefabEditorComponent>
+		</s:NavigatorContent>
+		<s:NavigatorContent width="100%" height="100%" label="Animation Editor">
+			<components:AnimationEditorComponent id="animationEditor" x="0" y="0" width="100%" height="100%">
+			</components:AnimationEditorComponent>
+		</s:NavigatorContent>
+		<s:NavigatorContent width="100%" height="100%" label="Particle Editor">
+			<components:ParticleEditorComponent id="particleEditor" x="0" y="0" width="100%" height="100%">
+			</components:ParticleEditorComponent>
+		</s:NavigatorContent>
+	</mx:ViewStack>
+</s:WindowedApplication>

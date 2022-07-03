@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="382" height="226" creationComplete="onCreationComplete(event)" title="Prefab Texture Settings">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			
+			private var _configData:ConfigData;
+
+			public function get configData():ConfigData
+			{
+				return _configData;
+			}
+
+			public function set configData(value:ConfigData):void
+			{
+				_configData = value;
+			}
+
+			private function onCreationComplete(event:Event):void
+			{
+				if (_configData == null)
+				{
+					_configData = new ConfigData();
+				}
+				
+				update();
+			}
+			
+			private var _destFolder:File;			
+			private function update():void
+			{
+				title = _configData.path != "" ? "Edit config" : "New config";
+				
+				chkNeedCompression.selected = _configData.compressAtlas;
+				chkCropImage.selected = _configData.cropWhitespace;
+				chkIncludeNac.selected = _configData.includeBinAlpha;
+				chkExtrudeEdges.selected = _configData.extrudeEdges;
+				
+				edtCompressionLevel.text = _configData.compressionLevel.toString();
+				edtMipLevels.text = _configData.mipLevels.toString();
+				edtTexturesGap.text = _configData.textureGap.toString();
+			}
+			
+			private function save():void
+			{
+				_configData.compressAtlas = chkNeedCompression.selected;
+				_configData.cropWhitespace = chkCropImage.selected;
+				_configData.includeBinAlpha = chkIncludeNac.selected;
+				_configData.extrudeEdges = chkExtrudeEdges.selected;
+				
+				_configData.compressionLevel = uint(edtCompressionLevel.text);
+				_configData.mipLevels = uint(edtMipLevels.text);
+				_configData.textureGap = uint(edtTexturesGap.text);
+				
+				_configData.sourcePath = _destFolder != null ? _destFolder.nativePath : "";
+				
+				ConfigListDataProvider.getInstance().saveConfigData(_configData);
+				
+				_changed = false;
+			}
+			
+			private function close():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function btnSave_clickHandler(event:MouseEvent):void
+			{
+				save();
+				dispatchEvent(
+					new Event(Event.COMPLETE)
+				);
+				close();
+			}
+			
+			private function btnCancel_clickHandler(event:MouseEvent):void
+			{
+				close();
+			}
+			
+			private var _changed:Boolean = false;
+			private function onChange(event:Event):void
+			{
+				_changed = true;
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Label x="6" y="88" width="113" height="29" text="Compression level (30 is default):"/>
+	<s:TextInput id="edtCompressionLevel" x="129" y="88" width="48" text="30" change="onChange(event)"/>
+	<s:Label x="6" y="125" text="Mip levels:"/>
+	<s:TextInput id="edtMipLevels" x="129" y="122" width="50" text="0" change="onChange(event)"/>
+	<s:Label x="215" y="92" text="Textures gap:"/>
+	<s:TextInput id="edtTexturesGap" x="306" y="88" width="45" text="1" change="onChange(event)"/>
+	<s:CheckBox id="chkNeedCompression" x="10" y="8" label="Compress atlas" selected="true" change="onChange(event)"/>
+	<s:CheckBox id="chkIncludeNac" x="10" y="24" width="163" label="Include binary alpha data"
+				selected="false" change="onChange(event)"/>
+	<s:CheckBox id="chkCropImage" x="10" y="40" label="Crop whitespace" change="onChange(event)"/>
+	<s:CheckBox id="chkExtrudeEdges" x="10" y="56" label="Extrude edges" change="onChange(event)"/>
+	<s:Button id="btnSave" bottom="13" label="OK" click="btnSave_clickHandler(event)"
+			  horizontalCenter="-53"/>
+	<s:Button id="btnCancel" bottom="13" label="Cancel" click="btnCancel_clickHandler(event)"
+			  horizontalCenter="53"/>
+</s:Panel>

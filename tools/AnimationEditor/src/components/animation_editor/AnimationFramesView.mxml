@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:HGroup xmlns:fx="http://ns.adobe.com/mxml/2009"
+		  xmlns:s="spark.components.*"
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  xmlns:components="components.*"
+		  width="400" height="300" addedToStage="hgroup1_addedToStageHandler(event)" gap="10"
+		  paddingLeft="10" paddingTop="10" verticalAlign="top">
+	
+	<fx:Script>
+		<![CDATA[
+			import model.Model;
+			import model.events.AnimationDataEvent;
+			import model.events.ModelEvent;
+			
+			import molehill.core.animation.CustomAnimationData;
+			import molehill.core.animation.CustomAnimationFrameData;
+			
+			private var _animationData:CustomAnimationData;
+			private function update():void
+			{
+				removeAllElements();
+				
+				if (_animationData == null)
+				{
+					return;
+				}
+				
+				for (var i:int = 0; i < _animationData.listFrames.length; i++)
+				{
+					var frameView:FrameView = new FrameView(_animationData.listFrames[i]);
+					addElement(frameView);
+				}
+				
+				addElement(btnAddFrame);
+			}
+			
+			protected function btnAddFrame_clickHandler(event:MouseEvent):void
+			{
+				if (_animationData == null)
+				{
+					return;
+				}
+				
+				_animationData.listFrames.push(
+					new CustomAnimationFrameData("")
+				);
+				update();
+			}
+			
+			protected function hgroup1_addedToStageHandler(event:Event):void
+			{
+				removeAllElements();
+				Model.getInstance().addEventListener(ModelEvent.ACTIVE_ANIMATION_CHANGED, onActiveAnimationChanged);
+			}
+			
+			protected function onActiveAnimationChanged(event:Event):void
+			{
+				_animationData = Model.getInstance().activeAnimationData;
+				Model.getInstance().addEventListener(AnimationDataEvent.FRAMES_CHANGED, onAnimationFramesChanged);
+				
+				update();
+			}
+			
+			protected function onAnimationFramesChanged(event:Event):void
+			{
+				update();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button id="btnAddFrame" width="64" height="64" label="+"
+			  click="btnAddFrame_clickHandler(event)" fontSize="32"/>
+</s:HGroup>

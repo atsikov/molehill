@@ -1,0 +1,1009 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:components="components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:ns="components.prefab_editor.*"
+		 xmlns:s2="library://ns.adobe.com/flex/spark"
+		 width="1196" height="600" addedToStage="group1_addedToStageHandler(event)"
+		 implements="model.IPrefabEditorPluginHost" resize="group1_resizeHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import components.prefab_editor.PrefabExporter;
+			import components.prefab_editor.TrainPrefabCreator;
+			import components.windows.ListAnimationsWindow;
+			import components.windows.ListParticlesWindow;
+			
+			import flash.filters.*;
+			
+			import model.data.ParticleEmitterData;
+			import model.events.SceneStructureEvent;
+			import model.events.TextureExplorerEvent;
+			import model.providers.ParticlesListDataProvider;
+			
+			import molehill.core.Scene3DManager;
+			import molehill.core.animation.CustomAnimationFrameData;
+			import molehill.core.render.Scene3D;
+			import molehill.core.render.camera.CustomCamera;
+			import molehill.core.render.particles.ParticleEmitter;
+			import molehill.core.render.shader.Shader3D;
+			import molehill.core.render.shader.Shader3DFactory;
+			import molehill.core.sprite.AnimatedSprite3D;
+			import molehill.core.sprite.CustomAnimatedSprite3D;
+			import molehill.core.sprite.Sprite3D;
+			import molehill.core.sprite.Sprite3DContainer;
+			import molehill.core.text.TextField3D;
+			import molehill.core.texture.ARFTextureData;
+			import molehill.core.texture.TextureManager;
+			import molehill.core.utils.Sprite3DUtils;
+			
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			
+			import spark.components.Window;
+			import spark.events.IndexChangeEvent;
+			
+			import utils.ObjectUtils;
+			
+			private var _mainScene:Scene3D;
+			private var _coordsGrid:Sprite3DContainer;
+			private var _content:Sprite3DContainer;
+			public function get scene():Scene3D
+			{
+				return _mainScene;
+			}
+			
+			public function get content():Sprite3DContainer
+			{
+				return _content;
+			}
+			
+			public function get textureExplorer():TextureExplorerComponent
+			{
+				return textureExplorerComponent;
+			}
+			
+			protected function group1_addedToStageHandler(event:Event):void
+			{
+				if (_mainScene == null)
+				{
+					_mainScene = new Scene3D();
+					_mainScene.enableTextureCreatedCheck = false;
+					TextureManager.asyncTexturesLoading = false;
+					
+					_mainScene.camera = new CustomCamera();
+					_mainScene.camera.scrollX = -(stage.stageWidth - 620) / 2;
+					_mainScene.camera.scrollY = -(stage.stageHeight - 30) / 2;
+
+					createGrid();
+					
+					_content = new Sprite3DContainer();
+					_mainScene.addChild(_content);
+				}
+				
+				if (containsElement(textureExplorerComponent))
+				{
+					removeElement(textureExplorerComponent);
+				}
+				
+				Scene3DManager.getInstance().addScene(_mainScene);
+				textureExplorerComponent.update();
+				
+				if (sceneStructureView != null)
+				{
+					sceneStructureView.container = _content;
+				}
+				
+				stage.addEventListener(KeyboardEvent.KEY_DOWN, onStageKeyDown);
+				stage.addEventListener(KeyboardEvent.KEY_UP, onStageKeyUp);
+			}
+			
+			private function createGrid():void
+			{
+				_coordsGrid = new Sprite3DContainer();
+				
+				for (var i:int = -2000; i <= 2000; i+=100)
+				{
+					var hLine:Sprite3D = new Sprite3D();
+					hLine.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+					hLine.darkenColor = 0x000000;
+					hLine.alpha = i == 0 ? 1 : 0.3;
+					hLine.setSize(4000, 1);
+					hLine.moveTo(-2000, i);
+					_coordsGrid.addChild(hLine);
+					
+					var vLine:Sprite3D = new Sprite3D();
+					vLine.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+					vLine.darkenColor = 0x000000;
+					vLine.alpha = i == 0 ? 1 : 0.3;
+					vLine.setSize(1, 4000);
+					vLine.moveTo(i, -2000);
+					_coordsGrid.addChild(vLine);
+				}
+				
+				_mainScene.addChild(_coordsGrid);
+			}
+			
+			protected function group1_resizeHandler(event:ResizeEvent):void
+			{
+				if (stage == null)
+				{
+					return;
+				}
+				
+				if (Scene3DManager.getInstance().renderEngine != null)
+				{
+					Scene3DManager.getInstance().renderEngine.setViewportSize(
+						stage.stageWidth - 620,
+						stage.stageHeight - 30
+					);
+				}
+			}
+			
+			public function updateViewportSize():void
+			{
+				if (Scene3DManager.getInstance().renderEngine != null)
+				{
+					Scene3DManager.getInstance().renderEngine.setViewportSize(
+						stage.stageWidth - 620,
+						stage.stageHeight - 30
+					);
+				}
+			}
+			
+			protected function onSceneChildMoved(event:SceneStructureEvent):void
+			{
+				_sceneSaved = false;
+				
+				if (event.child.parent == null)
+				{
+					sceneStructureView.update();
+					return;
+				}
+				
+				var parent:Sprite3D = event.parent;
+				while (parent !== event.child && parent != null)
+				{
+					parent = parent.parent;
+				}
+				
+				if (parent === event.child)
+				{
+					sceneStructureView.update();
+					return;
+				}
+				
+				var childParent:Sprite3D = event.child.parent;
+				event.child.parent.removeChild(event.child);
+				
+				var index:int = event.index;
+				if (childParent == event.parent)
+				{
+					index--;
+				}
+				
+				event.parent.addChildAt(event.child, Math.max(index, 0));
+			}
+			
+			protected function onSceneChildCopied(event:SceneStructureEvent):void
+			{
+				var selectedSprite:Sprite3D = event.child;
+				if (selectedSprite == null)
+				{
+					return;
+				}
+				
+				var spriteClass:Class = getDefinitionByName(getQualifiedClassName(selectedSprite)) as Class;
+				var sprite:Sprite3D = new spriteClass();
+				sprite.setTexture(selectedSprite.textureID);
+				
+				var def:XML = describeType(selectedSprite);
+				
+				var accessors:XMLList = def['accessor'].(@access=='readwrite');
+				var accessorsProperties:XMLList = accessors.(@type=='Number' || @type=='int' || @type=='uint' || @type=='String' || @type=='Boolean');
+				
+				var alphabeticNames:Array = [];
+				for each (var node:XML in accessorsProperties) 
+				{
+					sprite[node.@name] = selectedSprite[node.@name];
+				}
+				
+				sprite.shader = selectedSprite.shader;
+				if (selectedSprite is CustomAnimatedSprite3D)
+				{
+					(sprite as CustomAnimatedSprite3D).customAnimationData = (selectedSprite as CustomAnimatedSprite3D).customAnimationData;
+				}
+				
+				var childParent:Sprite3D = event.child.parent;
+				var index:int = event.index;
+				if (childParent == event.parent)
+				{
+					index--;
+				}
+				
+				event.parent.addChildAt(sprite, Math.max(index, 0));
+				
+				sceneStructureView.update();
+			}
+			
+			protected function onSceneChildSelected(event:SceneStructureEvent):void
+			{
+				var hide:Boolean = chkSingleItem.selected;
+				var selectedSprite:Sprite3D = event.child;
+				var selectedSpriteParent:Sprite3DContainer = selectedSprite != null ? selectedSprite.parent : null;
+				if (hide && selectedSpriteParent != _hiddenParentContainer)
+				{
+					if (_lastHidItemsParent != null && selectedSpriteParent !== _lastHidItemsParent)
+					{
+						for (var i:int = 0; i < _lastHidItemsParent.numChildren; i++)
+						{
+							var child:Sprite3D = _lastHidItemsParent.getChildAt(i);
+							child.visible = true;
+						}
+					}
+					
+					_lastHidItemsParent = selectedSpriteParent;
+					if (_lastHidItemsParent != null)
+					{
+						for (i = 0; i < _lastHidItemsParent.numChildren; i++)
+						{
+							child = _lastHidItemsParent.getChildAt(i);
+							child.visible = child === selectedSprite;
+						}
+					}
+				}
+				
+				spritePropertiesView.sprite = event.child;
+				
+				if (chkViewParentOnly.selected)
+				{
+					chkHideOther_clickHandler(null);
+				}
+			}
+			
+			protected function sceneStructureView_childAddedHandler(event:SceneStructureEvent):void
+			{
+				_sceneSaved = false;
+				
+				if (event.parent == null)
+				{
+					_content.addChildAt(event.child, event.index);
+				}
+				else
+				{
+					event.parent.addChildAt(event.child, event.index);
+				}
+				sceneStructureView.update();
+			}
+			
+			protected function textureloadingpanel1_completeHandler(event:Event):void
+			{
+				textureExplorerComponent.update();
+			}
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				_sceneSaved = false;
+				
+				var child:Sprite3D = sceneStructureView.selectedSprite;
+				if (child != null)
+				{
+					child.parent.removeChild(child);
+					sceneStructureView.update();
+				}
+			}
+			
+			private function getUsedTextures(container:Sprite3DContainer, list:Array = null):Array
+			{
+				if (list == null)
+				{
+					list = new Array();
+				}
+				
+				for (var i:int = 0; i < container.numChildren; i++)
+				{
+					var child:Sprite3D = container.getChildAt(i);
+					if (child is CustomAnimatedSprite3D)
+					{
+						var listFrames:Vector.<CustomAnimationFrameData> = (child as CustomAnimatedSprite3D).customAnimationData.listFrames;
+						for (var j:int = 0; j < listFrames.length; j++)
+						{
+							var textureID:String = listFrames[j].textureName;
+							if (textureID != null && list.indexOf(textureID) == -1)
+							{
+								list.push(textureID);
+							}
+						}
+						
+						continue;
+					}
+					
+					if (child is TextField3D || child is AnimatedSprite3D || child is ParticleEmitter)
+					{
+						continue;
+					}
+					
+					if (child is Sprite3DContainer)
+					{
+						getUsedTextures(child as Sprite3DContainer, list);
+						continue;
+					}
+					
+					if (child.textureID != null)
+					{
+						if (list.indexOf(child.textureID) == -1)
+						{
+							list.push(child.textureID);
+						}
+					}
+				}
+				
+				return list;
+			}
+			
+			private var _sceneSaved:Boolean = false;
+			protected function button4_clickHandler(event:MouseEvent):void
+			{
+				var listUsedTextures:Array = getUsedTextures(_content);
+				var textureBytes:ByteArray = chkEmbedTextures.selected && !chkRebuildAtlas.selected ? _prefabTextureBytes : null;
+				if (textureBytes != null && _prefabARFData != null)
+				{
+					var listLoadedTextures:Array = _prefabARFData.textureAtlasData.listTexturesNames;
+					var numLoadedTextures:int = listLoadedTextures.length;
+					var numUsedTextures:int = listUsedTextures.length;
+					if (numLoadedTextures != numUsedTextures)
+					{
+						textureBytes = null;
+					}
+					else
+					{
+						for (var i:int = 0; i < numUsedTextures; i++)
+						{
+							var textureName:String = listUsedTextures[i];
+							if (listLoadedTextures.indexOf(textureName) == -1)
+							{
+								textureBytes == null;
+								break;
+							}
+						}
+					}
+				}
+				
+				PrefabExporter.getInstance().savePrefab(_content, chkEmbedTextures.selected, textureBytes);
+				_sceneSaved = true;
+			}
+			
+			protected function button5_clickHandler(event:MouseEvent):void
+			{
+				if (!_sceneSaved)
+				{
+					
+				}
+				
+				var so:SharedObject = SharedObject.getLocal("PrefabEditorSettings");
+				var lastPath:String = so.data.lastPrefabFilePath;
+				
+				var file:File = new File(lastPath);
+				file.addEventListener(Event.SELECT, onPrefabSelected);
+				
+				file.browseForOpen("Open prefab", [new FileFilter("Sprite Prefab", '*.pre', '*.pre')]);
+			}
+			
+			private var _prefabTextureBytes:ByteArray;
+			private var _prefabARFData:ARFTextureData;
+			protected function onPrefabSelected(event:Event):void
+			{
+				var file:File = event.currentTarget as File;
+				
+				var so:SharedObject = SharedObject.getLocal("PrefabEditorSettings");
+				so.data.lastPrefabFilePath = file.parent.nativePath;
+				so.flush();
+				
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(file, FileMode.READ);
+				
+				var bytes:ByteArray = new ByteArray();
+				fileStream.readBytes(bytes);
+				fileStream.close();
+				
+				while (_content.numChildren > 0)
+				{
+					_content.removeChildAt(0);
+				}
+				
+				var prefab:Sprite3DContainer;
+				if (chkLoadEmbeddedTextures.selected)
+				{
+					prefab = Sprite3DUtils.createFromPrefabBytes(bytes);
+				}
+				else
+				{
+					bytes.position = 6;
+					var rawPrefabData:Object = bytes.readObject();
+					prefab = Sprite3DUtils.createFromRawData(rawPrefabData as Array);
+				}
+				
+				bytes.position = 6;
+				rawPrefabData = bytes.readObject();
+				if (bytes.bytesAvailable > 0)
+				{
+					_prefabTextureBytes = new ByteArray();
+					_prefabTextureBytes.writeBytes(bytes, bytes.position);
+					
+					_prefabARFData = new ARFTextureData(_prefabTextureBytes);
+				}
+				
+				checkForParticles(prefab);
+				
+				if (!chkLoadEmbeddedTextures.selected)
+				{
+					var listHighlightChildren:Array = checkHighlights(prefab);
+					if (listHighlightChildren.length > 0)
+					{
+						var hashTextures:Object = new Object();
+						var listHighlightTextures:Array = new Array();
+						for each (var child:Sprite3D in listHighlightChildren)
+						{
+							var textureID:String = child.textureID;
+							if (hashTextures[child.textureID] == null)
+							{
+								hashTextures[child.textureID] = new Array();
+							}
+							hashTextures[child.textureID].push(child);
+							
+							var originalTextureID:String = textureID.substr(0, textureID.length - 2);
+							if (listHighlightTextures.indexOf(originalTextureID) == -1)
+							{
+								listHighlightTextures.push(originalTextureID);
+							}
+						}
+						TextureExplorerComponent.prepareBitmapDatasForTetxures(listHighlightTextures, onHighlightTextureReady, [hashTextures]);
+					}
+				}
+				
+				while (prefab.numChildren > 0)
+				{
+					child = prefab.removeChildAt(0);
+					_content.addChild(child);
+				}
+				
+				prefab = null;
+				_sceneSaved = true;
+				
+				sceneStructureView.update();
+				textureExplorerComponent.update();
+			}
+			
+			private function checkForParticles(container:Sprite3DContainer):void
+			{
+				for (var i:int = 0; i < container.numChildren; i++)
+				{
+					var child:Sprite3D = container.getChildAt(i);
+					if (child is Sprite3DContainer)
+					{
+						checkForParticles(child as Sprite3DContainer);
+					}
+					else if (child is ParticleEmitter)
+					{
+						var emitterName:String = child.name != null && child.name != "" ? child.name : "emitter" + int(Math.random() * 10000);
+						
+						var emitterData:ParticleEmitterData = new ParticleEmitterData();
+						emitterData.name = emitterName;
+						
+						var def:XML = describeType(emitterData);
+						var accessors:XMLList = def['variable'];
+						
+						for each (var node:XML in accessors) 
+						{
+							var propName:String = node.@name;
+							if (propName == name)
+							{
+								continue;
+							}
+							
+							emitterData[propName] = child[propName];
+						}
+						
+						if (ParticlesListDataProvider.getInstance().getParticlesDataByName(emitterData.name) == null)
+						{
+							ParticlesListDataProvider.getInstance().addParticlesData(emitterData);
+						}
+					}
+				}
+			}
+			
+			private function checkHighlights(container:Sprite3DContainer):Array
+			{
+				var result:Array = new Array();
+				var tm:TextureManager = TextureManager.getInstance();
+				for (var i:int = 0; i < container.numChildren; i++)
+				{
+					var child:Sprite3D = container.getChildAt(i);
+					if (child is Sprite3DContainer)
+					{
+						result = result.concat(
+							checkHighlights(child as Sprite3DContainer)
+						);
+					}
+					else if (child.textureID != null &&
+						child.textureID.lastIndexOf('hl') == (child.textureID.length - 2) &&
+						!tm.isTextureCreated(child.textureID))
+					{
+						var originalTextureID:String = child.textureID.substr(0, child.textureID.length - 2);
+						if (tm.isTextureCreated(originalTextureID))
+						{
+							result.push(child);
+						}
+					}
+				}
+				
+				return result;
+			}
+			
+			private var _listAnimationsWindow:ListAnimationsWindow;
+			private var _hashHighlightTextures:Object;
+			private var _trainPrefabCreator:TrainPrefabCreator;
+			protected function dropdownlist1_changeHandler(event:IndexChangeEvent):void
+			{
+				var selectedIndex:int = (event.currentTarget as DropDownList).selectedIndex;
+				
+				switch (selectedIndex)
+				{
+					case 1:
+						if (textureExplorerComponent.parent == null)
+						{
+							addElement(textureExplorerComponent);
+						}
+						break;
+					case 2:
+						_sceneSaved = false;
+						
+						var container:Sprite3DContainer = new Sprite3DContainer();
+						var selectedSprite:Sprite3D = sceneStructureView.selectedSprite;
+						if (selectedSprite != null)
+						{
+							selectedSprite.parent.addChildAt(
+								container,
+								selectedSprite.parent.getChildIndex(selectedSprite)
+							);
+						}
+						else
+						{
+							_content.addChild(container);
+						}
+						sceneStructureView.update();
+						break;
+					case 3:
+						selectedSprite = sceneStructureView.selectedSprite;
+						if (selectedSprite == null || selectedSprite.textureID == null)
+						{
+							break;
+						}
+						
+						var highlightTextureId:String = selectedSprite.textureID + 'hl';
+						var highlight:Sprite3D = Sprite3D.createFromTexture(highlightTextureId);
+						highlight.setScale(4, 4);
+						highlight.moveTo(
+							selectedSprite.x + (selectedSprite.width - highlight.width) / 2,
+							selectedSprite.y + (selectedSprite.height - highlight.height) / 2
+						);
+						var index:int = selectedSprite.parent.getChildIndex(selectedSprite);
+						selectedSprite.parent.addChildAt(highlight, index);
+						
+						sceneStructureView.update();
+						
+						if (_hashHighlightTextures == null)
+						{
+							_hashHighlightTextures = new Object();
+						}
+						if (_hashHighlightTextures[highlightTextureId] == null)
+						{
+							_hashHighlightTextures[highlightTextureId] = new Array();
+						}
+						_hashHighlightTextures[highlightTextureId].push(highlight);
+						
+						if (!TextureManager.getInstance().isTextureCreated(highlightTextureId))
+						{
+							TextureExplorerComponent.prepareBitmapDatasForTetxures([selectedSprite.textureID], onHighlightTextureReady);
+						}
+						break;
+					case 4:
+						break;
+					case 5:
+						if (_listAnimationsWindow == null || _listAnimationsWindow.closed)
+						{
+							_listAnimationsWindow = new ListAnimationsWindow();
+							_listAnimationsWindow.open();
+						}
+						break;
+					case 6:
+						_sceneSaved = false;
+						
+						var sprite:Sprite3D = new Sprite3D();
+						sprite.setSize(3, 3);
+						sprite.shader = Shader3DFactory.getInstance().getShaderInstance(null, false, Shader3D.TEXTURE_DONT_USE_TEXTURE);
+						sprite.darkenColor = 0x00FF00;
+						_content.addChild(sprite);
+						sceneStructureView.update();
+						break;
+					case 7:
+						var listParticlesWindow:ListParticlesWindow = ListParticlesWindow.getOpenedWindow();
+						if (listParticlesWindow == null || listParticlesWindow.closed)
+						{
+							listParticlesWindow = new ListParticlesWindow();
+							listParticlesWindow.open();
+						}
+						else
+						{
+							listParticlesWindow.orderToFront();
+						}
+						break;
+					case 8:
+						if (_trainPrefabCreator == null) 
+						{
+							_trainPrefabCreator = new TrainPrefabCreator(this);
+						}
+						if (textureExplorerComponent.parent == null)
+						{
+							addElement(textureExplorerComponent);
+							textureExplorerComponent.addEventListener(
+								TextureExplorerEvent.TEXTURE_SELECTED, onTrainTextureSelected
+							);
+						}
+						var trainPanelWindow:Window = new Window();
+						trainPanelWindow.addElement(_trainPrefabCreator.pluginPanel);
+						trainPanelWindow.alwaysInFront = true;
+						trainPanelWindow.open();
+						break;
+				}
+				
+				(event.currentTarget as DropDownList).selectedIndex = 0;
+			}
+			
+			private function onHighlightTextureReady(listTextures:Object = null):void
+			{
+				if (listTextures == null)
+				{
+					listTextures = _hashHighlightTextures;
+				}
+				
+				for (var textureId:String in listTextures)
+				{
+					if (listTextures[textureId] == null)
+					{
+						continue;
+					}
+					
+					var bmd:BitmapData = TextureExplorerComponent.getBitmapDataForTexture(textureId.substr(0, textureId.length - 2));
+					
+					var highlightBitmapData:BitmapData = new BitmapData(Math.ceil(bmd.width / 4), Math.ceil(bmd.height / 4), true, 0x00000000);
+					highlightBitmapData = new BitmapData(Math.ceil(bmd.width * 0.3), Math.ceil(bmd.height * 0.3), true, 0x00000000);
+					highlightBitmapData.draw(
+						bmd,
+						new Matrix(0.25, 0, 0, 0.25, bmd.width * 0.025, bmd.height * 0.025)
+					);
+					highlightBitmapData.applyFilter(
+						highlightBitmapData,
+						highlightBitmapData.rect,
+						new Point(),
+						new GlowFilter(0xFFFFFF, 1, 2, 2, 4, 3)
+					);
+					highlightBitmapData.applyFilter(
+						highlightBitmapData,
+						highlightBitmapData.rect,
+						new Point(),
+						new ColorMatrixFilter([
+							1, 1, 1, 0, 0,
+							1, 1, 1, 0, 0,
+							1, 1, 1, 0, 0,
+							0, 0, 0, 1, 0
+						])
+					);
+					
+					TextureManager.createTexture(highlightBitmapData, textureId);
+					var listSprites:Array = listTextures[textureId];
+					for (var i:int = 0; i < listSprites.length; i++)
+					{
+						var highlight:Sprite3D = listSprites[i];
+						highlight.setTexture(textureId);
+						var highlightIndex:int = highlight.parent.getChildIndex(highlight);
+						var nextSprite:Sprite3D = highlight.parent.getChildAt(highlightIndex + 1);
+						listSprites[i].moveTo(
+							nextSprite.x + (nextSprite.width - highlight.width) / 2,
+							nextSprite.y + (nextSprite.height - highlight.height) / 2
+						);
+					}
+					listTextures[textureId] = null;
+					_sceneSaved = false;
+				}
+				
+				trace(ObjectUtils.traceObject(_hashHighlightTextures));
+			}
+			
+			protected function sceneStructureView_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (_content != null)
+				{
+					sceneStructureView.container = _content;
+				}
+			}
+			
+			private var _overScene:Boolean = false;
+			protected function group2_mouseMoveHandler(event:MouseEvent):void
+			{
+				_overScene = true;
+				if (_spacePressed)
+				{
+					Mouse.cursor = MouseCursor.HAND;
+				}
+				else
+				{
+					Mouse.cursor = MouseCursor.AUTO;
+				}
+				
+				if (_dragScene)
+				{
+					_mainScene.camera.scrollX += _lastMousePoint.x - stage.mouseX;
+					_mainScene.camera.scrollY += _lastMousePoint.y - stage.mouseY;
+					_lastMousePoint = new Point(stage.mouseX, stage.mouseY);
+				}
+			}
+			
+			private var _spacePressed:Boolean = false;
+			private var _lastMousePoint:Point;
+			private var _dragScene:Boolean = false;
+			protected function onStageKeyDown(event:KeyboardEvent):void
+			{
+				_spacePressed = event.keyCode == Keyboard.SPACE;
+			}
+			
+			protected function onStageKeyUp(event:KeyboardEvent):void
+			{
+				_spacePressed = false;
+				_dragScene = false;
+			}
+			
+			private var _renderMouseDown:Boolean = false;
+			protected function group2_mouseDownHandler(event:MouseEvent):void
+			{
+				_lastMousePoint = new Point(stage.mouseX, stage.mouseY);
+				
+				(FlexGlobals.topLevelApplication as UIComponent).focusManager.deactivate();
+				
+				_renderMouseDown = true;
+				_dragScene = _spacePressed;
+			}
+			
+			protected function group2_mouseUpHandler(event:MouseEvent):void
+			{
+				_renderMouseDown = false;
+				_dragScene = false;
+			}
+			
+			protected function group2_mouseOutHandler(event:MouseEvent):void
+			{
+				_dragScene = false;
+				_overScene = false;
+				Mouse.cursor = MouseCursor.AUTO;
+			}
+			
+			private var _lastHidItemsParent:Sprite3DContainer;
+			protected function chkHideUnselected_clickHandler(event:MouseEvent):void
+			{
+				var hide:Boolean = chkSingleItem.selected;
+				var selectedSprite:Sprite3D = spritePropertiesView.sprite;
+				if (hide)
+				{
+					_lastHidItemsParent = selectedSprite == null ? null : spritePropertiesView.sprite.parent;
+				}
+				
+				if (_lastHidItemsParent != null && _lastHidItemsParent != _hiddenParentContainer)
+				{
+					for (var i:int = 0; i < _lastHidItemsParent.numChildren; i++)
+					{
+						var child:Sprite3D = _lastHidItemsParent.getChildAt(i);
+						child.visible = !hide || child == selectedSprite;
+					}
+				}
+				
+				if (!hide)
+				{
+					_lastHidItemsParent = null;
+				}
+			}
+			
+			protected function btnDuplicate_clickHandler(event:MouseEvent):void
+			{
+				var selectedSprite:Sprite3D = spritePropertiesView.sprite;
+				if (selectedSprite == null)
+				{
+					return;
+				}
+				
+				var spriteClass:Class = getDefinitionByName(getQualifiedClassName(selectedSprite)) as Class;
+				var sprite:Sprite3D = new spriteClass();
+				sprite.setTexture(selectedSprite.textureID);
+				
+				var def:XML = describeType(selectedSprite);
+				
+				var accessors:XMLList = def['accessor'].(@access=='readwrite');
+				var accessorsProperties:XMLList = accessors.(@type=='Number' || @type=='int' || @type=='uint' || @type=='String' || @type=='Boolean');
+				
+				var alphabeticNames:Array = [];
+				for each (var node:XML in accessorsProperties) 
+				{
+					sprite[node.@name] = selectedSprite[node.@name];
+				}
+				
+				sprite.shader = selectedSprite.shader;
+				if (selectedSprite is CustomAnimatedSprite3D)
+				{
+					(sprite as CustomAnimatedSprite3D).customAnimationData = (selectedSprite as CustomAnimatedSprite3D).customAnimationData;
+				}
+				
+				var index:int = selectedSprite.parent.getChildIndex(selectedSprite);
+				selectedSprite.parent.addChildAt(sprite, index);
+				
+				sceneStructureView.update();
+			}
+			
+			protected function onTrainTextureSelected(event:TextureExplorerEvent):void
+			{
+				removeElement(textureExplorerComponent);
+				
+				_trainPrefabCreator.addEventListener(Event.COMPLETE, onTrainPrefabComplete);
+				_trainPrefabCreator.createPrefab(event.textureName, _content);
+				
+				sceneStructureView.update();
+			}
+			
+			private function onTrainPrefabComplete(event:Event):void
+			{
+				sceneStructureView.update();
+			}
+			
+			private var _hiddenParentContainer:Sprite3DContainer;
+			private var _selectedVisibleChild:Sprite3D;
+			protected function chkHideOther_clickHandler(event:MouseEvent):void
+			{
+				var selectedSprite:Sprite3D = spritePropertiesView.sprite;
+				if (chkViewParentOnly.selected)
+				{
+					if (selectedSprite == null)
+					{
+						return;
+					}
+					
+					_hiddenParentContainer = selectedSprite.parent;
+					if (_hiddenParentContainer != null && _hiddenParentContainer !== _mainScene)
+					{
+						_hiddenParentContainer = _hiddenParentContainer.parent;
+					}
+					else
+					{
+						_hiddenParentContainer = null;
+					}
+					
+					_selectedVisibleChild = selectedSprite;
+					
+					if (_hiddenParentContainer != null)
+					{
+						for (var i:int = 0; i < _hiddenParentContainer.numChildren; i++)
+						{
+							var child:Sprite3D = _hiddenParentContainer.getChildAt(i);
+							child.visible = child == _selectedVisibleChild.parent;
+						}
+					}
+					else
+					{
+						_hiddenParentContainer = null;
+						_selectedVisibleChild = null;
+						chkViewParentOnly.selected = false;
+					}
+				}
+				else
+				{
+					if (_hiddenParentContainer != null)
+					{
+						for (i = 0; i < _hiddenParentContainer.numChildren; i++)
+						{
+							child = _hiddenParentContainer.getChildAt(i);
+							child.visible = true;
+						}
+					}
+					
+					_hiddenParentContainer = null;
+					_selectedVisibleChild = null;
+				}
+			}
+			
+			protected function button6_clickHandler(event:MouseEvent):void
+			{
+				while (_content.numChildren > 0)
+				{
+					_content.removeChildAt(0);
+				}
+				sceneStructureView.update();
+			}
+			
+			protected function btnShowAll_clickHandler(event:MouseEvent):void
+			{
+				chkSingleItem.selected = false;
+				chkViewParentOnly.selected = false;
+				
+				viewAllChildren(_mainScene);
+			}
+			
+			private function viewAllChildren(container:Sprite3DContainer):void
+			{
+				for (var i:int = 0; i < container.numChildren; i++)
+				{
+					var child:Sprite3D = container.getChildAt(i);
+					child.visible = true;
+					if (child is Sprite3DContainer)
+					{
+						viewAllChildren(child as Sprite3DContainer);
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<ns:TextureExplorerComponent id="textureExplorerComponent" x="7" y="5" width="780" height="508">
+	</ns:TextureExplorerComponent>
+	<ns:SceneStructureView id="sceneStructureView" right="10" top="10" bottom="257" width="300"
+						   childAdded="sceneStructureView_childAddedHandler(event)"
+						   childCopied="onSceneChildCopied(event)"
+						   childMoved="onSceneChildMoved(event)"
+						   childSelected="onSceneChildSelected(event)"
+						   creationComplete="sceneStructureView_creationCompleteHandler(event)">
+	</ns:SceneStructureView>
+	<ns:TextureLoadingPanel right="9" bottom="127" width="301" height="70" complete="textureloadingpanel1_completeHandler(event)">
+	</ns:TextureLoadingPanel>
+	<ns:SpritePropertiesView id="spritePropertiesView" right="318" top="10" bottom="10"
+									 width="294">
+	</ns:SpritePropertiesView>
+	<s:Button right="92" bottom="205" label="Remove" click="button3_clickHandler(event)"/>
+	<s:DropDownList right="171" bottom="205" width="139" change="dropdownlist1_changeHandler(event)"
+					selectedIndex="0">
+		<s:dataProvider>
+			<mx:ArrayCollection>
+				<fx:String>New item</fx:String>
+				<fx:String>Sprite</fx:String>
+				<fx:String>Sprite Container</fx:String>
+				<fx:String>Building Highlight</fx:String>
+				<fx:String>Text Field</fx:String>
+				<fx:String>Animated Sprite</fx:String>
+				<fx:String>Control Point</fx:String>
+				<fx:String>Particle System</fx:String>
+				<fx:String>Train Prefab</fx:String>
+			</mx:ArrayCollection>
+		</s:dataProvider>
+	</s:DropDownList>
+	<s:Button right="162" bottom="58" width="148" label="Save Prefab" click="button4_clickHandler(event)"/>
+	<s:Button right="10" bottom="58" width="137" label="Load Prefab" click="button5_clickHandler(event)"/>
+	<s:Group id="grpScene" left="0" right="620" top="0" bottom="0" contentBackgroundAlpha="0.0"
+			 contentBackgroundColor="#FFFFFF" focusEnabled="true"
+			 mouseDown="group2_mouseDownHandler(event)" mouseMove="group2_mouseMoveHandler(event)"
+			 mouseOut="group2_mouseOutHandler(event)" mouseUp="group2_mouseUpHandler(event)">
+	</s:Group>
+	<s:CheckBox id="chkEmbedTextures" right="203" bottom="101" label="Embed Textures" selected="true"/>
+	<s:CheckBox id="chkRebuildAtlas" right="218" bottom="82" label="Rebuild atlas"/>
+	<s:CheckBox id="chkLoadEmbeddedTextures" right="9" bottom="87" label="Load Embedded Textures"
+				enabled="true" selected="true"/>
+	<s:CheckBox id="chkSingleItem" right="202" bottom="230" label="View single item"
+				click="chkHideUnselected_clickHandler(event)"/>
+	<s:Button id="btnDuplicate" right="10" bottom="205" label="Duplicate"
+			  click="btnDuplicate_clickHandler(event)"/>
+	<s:CheckBox id="chkViewParentOnly" right="82" bottom="230" width="114" label="View Parent Only"
+				click="chkHideOther_clickHandler(event)"/>
+	<s:Button right="162" bottom="10" width="148" label="RESET PREFAB"
+			  click="button6_clickHandler(event)"/>
+	<s2:Button right="10" bottom="228" width="73" label="Show All"
+			   click="btnShowAll_clickHandler(event)"/>
+</s:Group>

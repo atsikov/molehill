@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+				  xmlns:s="library://ns.adobe.com/flex/spark"
+				  xmlns:mx="library://ns.adobe.com/flex/mx"
+				  xmlns:components="spark.components.*"
+				  xmlns:particles_editor="components.particles_editor.*"
+				  xmlns:layouts="spark.layouts.*"
+				  xmlns:prefab_editor="components.prefab_editor.*"
+				  xmlns:controls="mx.controls.*"
+				  width="888" height="546" addedToStage="group1_addedToStageHandler(event)"
+				  creationComplete="group1_creationCompleteHandler(event)"
+				  resize="group1_resizeHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import components.prefab_editor.TextureExplorerElementView;
+			import components.windows.ListParticlesWindow;
+			
+			import model.data.ParticleEmitterData;
+			import model.providers.ParticlesListDataProvider;
+			
+			import molehill.core.Scene3DManager;
+			import molehill.core.render.Scene3D;
+			import molehill.core.render.camera.CustomCamera;
+			import molehill.core.render.particles.ParticleEmitter;
+			import molehill.core.render.particles.ParticleEmitterShape;
+			
+			import mx.controls.Alert;
+			import mx.core.IVisualElement;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.managers.DragManager;
+			
+			import spark.events.IndexChangeEvent;
+			
+			private var _mainScene:Scene3D;
+			private var _emitter:ParticleEmitter;
+			public function get scene():Scene3D
+			{
+				return _mainScene;
+			}
+			
+			private var _emitterData:ParticleEmitterData;
+			protected function group1_creationCompleteHandler(event:FlexEvent):void
+			{
+				if (_mainScene == null)
+				{
+					_mainScene = new Scene3D();
+					_mainScene.camera = new CustomCamera();
+				}
+				
+				_emitter = new ParticleEmitter();
+				_mainScene.addChild(_emitter);
+				
+				_emitterData = new ParticleEmitterData();
+				
+				for (var i:int = 0; i < grpControls.numElements; i++)
+				{
+					var element:IVisualElement = grpControls.getElementAt(i);
+					if (!(element is SliderNumericEdit))
+					{
+						continue;
+					}
+					
+					(element as SliderNumericEdit).addEventListener(Event.CHANGE, onSliderValueChanged);
+					
+					var paramName:String = (element as SliderNumericEdit).id;
+					var paramValue:Number = (element as SliderNumericEdit).value;
+					if (paramName.indexOf("Multiplier") != -1)
+					{
+						paramValue /= 255;
+					}
+					_emitter[paramName] = paramValue;
+					_emitterData[paramName] = paramValue;
+				}
+				
+				removeElement(textureExplorer);
+			}
+			
+			public function updateViewportSize():void
+			{
+				if (Scene3DManager.getInstance().renderEngine != null)
+				{
+					Scene3DManager.getInstance().renderEngine.setViewportSize(
+						stage.stageWidth - 230,
+						stage.stageHeight - 10
+					);
+				}
+				
+				if (_mainScene != null)
+				{
+					_mainScene.camera.scrollX = -(stage.stageWidth - 230) / 2;
+					_mainScene.camera.scrollY = -(stage.stageHeight - 10) / 2;
+				}
+			}
+			
+			private function onSliderValueChanged(event:Event):void
+			{
+				var paramName:String = (event.currentTarget as SliderNumericEdit).id;
+				var paramValue:Number = (event.currentTarget as SliderNumericEdit).value;
+				if (paramName.indexOf("Multiplier") != -1)
+				{
+					paramValue /= 255;
+				}
+				_emitter[paramName] = paramValue;
+				_emitterData[paramName] = paramValue;
+			}
+			
+			protected function group1_addedToStageHandler(event:Event):void
+			{
+				if (_mainScene == null)
+				{
+					_mainScene = new Scene3D();
+					_mainScene.camera = new CustomCamera();
+				}
+				
+				Scene3DManager.getInstance().addScene(_mainScene);
+				updateViewportSize();
+			}
+			
+			protected function group1_resizeHandler(event:ResizeEvent):void
+			{
+				updateViewportSize();
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				textureExplorer.update();
+				addElement(textureExplorer);
+			}
+			
+			protected function hgroup1_dragEnterHandler(event:DragEvent):void
+			{
+				if (!event.dragSource.hasFormat("texturePreview"))
+				{
+					return;
+				}
+				
+				event.preventDefault();
+				DragManager.showFeedback(DragManager.COPY);
+				DragManager.acceptDragDrop(grpTexture);
+			}
+			
+			protected function grpTexture_dragDropHandler(event:DragEvent):void
+			{
+				if (event.dragSource.hasFormat("texturePreview"))
+				{
+					var texturePreview:TextureExplorerElementView = event.dragSource.dataForFormat("texturePreview") as TextureExplorerElementView;
+					edtTextureName.text = texturePreview.textureName;
+					_emitter.setTexture(texturePreview.textureName);
+					_emitterData.textureID = texturePreview.textureName;
+				}
+			}
+			
+			protected function dropdownlist1_changeHandler(event:IndexChangeEvent):void
+			{
+				_emitter.emitterShape = (event.currentTarget as DropDownList).selectedItem == "Square" ? ParticleEmitterShape.SQUARE : ParticleEmitterShape.ELLIPTIC;
+			}
+			
+			protected function edtEmitterName_changeHandler(event:Event):void
+			{
+				_emitterData.name = (event.currentTarget as LabeledEdit).value;
+			}
+			
+			protected function btnSave_clickHandler(event:MouseEvent):void
+			{
+				if (_emitterData.name != null && _emitterData.name != "")
+				{
+					ParticlesListDataProvider.getInstance().addParticlesData(_emitterData);
+				}
+				else
+				{
+					var alert:Alert = Alert.show("Particles emitter name cannot be empty!");
+					alert.addEventListener(Event.REMOVED_FROM_STAGE, onAlertNoNameRemovedFromStage);
+				}
+			}
+			
+			protected function btnLoad_clickHandler(event:MouseEvent):void
+			{
+				var listParticlesWindow:ListParticlesWindow = ListParticlesWindow.getOpenedWindow();
+				if (listParticlesWindow == null || listParticlesWindow.closed)
+				{
+					listParticlesWindow = new ListParticlesWindow();
+					listParticlesWindow.open();
+				}
+				else
+				{
+					listParticlesWindow.orderToFront();
+				}
+			}
+			
+			protected function onAlertNoNameRemovedFromStage(event:Event):void
+			{
+				focusManager.setFocus(edtEmitterName);
+			}
+			
+			protected function grpControls_nativeDragEnterHandler(event:NativeDragEvent):void
+			{
+				if (event.clipboard.formats.indexOf(ClipboardFormats.TEXT_FORMAT) == -1)
+				{
+					return;
+				}
+				
+				var text:String = event.clipboard.getData(ClipboardFormats.TEXT_FORMAT) as String;
+				
+				try
+				{
+					var parsedObject:Object = JSON.parse(text);
+				}
+				catch (e:Error)
+				{
+					return;
+				}
+				
+				if (parsedObject == null)
+				{
+					return;
+				}
+				
+				if (parsedObject.type != 'particles')
+				{
+					return;
+				}
+				
+				NativeDragManager.acceptDragDrop(grpControls);
+			}
+			
+			protected function grpControls_dragDropHandler(event:DragEvent):void
+			{
+				if (event.dragSource.hasFormat("air:text"))
+				{
+					var text:String = event.dragSource.dataForFormat("air:text") as String
+					var parsedObject:Object = JSON.parse(text);
+					if (parsedObject['type'] != 'particles')
+					{
+						return;
+					}
+						
+					_emitterData = ParticlesListDataProvider.getInstance().getParticlesDataByName(parsedObject['name']);
+					
+					applyEmitterData();
+				}
+			}
+			
+			private function applyEmitterData():void
+			{
+				for (var i:int = 0; i < grpControls.numElements; i++)
+				{
+					var element:IVisualElement = grpControls.getElementAt(i);
+					if (!(element is SliderNumericEdit))
+					{
+						continue;
+					}
+					
+					(element as SliderNumericEdit).addEventListener(Event.CHANGE, onSliderValueChanged);
+					
+					var paramName:String = (element as SliderNumericEdit).id;
+					var paramValue:Number = _emitterData[paramName];
+					_emitter[paramName] = paramValue;
+					if (paramName.indexOf("Multiplier") != -1)
+					{
+						paramValue *= 255;
+					}
+					(element as SliderNumericEdit).value = paramValue;
+				}
+				
+				_emitter.setTexture(_emitterData.textureID);
+				edtTextureName.text = _emitterData.textureID;
+				edtEmitterName.value = _emitterData.name;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<prefab_editor:TextureExplorerComponent id="textureExplorer" x="7" y="5" width="780" height="508">
+	</prefab_editor:TextureExplorerComponent>
+	<components:Scroller right="0" top="0" bottom="28" width="220">
+		<components:VGroup id="grpControls" y="10" right="10" width="100%" height="100%"
+						   dragDrop="grpControls_dragDropHandler(event)"
+						   nativeDragEnter="grpControls_nativeDragEnterHandler(event)">
+			<prefab_editor:LabeledEdit id="edtEmitterName" width="200" label="Name"
+									   change="edtEmitterName_changeHandler(event)">
+			</prefab_editor:LabeledEdit>
+			<components:HGroup id="grpTexture" width="200" height="22"
+							   dragDrop="grpTexture_dragDropHandler(event)"
+							   dragEnter="hgroup1_dragEnterHandler(event)">
+				<components:Label paddingTop="7" text="Texture ID"/>
+				<components:TextInput width="103" editable="false" id="edtTextureName"/>
+				<components:Button width="31" label="..." click="button1_clickHandler(event)"/>
+			</components:HGroup>
+			<particles_editor:SliderNumericEdit id="redMultiplier" width="200" caption="Red Level" maxValue="255"
+												minValue="0" value="255">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="greenMultiplier" width="200" caption="Green Level" maxValue="255"
+												minValue="0" value="255">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="blueMultiplier" width="200" caption="Blue Level" maxValue="255"
+												minValue="0" value="255">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<particles_editor:SliderNumericEdit id="endRedMultiplier" width="200" caption="End Red Level" maxValue="255"
+												minValue="0" value="255">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="endGreenMultiplier" width="200" caption="End Green Level" maxValue="255"
+												minValue="0" value="255">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="endBlueMultiplier" width="200" caption="End Blue Level" maxValue="255"
+												minValue="0" value="255">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<particles_editor:SliderNumericEdit id="appearInterval" width="200" caption="Appear Interval" maxValue="1000"
+												minValue="15" value="15">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="appearCount" width="200" caption="Appear Count" maxValue="200"
+												value="10" minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="lifeTime" width="200" caption="Life Time" maxValue="5000"
+												minValue="100" value="1000">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<components:DropDownList width="200" change="dropdownlist1_changeHandler(event)"
+									 selectedIndex="0">
+				<components:dataProvider>
+					<mx:ArrayCollection>
+						<fx:String>Elliptic</fx:String>
+						<fx:String>Square</fx:String>
+					</mx:ArrayCollection>
+				</components:dataProvider>
+			</components:DropDownList>
+			<particles_editor:SliderNumericEdit id="xRadius" width="200" caption="Radius X" maxValue="200"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="yRadius" width="200" caption="Radius Y" maxValue="200"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<particles_editor:SliderNumericEdit id="accelerationX" width="200" caption="Acceleration X" maxValue="500"
+												minValue="-500">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="accelerationXDeviation" width="200" caption="Acceleration X Deviation" maxValue="500"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="accelerationY" width="200" caption="Acceleration Y" maxValue="500"
+												minValue="-500">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="accelerationYDeviation" width="200" caption="Acceleration Y Deviation" maxValue="500"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<particles_editor:SliderNumericEdit id="speedX" width="200" caption="Speed X" maxValue="500"
+												minValue="-500">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="speedXDeviation" width="200" caption="Speed X Deviation" maxValue="500"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="speedY" width="200" caption="Speed Y" maxValue="500"
+												minValue="-500">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="speedYDeviation" width="200" caption="Speed Y Deviation" maxValue="500"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<particles_editor:SliderNumericEdit id="startAlpha" width="200" caption="Start Alpha" stepSize="0.01" maxValue="1"
+												minValue="0" value="1">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="endAlpha" width="200" caption="End Alpha" stepSize="0.01" maxValue="1"
+												minValue="0" value="1">
+			</particles_editor:SliderNumericEdit>
+			<controls:HRule width="100%" height="20"/>
+			<particles_editor:SliderNumericEdit id="startScale" width="200" caption="Start Scale" stepSize="0.01" maxValue="10"
+												minValue="0" value="1">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="startScaleDeviation" width="200" caption="Start Scale Deviation" stepSize="0.01" maxValue="10"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="endScale" width="200" caption="End Scale" stepSize="0.01" maxValue="10"
+												minValue="0" value="1">
+			</particles_editor:SliderNumericEdit>
+			<particles_editor:SliderNumericEdit id="endScaleDeviation" width="200" caption="End Scale Deviation" stepSize="0.01" maxValue="10"
+												minValue="0">
+			</particles_editor:SliderNumericEdit>
+		</components:VGroup>
+	</components:Scroller>
+	<components:Button id="btnNew" right="156" bottom="4" width="64" label="New"/>
+	<components:Button id="btnLoad" right="20" bottom="4" width="64" label="Load"
+					   click="btnLoad_clickHandler(event)"/>
+	<components:Button id="btnSave" right="88" bottom="4" width="64" label="Save"
+					   click="btnSave_clickHandler(event)"/>
+</components:Group>

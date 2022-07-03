@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="spark.components.*" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" width="204" height="23"
+		  implements="mx.managers.IFocusManagerComponent">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.TextOperationEvent;
+			private var _label:String;
+			
+			[Inspectable(defaultValue="Label")]
+			public function get label():String
+			{
+				return _label;
+			}
+			
+			[Inspectable(defaultValue="Label")]
+			public function set label(value:String):void
+			{
+				_label = value;
+				lblLabel.text = value;
+			}
+			
+			public function get value():String
+			{
+				return edtValue.text;
+			}
+			
+			public function set value(val:String):void
+			{
+				edtValue.text = val;
+			}
+			
+			protected function lblLabel_updateCompleteHandler(event:FlexEvent):void
+			{
+				edtValue.left = lblLabel.width + 8;
+			}
+			
+			protected function edtValue_changeHandler(event:TextOperationEvent):void
+			{
+				dispatchEvent(
+					new Event(Event.CHANGE)
+				);
+			}
+			
+			override public function setFocus():void
+			{
+				edtValue.setFocus();
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Metadata>
+		[Event(name="change", type="flash.events.Event")]
+	</fx:Metadata>
+	<s:Label id="lblLabel" x="3" y="6" text="Label"
+			 updateComplete="lblLabel_updateCompleteHandler(event)"/>
+	<s:TextInput id="edtValue" left="40" right="0" top="0" bottom="0"
+				 change="edtValue_changeHandler(event)"/>
+</s:Group>

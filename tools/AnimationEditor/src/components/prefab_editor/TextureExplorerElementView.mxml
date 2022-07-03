@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="206" height="232" contentBackgroundAlpha="0.0">
+	<fx:Script>
+		<![CDATA[
+			import mx.core.UIComponent;
+			
+			import spark.filters.DropShadowFilter;
+			import spark.filters.GlowFilter;
+			
+			private var _sourceBitmap:Bitmap;
+			private var _bitmapComponent:UIComponent;
+			private var _bitmapFrame:UIComponent;
+			public function setBitmapData(bitmapData:BitmapData):void
+			{
+				if (_sourceBitmap != null && _sourceBitmap.bitmapData === bitmapData)
+				{
+					return;
+				}
+				
+				if (_sourceBitmap == null)
+				{
+					_sourceBitmap = new Bitmap();
+					
+					_bitmapComponent = new UIComponent();
+					/*_bitmapComponent.filters = [
+						new DropShadowFilter(5, 45, 0x000000, 1, 5, 5, 1, 3)
+					];
+					_bitmapComponent.filters = [
+						new GlowFilter(0x000000, 1, 4, 4, 2, 3)
+					];*/
+					
+					_bitmapComponent.addChild(_sourceBitmap);
+					
+					addElementAt(_bitmapComponent, 0);
+					
+					_bitmapFrame = new UIComponent();
+					addElementAt(_bitmapFrame, 1);
+				}
+				_sourceBitmap.bitmapData = bitmapData;
+			}
+			
+			private var _textureName:String;
+			public function get textureName():String
+			{
+				return _textureName;
+			}
+			
+			private var _textureRect:Rectangle;
+			public function get textureRect():Rectangle
+			{
+				return _textureRect;
+			}
+			
+			public function setTexture(bitmapRegion:Rectangle, name:String):void
+			{
+				if (_textureName == name)
+				{
+					return;
+				}
+				
+				_textureName = name;
+				_textureRect = bitmapRegion;
+				
+				_sourceBitmap.scrollRect = bitmapRegion;
+				
+				width = bitmapRegion.width + 10;
+				height = bitmapRegion.height + 30;
+				
+				_bitmapFrame.graphics.clear();
+				_bitmapFrame.graphics.moveTo(0, 0);
+				_bitmapFrame.graphics.lineStyle(1, 0x00FF00);
+				_bitmapFrame.graphics.lineTo(bitmapRegion.width, 0);
+				_bitmapFrame.graphics.lineTo(bitmapRegion.width, bitmapRegion.height);
+				_bitmapFrame.graphics.lineTo(0, bitmapRegion.height);
+				_bitmapFrame.graphics.lineTo(0, 0);
+				
+				lblTextureName.text = name;
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:Label id="lblTextureName" x="5" bottom="10" color="#FFFFFF" text="Label" filters="{[new spark.filters.GlowFilter(0x000000, 1, 2, 2, 2, 3)]}"/>
+</s:Group>

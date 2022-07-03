@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="spark.components.*" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="122" height="154">
+	
+	<fx:Script>
+		<![CDATA[
+			import model.events.TrainPrefabEditorPanelEvent;
+			public function get numEmitters():int
+			{
+				return int(edtNumEmitters.text);
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(
+					new TrainPrefabEditorPanelEvent(
+						TrainPrefabEditorPanelEvent.PLACE_ANCHORS
+					)
+				);
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(
+					new TrainPrefabEditorPanelEvent(
+						TrainPrefabEditorPanelEvent.MIRROR_ANCHORS
+					)
+				);
+			}
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(
+					new TrainPrefabEditorPanelEvent(
+						TrainPrefabEditorPanelEvent.COPY_ANCHORS
+					)
+				);
+			}
+			
+			protected function button4_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(
+					new TrainPrefabEditorPanelEvent(
+						TrainPrefabEditorPanelEvent.PASTE_ANCHORS
+					)
+				);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="placeAnchors", type="model.events.TrainPrefabEditorPanelEvent")]
+		[Event(name="mirrorAnchors", type="model.events.TrainPrefabEditorPanelEvent")]
+		[Event(name="copyAnchors", type="model.events.TrainPrefabEditorPanelEvent")]
+		[Event(name="pasteAnchors", type="model.events.TrainPrefabEditorPanelEvent")]
+	</fx:Metadata>
+	
+	<s:Button x="10" y="38" width="106" label="Place anchors" click="button1_clickHandler(event)"/>
+	<s:Button x="10" y="67" width="106" label="Mirror anchors" click="button2_clickHandler(event)"/>
+	<s:Button x="10" y="96" width="106" label="Copy anchors" click="button3_clickHandler(event)"/>
+	<s:Button x="10" y="125" width="106" label="Paste anchors" click="button4_clickHandler(event)"/>
+	<s:TextInput x="92" y="10" width="24" text="1" restrict="0123456789" id="edtNumEmitters" maxChars="1"/>
+	<s:Label x="10" y="18" text="Num emitters"/>
+</s:Group>

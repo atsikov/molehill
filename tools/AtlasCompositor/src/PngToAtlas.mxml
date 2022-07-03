@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="800" height="462"
+					   creationComplete="creationCompleteHandler(event)"
+					   closing="windowedapplication1_closingHandler(event)"
+					   xmlns:config="config.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.images.PNGEncoder;
+			
+			import config.ConfigData;
+			import config.ConfigEditorView;
+			import config.ConfigListDataProvider;
+			import config.ConfigProcessor;
+			
+			import flash.filters.ColorMatrixFilter;
+			import flash.filters.GlowFilter;
+			
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Application;
+			import spark.components.DataGroup;
+			import spark.events.IndexChangeEvent;
+			
+			private var _chosenPNG:File;
+			protected function btnProcessSingleFile_clickHandler(event:MouseEvent):void
+			{
+				var so:SharedObject = SharedObject.getLocal("PngToAtlasSettings");
+				var lastPath:String = so.data.lastPath;
+				
+				_chosenPNG = new File(lastPath);
+				_chosenPNG.addEventListener(Event.SELECT, onSingleSWFChosen);
+				//_chosenPNG.browseForOpen("Please select PNG file...", [new FileFilter("PNG Image", "*.arf", "*.png")]);
+				_chosenPNG.browseForOpen("Please select PNG file...", [new FileFilter("PNG Image", "*.png", "*.png")]);
+			}
+			
+			protected function onSingleSWFChosen(event:Event):void
+			{
+				/*
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(_chosenPNG, FileMode.READ);
+				
+				var source:ByteArray = new ByteArray();
+				fileStream.readBytes(source);
+				
+				fileStream.close();
+				
+				source.position = 3;
+				var atfSize:int = source.readUnsignedByte() * 0x10000 + source.readUnsignedByte() * 0x100 + source.readUnsignedByte();
+				
+				source.position += atfSize;
+				trace(source.readUTFBytes(3));
+				
+				var descSize:int = source.readUnsignedByte() * 0x10000 + source.readUnsignedByte() * 0x100 + source.readUnsignedByte();
+				var desc:ByteArray = new ByteArray();
+				source.readBytes(desc);
+				
+				desc.position = 0;
+				var descObject:Object = desc.readObject();
+				
+				for (var textureID:String in descObject['info'])
+				{
+					break;
+				}
+				
+				var newTextureID:String = _chosenPNG.name.substr(0, _chosenPNG.name.length - 4);
+				descObject['info'][newTextureID] = descObject['info'][textureID];
+				if (textureID != newTextureID)
+				{
+					delete descObject['info'][textureID];
+				}
+				
+				descObject['info'][newTextureID]['textureID'] = newTextureID;
+				
+				desc.clear();
+				desc.writeObject(descObject);
+				
+				source.position = atfSize + 9;
+				source.length = source.position;
+				
+				var size:int = desc.length;
+				source.writeByte((size >> 16) & 0xFF);
+				source.writeByte((size >> 8) & 0xFF);
+				source.writeByte(size & 0xFF);
+				
+				source.writeBytes(desc);
+				
+				source.position = 0;
+				
+				fileStream.open(_chosenPNG, FileMode.WRITE);
+				fileStream.writeBytes(source);
+				fileStream.close();
+				
+				return;
+				*/
+				taLog.appendText(_chosenPNG.nativePath + " selected for processing\n");
+				
+				var so:SharedObject = SharedObject.getLocal("PngToAtlasSettings");
+				so.data.lastPath = _chosenPNG.parent.nativePath;
+				so.flush();
+				
+				var configData:ConfigData = new ConfigData();
+				
+				configData.combineSpriteSheet = chkAsSpriteSheet.selected;
+				configData.cropWhitespace = chkCropImage.selected;
+				
+				configData.embedAnimation = chkEmbedSap.selected;
+				configData.extrudeEdges = chkExtrudeEdges.selected;
+				configData.generateClass = chkGenerateClass.selected;
+				configData.createHighlights = chkHighlights.selected;
+				configData.includeBinAlpha = chkIncludeNac.selected;
+				configData.compressAtlas = chkNeedCompression.selected;
+				configData.advancedCompression = chkAdvCompression.selected;
+				
+				configData.compressionLevel = uint(edtCompressionLevel.text);
+				configData.mipLevels = uint(edtMipLevels.text);
+				configData.textureGap = uint(edtTexturesGap.text);
+				
+				configData.listSourcePath = [_chosenPNG.parent.nativePath];
+				
+				applyConfig(configData);
+			}
+			
+			private function creationCompleteHandler(event:FlexEvent):void
+			{
+				_configListDataProvider = ConfigListDataProvider.getInstance();
+				configList.dataProvider = _configListDataProvider.sourceCollection;
+				loadConfigList();
+				
+				NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onInvokeEvent);
+			}
+			
+			private var _listPaths:Array;
+			private var _commandLineConfig:ConfigData;
+			private function onInvokeEvent(event:InvokeEvent):void
+			{
+				var arguments:Array = event.arguments;
+				
+				if (arguments.length == 0)
+				{
+					return;
+				}
+				
+				var params:String = "";
+				_listPaths = [];
+				for (var i:int = 0; i < arguments.length; i++)
+				{
+					if (arguments[i].charAt(0) == '-')
+					{
+						params += arguments[i].substr(1);
+					}
+					else
+					{
+						_listPaths.push(arguments[i]);
+					}
+				}
+				
+				var toAtlas:Boolean = false;
+				var configData:ConfigData = new ConfigData();
+				configData.removeTemp = true;
+				
+				for (i = 0; i < params.length; i++)
+				{
+					var param:String = params.charAt(i);
+					switch (param)
+					{
+						case 'a':
+							toAtlas = true;
+							break;
+						
+						case 'c':
+							configData.compressAtlas = true;
+							break;
+						
+						case 'j':
+							configData.advancedCompression = true;
+							break;
+						
+						case 'b':
+							configData.includeBinAlpha = true;
+							break;
+						
+						case 's':
+							configData.combineSpriteSheet = true;
+							break;
+						
+						case 'w':
+							configData.cropWhitespace = true;
+							break;
+						
+						case 'e':
+							configData.extrudeEdges = true;
+							break;
+					}
+				}
+				
+				_commandLineConfig = configData;
+				
+				if (toAtlas)
+				{
+					_commandLineConfig.listSourcePath = new Array();
+					for (i = 0; i < _listPaths.length; i++)
+					{
+						_commandLineConfig.listSourcePath.push(_listPaths[i]);
+					}
+				}
+				else
+				{
+					_commandLineConfig.listSourcePath = [_listPaths.shift()];
+					_commandLineConfig.useFolderName = false;
+					ConfigProcessor.getInstance().addEventListener(Event.COMPLETE, onConfigProcessed);
+				}
+				
+				ConfigProcessor.getInstance().applyConfig(_commandLineConfig, this, this.taLog);
+			}
+			
+			protected function onConfigProcessed(event:Event):void
+			{
+				if (_listPaths.length > 0)
+				{
+					_commandLineConfig.listSourcePath = [_listPaths.shift()];
+					ConfigProcessor.getInstance().applyConfig(_commandLineConfig, this, this.taLog);
+				}
+			}
+			
+			/* CONFIG */
+			private var _configListDataProvider:ConfigListDataProvider;
+			
+			private function loadConfigList():void
+			{
+				configList.enabled = false;
+				
+				_configListDataProvider.addEventListener(Event.COMPLETE, onConfigListDataProviderReady);
+				
+				_configListDataProvider.init();
+			}
+			
+			private function onConfigListDataProviderReady(event:Event):void
+			{
+				configList.enabled = true;
+			}
+			
+			private function addConfig_clickHandler(event:MouseEvent):void
+			{
+				var configEditorView:ConfigEditorView = new ConfigEditorView();
+				PopUpManager.addPopUp(configEditorView, this, true);
+				PopUpManager.centerPopUp(configEditorView);
+			}
+			
+			private function btnOpenConfig_clickHandler(event:MouseEvent):void
+			{
+				var openFile:File = new File(_configListDataProvider.lastPath);
+				openFile.addEventListener(Event.SELECT, onConfigForOpenSelected);
+				openFile.browseForOpen("Open cofig file...", [new FileFilter("Config file", "*.dat")]);
+			}
+			
+			private function onConfigForOpenSelected(event:Event):void
+			{
+				var file:File = event.target as File;
+				_configListDataProvider.loadConfig(file.nativePath);
+			}
+			
+			private function editConfig_clickHandler(event:MouseEvent):void
+			{
+				if (configList.selectedItem == null)
+				{
+					return;
+				}
+				
+				var configEditorView:ConfigEditorView = new ConfigEditorView();
+				var configData:ConfigData = configList.selectedItem;
+				configEditorView.configData = configData;
+				PopUpManager.addPopUp(configEditorView, this, true);
+				PopUpManager.centerPopUp(configEditorView);
+			}
+			
+			private function btnDeleteConfig_clickHandler(event:MouseEvent):void
+			{
+				if (configList.selectedItem == null)
+				{
+					return;
+				}
+				
+				_configListDataProvider.removeConfig(configList.selectedItem);
+			}
+			
+			private function configList_changeHandler(event:IndexChangeEvent):void
+			{
+				btnEditConfig.enabled = configList.selectedItem != null;
+			}
+			
+			private function windowedapplication1_closingHandler(event:Event):void
+			{
+				ConfigListDataProvider.getInstance().saveConfigList();
+			}
+			
+			private function applyConfig(configData:ConfigData):void
+			{
+				ConfigProcessor.getInstance().applyConfig(
+					configData, 
+					this,
+					taLog
+				);
+			}
+			
+			private function btnApplyConfig_clickHandler(event:MouseEvent):void
+			{
+				promptApplyConfig();
+			}
+			
+			protected function configList_doubleClickHandler(event:MouseEvent):void
+			{
+				if (event.target is DataGroup) // if not double clicked on item
+				{
+					return;
+				}
+				
+				promptApplyConfig();
+			}
+			
+			
+			private function promptApplyConfig():void
+			{
+				if ((configList.selectedItem as ConfigData) == null)
+				{
+					return;
+				}
+				
+				Alert.show(
+					"Are you sure to apply config '" + (configList.selectedItem as ConfigData).label + "'?", 
+					"Apply config", 
+					Alert.YES | Alert.NO, 
+					this, 
+					onPromptApplyConfigClosed
+				);
+			}
+			
+			private function onPromptApplyConfigClosed(event:CloseEvent):void
+			{
+				switch(event.detail)
+				{
+					case Alert.YES:
+					{
+						applyConfig(configList.selectedItem);
+						break;
+					}
+						
+					case Alert.NO:
+					{
+						break;
+					}
+						
+					default:
+					{
+						break;
+					}
+				}
+			}
+			
+			private var _fileBitmaps:File;
+			private var _fileTypeFiler:Array;
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				_listBitmaps = new Array();
+				_listBitmapFiles = new Array();
+				
+				if (_fileTypeFiler == null)
+				{
+					_fileTypeFiler = [
+						new FileFilter("PNG Image", "*.png", "*.png")
+					]; 
+				}
+				
+				if (_fileBitmaps == null)
+				{
+					var so:SharedObject = SharedObject.getLocal("PngToAtlas");
+					var lastPath:String = so.data.lastHighlightPath;
+					
+					_fileBitmaps = new File(lastPath);
+					_fileBitmaps.addEventListener(FileListEvent.SELECT_MULTIPLE, onBitmapsSelected);
+				}
+				_fileBitmaps.browseForOpenMultiple("Select texture files", _fileTypeFiler);
+			}
+			
+			protected function onBitmapsSelected(event:FileListEvent):void
+			{
+				if (_listFiles == null)
+				{
+					_listFiles = event.files;
+				}
+				else
+				{
+					_listFiles = _listFiles.concat(event.files);
+				}
+				
+				var so:SharedObject = SharedObject.getLocal("PngToAtlas");
+				so.data.lastHighlightPath = event.files[0].parent.nativePath;
+				so.flush();
+				
+				processFiles();
+				
+				(FlexGlobals.topLevelApplication as Application).enabled = false;
+			}
+			
+			private var _listFiles:Array;
+			private var _currentBitmapFile:File;
+			private function processFiles():void
+			{
+				if (_listFiles == null || _listFiles.length == 0)
+				{
+					createHighlights();
+					return;
+				}
+				
+				if (_currentBitmapFile != null)
+				{
+					return;
+				}
+				
+				loadBitmapFromFile(
+					_listFiles.shift()
+				);
+			}
+			
+			private function loadBitmapFromFile(file:File):void
+			{
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(file, FileMode.READ);
+				
+				var bytes:ByteArray = new ByteArray();
+				fileStream.readBytes(bytes, 0, file.size);
+				fileStream.close();
+				
+				_currentBitmapFile = file;
+				
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onBitmapReady);
+				loader.loadBytes(bytes);
+			}
+			
+			private var _listBitmaps:Array;
+			private var _listBitmapFiles:Array;
+			protected function onBitmapReady(event:Event):void
+			{
+				_listBitmaps.push(
+					(event.target as LoaderInfo).loader.content
+				);
+				_listBitmapFiles.push(_currentBitmapFile.nativePath);
+					
+				_currentBitmapFile = null;
+				processFiles();
+			}
+			
+			private function createHighlights():void
+			{
+				for (var i:int = 0; i < _listBitmaps.length; i++)
+				{
+					var bitmapData:BitmapData = _listBitmaps[i].bitmapData;
+					var highlightBitmapData:BitmapData = new BitmapData(Math.ceil(bitmapData.width / 4), Math.ceil(bitmapData.height / 4), true, 0x00000000);
+					highlightBitmapData = new BitmapData(Math.ceil(bitmapData.width * 0.3), Math.ceil(bitmapData.height * 0.3), true, 0x00000000);
+					highlightBitmapData.draw(
+						bitmapData,
+						new Matrix(0.25, 0, 0, 0.25, bitmapData.width * 0.025, bitmapData.height * 0.025)
+					);
+					highlightBitmapData.applyFilter(
+						highlightBitmapData,
+						highlightBitmapData.rect,
+						new Point(),
+						new GlowFilter(0xFFFFFF, 1, 2, 2, 4, 3)
+					);
+					highlightBitmapData.applyFilter(
+						highlightBitmapData,
+						highlightBitmapData.rect,
+						new Point(),
+						new ColorMatrixFilter([
+							1, 1, 1, 0, 0,
+							1, 1, 1, 0, 0,
+							1, 1, 1, 0, 0,
+							0, 0, 0, 1, 0
+						])
+					);
+					
+					var filePath:String = _listBitmapFiles[i];
+					var hlFilePath:String = filePath.substr(0, filePath.length - 4) + 'hl.png';
+					var hlFile:File = new File(hlFilePath);
+					
+					var fileStream:FileStream = new FileStream();
+					fileStream.open(hlFile, FileMode.WRITE);
+					fileStream.writeBytes(
+						PNGEncoder.encode(highlightBitmapData)
+					);
+					fileStream.close();
+				}
+				
+				(FlexGlobals.topLevelApplication as Application).enabled = true;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:TextArea id="taLog" left="10" right="200" top="74" bottom="11"/>
+	<s:Button id="btnProcessSingleFile" x="11" y="12" width="101" label="Select images"
+			  click="btnProcessSingleFile_clickHandler(event)"/>
+	<s:Label x="619" y="29" width="113" height="29" text="Compression level (30 is default):"/>
+	<s:TextInput id="edtCompressionLevel" x="742" y="29" width="48" text="30"/>
+	<s:Label x="619" y="60" text="Mip levels:"/>
+	<s:TextInput id="edtMipLevels" x="742" y="53" width="48" text="0"/>
+	<s:Label x="620" y="10" text="Textures gap:"/>
+	<s:TextInput id="edtTexturesGap" x="742" y="5" width="48" text="1"/>
+	<s:CheckBox id="chkNeedCompression" x="120" y="5" label="ATF Compression" selected="true"/>
+	<s:CheckBox id="chkAdvCompression" x="120" y="20" label="Bitmap Compression" selected="false"/>
+	<s:CheckBox id="chkIncludeNac" x="120" y="36" width="163" label="Include binary alpha data"
+				selected="false"/>
+	<s:CheckBox id="chkAsSpriteSheet" x="438" y="5" label="Combine as SpriteSheet"/>
+	<s:CheckBox id="chkCropImage" x="120" y="53" label="Crop whitespace"/>
+	<s:CheckBox id="chkHighlights" x="288" y="5" label="Create highlights"/>
+	<s:CheckBox id="chkGenerateClass" x="288" y="21" label="Generate class"/>
+	<s:CheckBox id="chkEmbedSap" x="288" y="37" label="Embed animation"/>
+	<s:CheckBox id="chkExtrudeEdges" x="288" y="53" label="Extrude edges"/>
+	<s:Group right="10" top="74" bottom="10" width="183">
+		<s:Label x="3" y="8" text="Use config:"/>
+		<s:List id="configList" left="2" right="2" top="21" bottom="67" doubleClickEnabled="true" 
+				doubleClick="configList_doubleClickHandler(event)"
+				change="configList_changeHandler(event)"/>
+		<s:Group bottom="6" height="53" horizontalCenter="0">
+			<s:Button id="btnApplyConfig" x="3" y="39" width="63" label="Apply"
+					  click="btnApplyConfig_clickHandler(event)"/>
+			<s:Button id="btnAddConfig" x="3" y="2" width="48" label="Add"
+					  click="addConfig_clickHandler(event)"/>
+			<s:Button id="btnDeleteConfig" x="122" y="39" width="59" label="Delete"
+					  click="btnDeleteConfig_clickHandler(event)"/>
+			<s:Button id="btnEditConfig" x="122" y="2" width="59" label="Edit"
+					  click="editConfig_clickHandler(event)"/>
+			<s:Button id="btnOpenConfig" x="58" y="2" width="56" label="Open"
+					  click="btnOpenConfig_clickHandler(event)"/>
+		</s:Group>
+	</s:Group>
+	<s:Button x="10" y="41" width="102" label="Create *hl" click="button1_clickHandler(event)"/>
+</s:WindowedApplication>

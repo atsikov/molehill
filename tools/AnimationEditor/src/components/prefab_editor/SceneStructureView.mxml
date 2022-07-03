@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="spark.components.*" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="400" height="300" xmlns:components="components.*" xmlns:ns="components.prefab_editor.*">
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.getDefinitionByName;
+			import flash.utils.getQualifiedClassName;
+			
+			import model.data.ParticleEmitterData;
+			import model.events.SceneStructureEvent;
+			import model.providers.ParticlesListDataProvider;
+			
+			import molehill.core.animation.CustomAnimationData;
+			import molehill.core.animation.CustomAnimationManager;
+			import molehill.core.render.Scene3D;
+			import molehill.core.render.particles.ParticleEmitter;
+			import molehill.core.sprite.CustomAnimatedSprite3D;
+			import molehill.core.sprite.Sprite3D;
+			import molehill.core.sprite.Sprite3DContainer;
+			import molehill.core.text.TextField3D;
+			
+			import mx.controls.Tree;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.managers.DragManager;
+			
+			import spark.components.List;
+			
+			private var _container:Sprite3DContainer;
+			public function get container():Sprite3DContainer
+			{
+				return _container;
+			}
+			
+			public function set container(value:Sprite3DContainer):void
+			{
+				_container = value;
+				
+				update();
+			}
+			
+			public function get selectedSprite():Sprite3D
+			{
+				if (sceneTree.selectedItem != null)
+				{
+					return sceneTree.selectedItem.child;
+				}
+				
+				return null;
+			}
+			
+			private var _openItems:Array;
+			private var _lastVScrollPosition:Number = 0;
+			private var _lastHScrollPosition:Number = 0;
+			public function update(keepOpened:Boolean = true):void
+			{
+				_lastHScrollPosition = sceneTree.horizontalScrollPosition;
+				_lastVScrollPosition = sceneTree.verticalScrollPosition;
+				_openItems = new Array();
+				_treeData = fillTreeData(_container);
+				
+				sceneTree.dataProvider = _treeData;
+				if (keepOpened)
+				{
+					sceneTree.openItems = _openItems;
+				}
+				
+				sceneTree.addEventListener(FlexEvent.UPDATE_COMPLETE, onSceneTreeUpdated);
+			}
+			
+			private function fillTreeData(container:Sprite3DContainer):Object
+			{
+				var openItems:Array = sceneTree.openItems as Array;
+				var pointer:Object = new Array();
+				
+				for (var i:int = 0; i < container.numChildren; i++)
+				{
+					var child:Sprite3D = container.getChildAt(i);
+					pointer[i] = new Object();
+					pointer[i].child = child;
+					
+					if (child is TextField3D)
+					{
+						pointer[i].label = "Text: " + (child as TextField3D).text;
+					}
+					else if (child is Sprite3DContainer)
+					{
+						pointer[i].label = "Sprite3DContainer (" + child.name + ")";
+						pointer[i].children = fillTreeData(child as Sprite3DContainer);
+					}
+					else if (child is CustomAnimatedSprite3D)
+					{
+						pointer[i].label = "Custom animation: " + (child as CustomAnimatedSprite3D).customAnimationData.animationName;
+					}
+					else
+					{
+						pointer[i].label = child.textureID == null ? '<No Texture> (' + child.darkenColor.toString(16) + ')' : child.textureID;
+						pointer[i].label += " (" + child.name + ")";
+					}
+					
+					for (var j:int = 0; j < openItems.length; j++)
+					{
+						var item:Object = openItems[j];
+						
+						if (item.child === child)
+						{
+							_openItems.push(pointer[i]);
+							break;
+						}
+					}
+				}
+				
+				return pointer;
+			}
+			
+			private var _treeData:Object;
+			
+			protected function sceneTree_dragDropHandler(event:DragEvent):void
+			{
+				if (event.dragInitiator === sceneTree)
+				{
+					var draggedElement:Object = (event.dragSource.dataForFormat("treeItems") as Array)[0];
+					if (draggedElement == null) 
+					{
+						update();
+						return;
+					}
+					
+					var parentObject:Object = sceneTree.mx_internal::_dropData.parent;
+					var index:int = sceneTree.mx_internal::_dropData.index;
+					
+					if (event.action == DragManager.MOVE)
+					{
+						dispatchEvent(
+							new SceneStructureEvent(SceneStructureEvent.CHILD_MOVED, draggedElement.child, parentObject == null ? _container : parentObject.child, index)
+						);
+					}
+					else if (event.action == DragManager.COPY)
+					{
+						dispatchEvent(
+							new SceneStructureEvent(SceneStructureEvent.CHILD_COPIED, draggedElement.child, parentObject == null ? _container : parentObject.child, index)
+						);
+					}
+				}
+				else if (event.dragSource.hasFormat("animationData") || event.dragSource.hasFormat("air:text"))
+				{
+					var text:String = event.dragSource.dataForFormat("animationData") as String;
+					if (text == null)
+					{
+						text = event.dragSource.dataForFormat("air:text") as String;
+					}
+					var parsedObject:Object = JSON.parse(text);
+					if (parsedObject['type'] == "custom_animation")
+					{
+						var customAnimationData:CustomAnimationData = CustomAnimationManager.getInstance().getAnimationData(parsedObject['animationName']);
+						var customAnimatedSprite:CustomAnimatedSprite3D = new CustomAnimatedSprite3D();
+						customAnimatedSprite.customAnimationData = customAnimationData;
+						customAnimatedSprite.play();
+						child = customAnimatedSprite;
+					}
+					else if (parsedObject['type'] == 'particles')
+					{
+						child = new ParticleEmitter();
+						var particleData:ParticleEmitterData = ParticlesListDataProvider.getInstance().getParticlesDataByName(parsedObject['name']);
+						
+						var def:XML = describeType(particleData);
+						
+						var accessors:XMLList = def['variable'];
+						
+						for each (var node:XML in accessors) 
+						{
+							var propName:String = node.@name;
+							if (propName != 'textureID')
+							{
+								child[propName] = particleData[propName];
+							}
+							else
+							{
+								child.setTexture(particleData[propName]);
+							}
+						}
+					}
+					else
+					{
+						return;
+					}
+					
+					parentObject = sceneTree.mx_internal::_dropData.parent;
+					if (parentObject != null) 
+					{
+						parentObject = parentObject.child;
+					}
+					
+					index = sceneTree.mx_internal::_dropData.index;
+					
+					if (parentObject != null && !parentObject is Sprite3DContainer)
+					{
+						parentObject = (parentObject as Sprite3DContainer).parent;
+						index = (parentObject as Sprite3DContainer).numChildren;
+					}
+					
+					dispatchEvent(
+						new SceneStructureEvent(SceneStructureEvent.CHILD_ADDED, child, parentObject as Sprite3DContainer, index)
+					);
+				}
+				else if (event.dragSource.hasFormat("texturePreview"))
+				{
+					parentObject = sceneTree.mx_internal::_dropData.parent;
+					if (parentObject != null) 
+					{
+						parentObject = parentObject.child;
+					}
+					
+					index = sceneTree.mx_internal::_dropData.index;
+					
+					if (parentObject != null && !parentObject is Sprite3DContainer)
+					{
+						parentObject = (parentObject as Sprite3DContainer).parent;
+						index = (parentObject as Sprite3DContainer).numChildren;
+					}
+					
+					var texturePreview:TextureExplorerElementView = event.dragSource.dataForFormat("texturePreview") as TextureExplorerElementView;
+					var child:Sprite3D = Sprite3D.createFromTexture(texturePreview.textureName);
+					
+					dispatchEvent(
+						new SceneStructureEvent(SceneStructureEvent.CHILD_ADDED, child, parentObject as Sprite3DContainer, index)
+					);
+				}
+			}
+			
+			protected function sceneTree_itemClickHandler(event:ListEvent):void
+			{
+				if (sceneTree.selectedItem != null)
+				{
+					dispatchEvent(
+						new SceneStructureEvent(SceneStructureEvent.CHILD_SELECTED, sceneTree.selectedItem.child, null, 0)
+					);
+				}
+			}
+			
+			protected function sceneTree_dragEnterHandler(event:DragEvent):void
+			{
+				if (event.dragInitiator == sceneTree)
+				{
+					return;
+				}
+				
+				if (!event.dragSource.hasFormat("texturePreview") &&
+					!event.dragSource.hasFormat("animationData") &&
+					!event.dragSource.hasFormat("air:text"))
+				{
+					return;
+				}
+				
+				event.preventDefault();
+				DragManager.showFeedback(DragManager.COPY);
+				DragManager.acceptDragDrop(sceneTree);
+				(event.target as Tree).showDropFeedback(event);
+			}
+			
+			protected function sceneTree_clickHandler(event:MouseEvent):void
+			{
+				if (sceneTree.selectedItem == null)
+				{
+					dispatchEvent(
+						new SceneStructureEvent(SceneStructureEvent.CHILD_SELECTED, null, null, -1)
+					);
+				}
+			}
+			
+			protected function sceneTree_nativeDragEnterHandler(event:NativeDragEvent):void
+			{
+				if (event.clipboard.formats.indexOf(ClipboardFormats.TEXT_FORMAT) == -1)
+				{
+					return;
+				}
+				
+				var text:String = event.clipboard.getData(ClipboardFormats.TEXT_FORMAT) as String;
+				
+				try
+				{
+					var parsedObject:Object = JSON.parse(text);
+				}
+				catch (e:Error)
+				{
+					return;
+				}
+				
+				if (parsedObject == null)
+				{
+					return;
+				}
+				
+				if (parsedObject.type != 'custom_animation' &&
+					parsedObject.type != 'particles')
+				{
+					return;
+				}
+				
+				NativeDragManager.acceptDragDrop(sceneTree);
+			}
+			
+			protected function onSceneTreeUpdated(event:FlexEvent):void
+			{
+				sceneTree.removeEventListener(FlexEvent.UPDATE_COMPLETE, onSceneTreeUpdated);
+				
+				sceneTree.horizontalScrollPosition = _lastHScrollPosition;
+				sceneTree.verticalScrollPosition = _lastVScrollPosition;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Metadata>
+		[Event(name="childMoved", type="model.events.SceneStructureEvent")]
+		[Event(name="childCopied", type="model.events.SceneStructureEvent")]
+		[Event(name="childSelected", type="model.events.SceneStructureEvent")]
+		[Event(name="childAdded", type="model.events.SceneStructureEvent")]
+	</fx:Metadata>
+	
+	<s:Scroller x="0" y="0" width="100%" height="100%" id="scrSceneTree">
+		<s:Group width="100%" height="100%">
+			<ns:DeselectableTree id="sceneTree" left="0" right="0" top="0" bottom="0"
+								 allowMultipleSelection="false" borderColor="#000000"
+								 click="sceneTree_clickHandler(event)"
+								 dragDrop="sceneTree_dragDropHandler(event)" dragEnabled="true"
+								 dragMoveEnabled="true" dragOver="sceneTree_dragEnterHandler(event)"
+								 dropEnabled="true" itemClick="sceneTree_itemClickHandler(event)"
+								 nativeDragEnter="sceneTree_nativeDragEnterHandler(event)">
+				
+			</ns:DeselectableTree>
+		</s:Group>
+	</s:Scroller>
+</s:Group>

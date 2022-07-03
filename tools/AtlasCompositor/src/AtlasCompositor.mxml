@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   addedToStage="windowedapplication1_addedToStageHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import components.BuildingView;
+			import animation_data.WorldEntryAnimationInfo;
+			
+			import molehill.core.texture.SpriteSheetData;
+			import molehill.core.texture.TextureAtlasBitmapData;
+			import molehill.core.texture.TextureData;
+			
+			import mx.graphics.codec.PNGEncoder;
+			import mx.managers.PopUpManager;
+			
+			private var _rootDirectory:File;
+			private var _rootDirectoryPath:String = "";
+			protected function buttonBrowse_clickHandler(event:MouseEvent):void
+			{
+				_rootDirectory = new File("Z:\\home\\localhost\\www\\uploads\\buildings");
+				_rootDirectory.addEventListener(Event.SELECT, onDirectoryChosen);
+				_rootDirectory.browseForDirectory("Please select a directory...");
+			}
+			
+			protected function onDirectoryChosen(event:Event):void
+			{
+				_rootDirectoryPath = _rootDirectory.nativePath;
+				taLog.appendText(_rootDirectoryPath + " selected as root directory\n");
+			}
+			
+			private var _currentFolderIndex:int = 0;
+			private var _currentFileIndex:int = 0;
+			private var _currentFolder:File;
+			private var _currentFile:File;
+			protected function btnProcess_clickHandler(event:MouseEvent):void
+			{
+				if (_rootDirectoryPath == "")
+				{
+					//Alert.show("Select root directory");
+					return;
+				}
+				
+				//processNextFolder();
+				
+				loadAnimationInfo();
+				
+				/*
+				var listFiles:Array = _rootDirectory.getDirectoryListing();
+				for (var i:int = 0; i < listFiles.length; i++)
+				{
+					var itemDir:File = listFiles[i];
+					if (!itemDir.isDirectory)
+					{
+						continue;
+					}
+					
+					var listPics:Array = itemDir.getDirectoryListing();
+					for (var j:int = 0; j < listPics.length; j++)
+					{
+						var picFile:File = listPics[j];
+						if (picFile.extension != 'png')
+						{
+							continue;
+						}
+						
+						if (picFile.name == picFile.parent.name + "_i.png")
+						{
+							continue;
+						}
+						
+						taLog.appendText(picFile.name + " found in " + itemDir.name + " folder\n");
+					}
+				}
+				*/
+			}
+			
+			private var _animationsInfo:Object;
+			private var _spriteSheetDataInfo:Object;
+			private function loadAnimationInfo():void
+			{
+				var file:File = new File(_rootDirectoryPath + "/animations_all.json");
+				if (file.exists)
+				{
+					var fileStream:FileStream = new FileStream();
+					fileStream.open(file, FileMode.READ);
+					var rawData:String = fileStream.readUTFBytes(file.size);
+					fileStream.close();
+				
+					_animationsInfo = JSON.parse(rawData);
+				}
+				
+				file = new File(_rootDirectoryPath + "/sprite_sheet_data.json");
+				if (file.exists)
+				{
+					fileStream = new FileStream();
+					fileStream.open(file, FileMode.READ);
+					rawData = fileStream.readUTFBytes(file.size);
+					fileStream.close();
+					
+					_spriteSheetDataInfo = JSON.parse(rawData);
+				}
+				
+				var listFiles:Array = _rootDirectory.getDirectoryListing();
+				for (var i:int = 0; i < listFiles.length; i++)
+				{
+					var itemDir:File = listFiles[i];
+					if (!itemDir.isDirectory)
+					{
+						continue;
+					}
+					
+				}
+				
+				_hashPeopleSpriteSheets = new Object();
+				
+				processNextFolder();
+			}
+			
+			private var _currentAnimationInfo:Object;
+			private var _hashPeopleSpriteSheets:Object;
+			private function processNextFolder():void
+			{
+				if (_currentBitmaps != null)
+				{
+					for each (var bd:Object in _currentBitmaps)
+					{
+						(bd as BitmapData).dispose(); 
+					}
+				}
+				
+				_currentBitmaps = new Object();
+				
+				do
+				{
+					_currentFolder = _rootDirectory.getDirectoryListing()[_currentFolderIndex];
+					_currentFolderIndex++;
+				}
+				while (_currentFolder != null && !_currentFolder.isDirectory);
+				
+				if (_currentFolder == null)
+				{
+					taLog.appendText("All folders were processed\n");
+					return;
+				}
+				
+				var animationTag:String = _currentFolder.name;
+				
+				_currentAnimationInfo = _animationsInfo != null ? _animationsInfo[animationTag] : null;
+				if (_currentAnimationInfo != null)
+				{
+					var file:File = new File(_currentFolder.nativePath + "/animations.json");
+					var fileStream:FileStream = new FileStream();
+					fileStream.open(file, FileMode.WRITE);
+					fileStream.writeUTFBytes(JSON.stringify(_animationsInfo[animationTag]));
+					fileStream.close();
+					
+					file = new File(_currentFolder.nativePath + "/animations.amf");
+					fileStream = new FileStream();
+					fileStream.open(file, FileMode.WRITE);
+					fileStream.writeObject(_animationsInfo[animationTag]);
+					fileStream.close();
+					
+					taLog.appendText("Animation info added: " + animationTag + "\n");
+				}
+				
+				_currentFileIndex = 0;
+				processNextImage();
+			}
+			
+			private var _fromSWF:Boolean = false;
+			private function processNextImage():void
+			{
+				if (!_fromSWF)
+				{
+					if (_currentFileIndex >= _currentFolder.getDirectoryListing().length)
+					{
+						processLoadedImages();
+						return;
+					}
+					
+					do
+					{
+						_currentFile = _currentFolder.getDirectoryListing()[_currentFileIndex];
+						_currentFileIndex++;
+					}
+					while (_currentFileIndex < _currentFolder.getDirectoryListing().length && (_currentFile.isDirectory || _currentFile.name.indexOf(".png") != -1 || _currentFile.name == _currentFile.parent.name + "_atlas.png"));
+					
+					if (_currentFile.isDirectory || _currentFile.name.indexOf(".png") != -1 || _currentFile.name == _currentFile.parent.name + "_atlas.png")
+					{
+						processLoadedImages();
+						return;
+					}
+					
+					var fileStream:FileStream = new FileStream();
+					fileStream.open(_currentFile, FileMode.READ);
+					
+					var bdBytes:ByteArray = new ByteArray();
+					fileStream.readBytes(bdBytes, 0, _currentFile.size);
+					fileStream.close();
+					
+					_currentFileName = _currentFile.name;
+				}
+				else
+				{
+					for (var fileName:String in _bvSingleSWF.hashPNGs)
+					{
+						_currentFileName = fileName;
+						var pngBytes:ByteArray = _bvSingleSWF.hashPNGs[fileName];
+						
+						delete _bvSingleSWF.hashPNGs[fileName];
+						break;
+					}
+					if (pngBytes != null)
+					{
+						bdBytes = pngBytes;
+					}
+					else
+					{
+						processLoadedImages();
+						return;
+					}
+				}
+			
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onImageReady);
+				loader.loadBytes(bdBytes);
+			}
+			
+			private var _currentBitmaps:Object;
+			private var _currentFileName:String = "";
+			private function onImageReady(event:Event):void
+			{
+				var bitmapData:BitmapData = ((event.currentTarget as LoaderInfo).loader.content as Bitmap).bitmapData;
+				_currentBitmaps[_currentFileName] = bitmapData;
+				
+				processNextImage();
+			}
+			
+			private function processLoadedImages():void
+			{
+				var listBitmaps:Array = new Array();
+				var listNames:Array = new Array();
+				var hashAlphaByName:Object = new Object();
+				var baseBitmap:BitmapData;
+				for (var bitmapName:String in _currentBitmaps)
+				{
+					if (_currentFolder.name != "people" && bitmapName.indexOf("animation_") != -1)
+					{
+						continue;
+					}
+					
+					listBitmaps.push(_currentBitmaps[bitmapName]);
+					
+					if (bitmapName.match(/(\d{6}|\dx\d|\w+)_(i|work)\.\w{3}/) != null)
+					{
+						baseBitmap = _currentBitmaps[bitmapName];
+					}
+					
+					if (baseBitmap != null)
+					{
+						var i:int = 0;
+						var alphaData:ByteArray = new ByteArray();
+						alphaData.writeShort(int((baseBitmap.width + 8 - 1) / 8) * 8);
+						alphaData.writeShort(baseBitmap.height);
+						var alphaByte:uint = 0;
+						for (i = 0; i < baseBitmap.height; i++)
+						{
+							for (var j:int = 0; j < baseBitmap.width; j += 8)
+							{
+								alphaByte = 0;
+								for (var k:int = 0; k < 8; k++)
+								{
+									var pixel32:uint = (j + k) < baseBitmap.width ? baseBitmap.getPixel32(j + k, i) : 0;
+									pixel32 = pixel32 >> 24;
+									if (pixel32 > 0)
+									{
+										pixel32 = 1;
+									}
+									pixel32 = pixel32 << (7 - k);
+									alphaByte += pixel32;
+								}
+								alphaData.writeByte(alphaByte);
+							}
+						}
+						
+						hashAlphaByName[bitmapName.substr(0, bitmapName.length - 4)] = alphaData;
+					}
+					
+					baseBitmap = null;
+				}
+				listBitmaps.sortOn("width", Array.NUMERIC | Array.DESCENDING);
+
+				for (bitmapName in _currentBitmaps)
+				{
+					listNames[listBitmaps.indexOf(_currentBitmaps[bitmapName])] = bitmapName.substr(0, bitmapName.length - 4);
+				}
+				
+				var atlasWidth:int = 2;
+				var atlasHeight:int = 2;
+				while (atlasWidth < listBitmaps[0].width)
+				{
+					atlasWidth *= 2;
+				}
+				
+				while (atlasHeight < listBitmaps[0].height)
+				{
+					atlasHeight *= 2;
+				}
+				
+				i = 0;
+				var textureAtlas:TextureAtlasBitmapData;
+				var expandWidth:Boolean = true;
+				while (i < listBitmaps.length)
+				{
+					if (textureAtlas == null)
+					{
+						textureAtlas = new TextureAtlasBitmapData(atlasWidth, atlasHeight);
+					}
+					
+					if (textureAtlas.insert(listBitmaps[i], listNames[i]) != null)
+					{
+						if (_currentFolder.name == "people")
+						{
+							textureAtlas.textureAtlasData.getTextureData(listNames[i]).spriteSheetData = _hashPeopleSpriteSheets[listNames[i]];
+						}
+						i++
+					}
+					else
+					{
+						i = 0;
+						textureAtlas.dispose();
+						textureAtlas = null;
+						
+						if (expandWidth && atlasWidth < 2048)
+						{
+							atlasWidth *= 2;
+							expandWidth = false;							
+						}
+						else if (atlasHeight < 2048)
+						{
+							atlasHeight *= 2;
+							expandWidth = true;
+						}
+					}
+				}
+				
+				if (_currentAnimationInfo != null)
+				{
+					var animationName:String;
+					var peopleAnimations:Object = _currentAnimationInfo['hashPeopleAnimations'];
+					for (animationName in peopleAnimations)
+					{
+						_hashPeopleSpriteSheets[animationName] = SpriteSheetData.fromRawData(_spriteSheetDataInfo[animationName]);
+					}
+				
+					
+					var techAnimations:Array = _currentAnimationInfo['hashTechnicalAnimation'];
+					for (i = 0; i < techAnimations.length; i++)
+					{
+						animationName = techAnimations[i]['id'];
+						var animationTextureName:String = animationName.split('$')[0];
+						var animationTextureData:TextureData = textureAtlas.textureAtlasData.getTextureData(animationTextureName);
+						if (animationTextureData != null && animationTextureData.spriteSheetData == null && _spriteSheetDataInfo[animationTextureName] != null)
+						{
+							animationTextureData.spriteSheetData = SpriteSheetData.fromRawData(_spriteSheetDataInfo[animationTextureName]);
+						}
+					}
+				}
+				
+				var fileStream:FileStream = new FileStream();
+				var outputFile:File = new File(_currentFolder.nativePath + '/' + _currentFolder.name + "_atlas.png");
+				fileStream.open(outputFile, FileMode.WRITE);
+				
+				var png:ByteArray = new PNGEncoder().encode(textureAtlas);
+				fileStream.writeBytes(png, 0, png.length);
+				fileStream.close();
+				
+				outputFile = new File(_currentFolder.nativePath + '/' + _currentFolder.name + "_atlas.tad");
+				fileStream = new FileStream();
+				fileStream.open(outputFile, FileMode.WRITE);
+				fileStream.writeObject(textureAtlas.textureAtlasData.getRawData());
+				fileStream.close();
+				
+				outputFile = new File(_currentFolder.nativePath + '/' + _currentFolder.name + "_atlas.tad.json");
+				fileStream = new FileStream();
+				fileStream.open(outputFile, FileMode.WRITE);
+				fileStream.writeUTFBytes(JSON.stringify(textureAtlas.textureAtlasData.getRawData()));
+				fileStream.close();
+				
+				outputFile = new File(_currentFolder.nativePath + '/' + _currentFolder.name + ".nac");
+				fileStream = new FileStream();
+				fileStream.open(outputFile, FileMode.WRITE);
+				var baNAC:ByteArray = new ByteArray();
+				for (bitmapName in hashAlphaByName)
+				{
+					baNAC.writeUTF(bitmapName);
+					baNAC.writeShort((hashAlphaByName[bitmapName] as ByteArray).length);
+					baNAC.writeBytes(hashAlphaByName[bitmapName]);
+				}
+				fileStream.writeBytes(baNAC);
+				fileStream.close();
+				
+				taLog.appendText("Created atlas for " + _currentFolder.name + "\n");
+				
+				var executableName:String = "";
+				if (Capabilities.os.indexOf("Windows") != -1)
+				{
+					executableName = "png2atf.exe";
+				}
+				else if (Capabilities.os.indexOf("Mac") != -1)
+				{
+					executableName = "png2atf";
+				}
+				else
+				{
+					taLog.appendText("This host OS isn't supported!\n");
+					return;
+				}
+				
+				var npInfo:NativeProcessStartupInfo = new NativeProcessStartupInfo();
+				var file:File = new File(File.applicationDirectory.nativePath + "/assets/" + executableName);
+				
+				npInfo.executable = file;
+				npInfo.workingDirectory = _rootDirectory != null && _rootDirectory.name != "" ? _rootDirectory : _currentFolder;
+				var arguments:Vector.<String> = new Vector.<String>();
+				arguments.push(
+					"-i",
+					_currentFolder.nativePath + "/" + _currentFolder.name + "_atlas.png",
+					"-o",
+					_currentFolder.nativePath + "/" + _currentFolder.name + ".atf",
+					"-q",
+					"20",
+					"-s",
+					"-n",
+					"0,0"
+				);
+				npInfo.arguments = arguments;
+				
+				var nativeProcess:NativeProcess = new NativeProcess();
+				nativeProcess.addEventListener(NativeProcessExitEvent.EXIT, onATFConverterExit);
+				nativeProcess.start(npInfo);
+			}
+			
+			protected function onATFConverterExit(event:NativeProcessExitEvent):void
+			{
+				var file:File;
+				var fsIn:FileStream;
+				var ba:ByteArray;
+				
+				var arfFile:File = new File(_currentFolder.nativePath + '/' + _currentFolder.name + ".arf");
+				var fsOut:FileStream = new FileStream();
+				fsOut.open(arfFile, FileMode.WRITE);
+				file = new File(_currentFolder.nativePath + '/' + _currentFolder.name + ".atf");
+				fsIn = new FileStream();
+				fsIn.open(file, FileMode.READ);
+				ba = new ByteArray();
+				fsIn.readBytes(ba, 0, file.size);
+				fsIn.close();
+				fsOut.writeBytes(ba, 0, ba.length);
+				
+				file = new File(_currentFolder.nativePath + '/' + _currentFolder.name + "_atlas.tad");
+				fsIn = new FileStream();
+				fsIn.open(file, FileMode.READ);
+				ba = new ByteArray();
+				fsIn.readBytes(ba, 0, file.size);
+				fsIn.close();
+				
+				fsOut.writeByte(('T').charCodeAt(0));
+				fsOut.writeByte(('A').charCodeAt(0));
+				fsOut.writeByte(('D').charCodeAt(0));
+				
+				var size:int = ba.length;
+				var s1:int = (size >> 16) & 0xFF;
+				var s2:int = (size >> 8) & 0xFF;
+				var s3:int = size & 0xFF;
+				
+				fsOut.writeByte(s1);
+				fsOut.writeByte(s2);
+				fsOut.writeByte(s3);
+				
+				fsOut.writeBytes(ba, 0, ba.length);
+				
+				file = new File(_currentFolder.nativePath + '/' + _currentFolder.name +  '.nac');
+				if (file.exists)
+				{
+					fsIn = new FileStream();
+					fsIn.open(file, FileMode.READ);
+					ba = new ByteArray();
+					fsIn.readBytes(ba, 0, file.size);
+					fsIn.close();
+					
+					fsOut.writeByte(('N').charCodeAt(0));
+					fsOut.writeByte(('A').charCodeAt(0));
+					fsOut.writeByte(('C').charCodeAt(0));
+					
+					size = ba.length;
+					s1 = (size >> 16) & 0xFF;
+					s2 = (size >> 8) & 0xFF;
+					s3 = size & 0xFF;
+					
+					fsOut.writeByte(s1);
+					fsOut.writeByte(s2);
+					fsOut.writeByte(s3);
+					
+					fsOut.writeBytes(ba, 0, ba.length);
+				}
+				
+				file = new File(_currentFolder.nativePath + '/animations.amf');
+				if (file.exists)
+				{
+					fsIn = new FileStream();
+					fsIn.open(file, FileMode.READ);
+					ba = new ByteArray();
+					fsIn.readBytes(ba, 0, file.size);
+					fsIn.close();
+					
+					fsOut.writeByte(('S').charCodeAt(0));
+					fsOut.writeByte(('A').charCodeAt(0));
+					fsOut.writeByte(('D').charCodeAt(0));
+					
+					size = ba.length;
+					s1 = (size >> 16) & 0xFF;
+					s2 = (size >> 8) & 0xFF;
+					s3 = size & 0xFF;
+					
+					fsOut.writeByte(s1);
+					fsOut.writeByte(s2);
+					fsOut.writeByte(s3);
+					
+					fsOut.writeBytes(ba, 0, ba.length);
+				}
+				
+				fsOut.close();
+				
+				if (!_fromSWF)
+				{
+					processNextFolder();
+				}
+				else
+				{
+					taLog.appendText("SWF file processed\n");
+				}
+			}
+			
+			private var _singleSWF:File;
+			protected function btnProcessSingleFile_clickHandler(event:MouseEvent):void
+			{
+				_fromSWF = true;
+				
+				_singleSWF = new File();
+				_singleSWF.addEventListener(Event.SELECT, onSingleSWFChosen);
+				_singleSWF.browseForOpen("Please select SWF file...", [new FileFilter("SWF movie", "*.swf", "*.swf")]);
+			}
+			
+			protected function onSingleSWFChosen(event:Event):void
+			{
+				PopUpManager.addPopUp(wndBuildingSettings, this, true);
+				PopUpManager.centerPopUp(wndBuildingSettings);
+			}
+			
+			private function loadSingleSWF():void
+			{
+				taLog.appendText(_singleSWF.nativePath + " selected for processing\n");
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onSingleSWFLoadingComplete);
+				loader.load(
+					new URLRequest(_singleSWF.nativePath)
+				);
+			}
+			
+			private var _bvSingleSWF:BuildingView;
+			protected function onSingleSWFLoadingComplete(event:Event):void
+			{
+				_bvSingleSWF = new BuildingView(
+					(event.currentTarget as LoaderInfo).loader.content as MovieClip,
+					tfBuildingID.text,
+					chkWorkState.selected
+				);
+				
+				if (_rootDirectory != null && _rootDirectory.nativePath != null)
+				{
+					_currentFolder = new File(_rootDirectory.nativePath + "/" + _bvSingleSWF.entryTextureID);
+				}
+				else
+				{
+					_currentFolder = new File(_singleSWF.parent.nativePath + "/" + _bvSingleSWF.entryTextureID);
+				}
+				if (!_currentFolder.exists)
+				{
+					_currentFolder.createDirectory();
+				}
+				
+				_currentBitmaps = new Object();
+				_spriteSheetDataInfo = _bvSingleSWF.hashSpriteSheetDatas;
+				
+				_currentAnimationInfo = new Object();
+				if (WorldEntryAnimationInfo.getInstance().getAnimationInfo(_bvSingleSWF.entryTextureID) != null)
+				{
+					var itemID:String;
+					if (_bvSingleSWF.url.indexOf('construction') != -1)
+					{
+						itemID = 'construction_' + _bvSingleSWF.url.match(/\\(\dx\d_?w?a?t?e?r?)\.swf/)[1];
+					}
+					else if (_bvSingleSWF.url.match(/(\d+)(_i|_work)?\.swf/))
+					{
+						itemID = 'item' + int(_bvSingleSWF.url.match(/(\d+)(_i|_work)?\.swf/)[1]).toString();
+					}
+					else
+					{
+						itemID = _bvSingleSWF.url.match(/\/(\w+)(_i|_work)?\.swf/)[1];
+					}
+					_currentAnimationInfo = JSON.parse(JSON.stringify(WorldEntryAnimationInfo.getInstance().getAnimationInfo(_bvSingleSWF.entryTextureID)));
+					
+					var file:File = new File(_currentFolder.nativePath + "/animations.json");
+					var fileStream:FileStream = new FileStream();
+					fileStream.open(file, FileMode.WRITE);
+					fileStream.writeUTFBytes(JSON.stringify(_currentAnimationInfo));
+					fileStream.close();
+					
+					file = new File(_currentFolder.nativePath + "/animations.amf");
+					fileStream = new FileStream();
+					fileStream.open(file, FileMode.WRITE);
+					fileStream.writeObject(_currentAnimationInfo);
+					fileStream.close();
+					
+					taLog.appendText("Animation info added: " + itemID + "\n");
+				}
+				
+				_hashPeopleSpriteSheets = new Object();
+				
+				processNextImage();
+			}
+			
+			protected function windowedapplication1_addedToStageHandler(event:Event):void
+			{
+				removeElement(wndBuildingSettings);
+			}
+			
+			protected function btnSubmitSettings_clickHandler(event:MouseEvent):void
+			{
+				PopUpManager.removePopUp(wndBuildingSettings);
+				loadSingleSWF();
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				PopUpManager.removePopUp(wndBuildingSettings);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button id="btnBrowse" x="10" y="10" label="Browse root dir" click="buttonBrowse_clickHandler(event)"/>
+	<s:Button id="btnProcess" x="126" y="9" label="Process" click="btnProcess_clickHandler(event)"/>
+	<s:TextArea id="taLog" left="10" right="8" top="38" bottom="11"/>
+	<s:Button id="btnProcessSingleFile" x="204" y="9" label="Process Single File"
+			  click="btnProcessSingleFile_clickHandler(event)"/>
+	<s:Panel id="wndBuildingSettings" x="465" y="158" width="246" height="140"
+			 title="Building Settings">
+		<s:Label x="10" y="10" width="49" height="16" fontSize="16" text="Item ID"/>
+		<s:Label x="10" y="41" width="86" height="16" fontSize="16" text="Work State"/>
+		<s:TextInput id="tfBuildingID" x="99" y="5"/>
+		<s:CheckBox id="chkWorkState" x="99" y="37"/>
+		<s:Button id="btnSubmitSettings" x="38" y="75" label="OK"
+				  click="btnSubmitSettings_clickHandler(event)"/>
+		<s:Button x="138" y="75" label="Cancel" click="button1_clickHandler(event)"/>
+	</s:Panel>
+</s:WindowedApplication>

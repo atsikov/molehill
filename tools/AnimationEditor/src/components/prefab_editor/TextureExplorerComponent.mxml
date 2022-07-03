@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="780" height="520" creationComplete="panel1_creationCompleteHandler(event)"
+		 mouseDown="panel1_mouseDownHandler(event)" mouseUp="panel1_mouseUpHandler(event)"
+		 title="Texture Browser">
+	
+	<fx:Script>
+		<![CDATA[
+			import flash.utils.setTimeout;
+			
+			import model.events.TextureExplorerEvent;
+			
+			import molehill.core.Scene3DManager;
+			import molehill.core.render.Scene3D;
+			import molehill.core.sprite.Sprite3D;
+			import molehill.core.texture.TextureAtlasData;
+			import molehill.core.texture.TextureData;
+			import molehill.core.texture.TextureManager;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.DragSource;
+			import mx.core.IVisualElement;
+			import mx.core.IVisualElementContainer;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.managers.DragManager;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import utils.FrameExecutorUtil;
+			
+			private static var _instance:TextureExplorerComponent;
+			
+			protected function panel1_mouseDownHandler(event:MouseEvent):void
+			{
+				var parent:DisplayObject = event.target as DisplayObject;
+				while (parent != null && parent !== grpContent && parent !== btnResize)
+				{
+					parent = parent.parent;
+				}
+				
+				if (parent === grpContent || parent === btnResize)
+				{
+					return;
+				}
+				
+				startDrag();
+			}
+			
+			protected function panel1_mouseUpHandler(event:MouseEvent):void
+			{
+				var parent:DisplayObject = event.target as DisplayObject;
+				while (parent != null && parent !== grpContent && parent !== btnResize)
+				{
+					parent = parent.parent;
+				}
+				
+				if (parent === grpContent || parent === btnResize)
+				{
+					return;
+				}
+				
+				stopDrag();
+			}
+			
+			private var _listLoadedAtlases:Array;
+			private var _listLoadedTextures:Array;
+			
+			private var _tempScene:Scene3D;
+			public function update():void
+			{
+				_listLoadedAtlases = new Array();
+				_listLoadedTextures = new Array();
+				
+				var listTextureAtlases:Array = TextureManager.getInstance().getAtlases();
+				for (var i:int = 0; i < listTextureAtlases.length; i++)
+				{
+					_listLoadedAtlases.push((listTextureAtlases[i] as TextureAtlasData).atlasID);
+					var listTextureNames:Array = (listTextureAtlases[i] as TextureAtlasData).listTexturesNames;
+					_listLoadedTextures = _listLoadedTextures.concat(listTextureNames);
+				}
+				
+				cmbTextureIDs.dataProvider = new ArrayCollection(_listLoadedTextures);
+				cmbAtlasIDs.dataProvider = new ArrayCollection(_listLoadedAtlases);
+				
+				imgTexture.source = null;
+			}
+			
+			private function checkTempScene():void
+			{
+				if (_tempScene == null)
+				{
+					_tempScene = new Scene3D();
+				}
+				else
+				{
+					while (_tempScene.numChildren > 0)
+					{
+						_tempScene.removeChildAt(0);
+					}
+				}
+			}
+			
+			private var _hashTextureCoords:Object;
+			protected function cmbAtlasIDs_changeHandler(event:IndexChangeEvent):void
+			{
+				var atlasID:String = cmbAtlasIDs.selectedItem;
+				
+				var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByID(atlasID);
+				if (textureAtlasData.listTexturesNames[0] == null)
+				{
+					return;
+				}
+				
+				_hashTextureCoords = new Object();
+				for (var i:int = 0; i < textureAtlasData.listTexturesNames.length; i++)
+				{
+					var textureName:String = textureAtlasData.listTexturesNames[i];
+					var textureRegion:Rectangle = textureAtlasData.getTextureBitmapRect(textureName);
+					_hashTextureCoords[textureName] = textureRegion;
+				}
+				
+				var bitmapData:BitmapData = TextureManager.getInstance().getAtlasBitmapByID(atlasID);
+				if (bitmapData != null)
+				{
+					if (_hashBitmapsByAtlasId == null)
+					{
+						_hashBitmapsByAtlasId = new Object();
+					}
+					_hashBitmapsByAtlasId[atlasID] = bitmapData;
+				}
+				
+				if (_hashBitmapsByAtlasId != null && _hashBitmapsByAtlasId[atlasID] != null)
+				{
+					_selectedAtlasId = atlasID;
+					_currentBitmapData = _hashBitmapsByAtlasId[atlasID];
+					imgTexture.source = _currentBitmapData;
+				}
+				else
+				{
+					showAtlasById(atlasID);
+				}
+			}
+			
+			private var _listScenes:Array;
+			private var _selectedAtlasId:String;
+			private function showAtlasById(atlasID:String):void
+			{
+				checkTempScene();
+				
+				var sceneManager:Scene3DManager = Scene3DManager.getInstance();
+				
+				if (!_tempScene.isActive)
+				{
+					_listScenes = new Array();
+					while (sceneManager.numScenes > 0)
+					{
+						_listScenes.push(
+							sceneManager.removeSceneAt(0)
+						);
+					}
+				
+					sceneManager.addScene(_tempScene);
+				}
+				
+				_selectedAtlasId = atlasID;
+				
+				var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByID(atlasID);
+				var sprite:Sprite3D = Sprite3D.createFromTexture(textureAtlasData.listTexturesNames[0]);
+				
+				var firstTextureData:TextureData = textureAtlasData.getTextureData(sprite.textureID);
+				sprite.textureRegion = new Rectangle(0, 0, 1, 1);
+				sprite.setSize(textureAtlasData.width, textureAtlasData.height);
+				
+				_tempScene.addChild(sprite);
+				
+				FrameExecutorUtil.getInstance().addNextFrameHandler(showSelectedAtlas);
+				//setTimeout(showSelectedAtlas, 50);
+			}
+			
+			private var _hashBitmapsByAtlasId:Object;
+			private var _currentBitmapData:BitmapData;
+			private function showSelectedAtlas():void
+			{
+				var sceneManager:Scene3DManager = Scene3DManager.getInstance();
+				var textureAtlasData:TextureAtlasData = TextureManager.getInstance().getAtlasDataByID(_selectedAtlasId);
+				
+				var currentViewportWidth:int = sceneManager.renderEngine.getViewportWidth();
+				var currentViewportHeight:int = sceneManager.renderEngine.getViewportHeight();
+				
+				sceneManager.renderEngine.setViewportSize(textureAtlasData.width, textureAtlasData.height);
+				
+				Scene3DManager.getInstance().renderEngine.setClearColor(0x00000000);
+				_currentBitmapData = sceneManager.getScreenshot();
+				Scene3DManager.getInstance().renderEngine.setClearColor(0x00CCCCCC);
+
+				imgTexture.source = _currentBitmapData;
+				
+				if (_hashBitmapsByAtlasId == null)
+				{
+					_hashBitmapsByAtlasId = new Object();
+				}
+				_hashBitmapsByAtlasId[_selectedAtlasId] = _currentBitmapData;
+				
+				sceneManager.renderEngine.setViewportSize(currentViewportWidth, currentViewportHeight);
+				
+				sceneManager.removeScene(_tempScene);
+				
+				for (var i:int = 0; i < _listScenes.length; i++)
+				{
+					sceneManager.addScene(_listScenes[i]);
+				}
+				
+				if (_listMissingAtlases != null && _listMissingAtlases.length > 0)
+				{
+					showAtlasById(_listMissingAtlases.shift());
+				}
+				else if (_bitmapsReadyCallback != null)
+				{
+					_bitmapsReadyCallback();
+					_bitmapsReadyCallback = null;
+				}
+			}
+			
+			private var _lastMousePosition:Point;
+			protected function btnResize_mouseDownHandler(event:MouseEvent):void
+			{
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMoveResize);
+				stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+				
+				_lastMousePosition = new Point(event.stageX, event.stageY);
+			}
+			
+			protected function onStageMouseMoveResize(event:MouseEvent):void
+			{
+				var newWidth:int = width + event.stageX - _lastMousePosition.x;
+				var newHeight:int = height + event.stageY - _lastMousePosition.y;
+				if (newWidth >= 780 && newHeight >= 520)
+				{
+					width = newWidth;
+					height = newHeight;
+					
+					_lastMousePosition.setTo(event.stageX, event.stageY);
+				}
+				else
+				{
+					width = newWidth >= 780 ? newWidth : 780;
+					height = newHeight >= 520 ? newHeight : 520;
+					
+					_lastMousePosition.setTo(event.stageX, event.stageY);
+				}
+			}
+			
+			protected function onStageMouseUp(event:MouseEvent):void
+			{
+				_mouseDown = false;
+				
+				stage.removeEventListener(MouseEvent.MOUSE_MOVE, onStageMouseMoveResize);
+				stage.removeEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				(parent as IVisualElementContainer).removeElement(this);
+			}
+			
+			private var _texturePreview:TextureExplorerElementView;
+			protected function imgTexture_mouseMoveHandler(event:MouseEvent):void
+			{
+				if (_mouseDown)
+				{
+					return;
+				}
+				
+				if (_texturePreview == null)
+				{
+					_texturePreview = new TextureExplorerElementView();
+					_texturePreview.mouseEnabled = false;
+					_texturePreview.mouseChildren = false;
+				}
+				
+				if (_currentBitmapData != null)
+				{
+					_texturePreview.setBitmapData(_currentBitmapData);
+				}
+				
+				showPreview(event.localX, event.localY);
+			}
+			
+			private function showPreview(pointX:Number, pointY:Number):void
+			{
+				for (var textureName:String in _hashTextureCoords)
+				{
+					var textureRect:Rectangle = _hashTextureCoords[textureName];
+					if (textureRect.contains(pointX, pointY))
+					{
+						break;
+					}
+					
+					textureRect = null;
+				}
+				
+				if (textureRect != null)
+				{
+					if (_texturePreview.parent == null)
+					{
+						grpTexture.addElement(_texturePreview);
+					}
+					_texturePreview.setTexture(textureRect, textureName);
+					
+					_texturePreview.x = textureRect.x;
+					_texturePreview.y = textureRect.y;
+				}
+				else
+				{
+					if (_texturePreview.parent != null)
+					{
+						grpTexture.removeElement(_texturePreview);
+					}
+				}
+			}
+			
+			protected function imgTexture_mouseOutHandler(event:MouseEvent):void
+			{
+				if (_texturePreview != null && _texturePreview.parent != null)
+				{
+					grpTexture.removeElement(_texturePreview);
+				}
+			}
+			
+			private var _mouseDown:Boolean = false;
+			protected function imgTexture_mouseDownHandler(event:MouseEvent):void
+			{
+				if (_texturePreview == null)
+				{
+					return;
+				}
+				
+				_mouseDown = true;
+				
+				var dragSource:DragSource = new DragSource();
+				dragSource.addData(_texturePreview, "texturePreview");
+				
+				if (_texturePreview.parent != null)
+				{
+					grpTexture.removeElement(_texturePreview);
+				}
+				
+				DragManager.doDrag(this, dragSource, event, _texturePreview, _texturePreview.x, _texturePreview.y + 27);
+				stage.addEventListener(MouseEvent.MOUSE_UP, onStageMouseUp);
+			}
+			
+			protected function panel1_creationCompleteHandler(event:FlexEvent):void
+			{
+				_instance = this;
+				_hashBitmapsByAtlasId = new Object();
+			}
+			
+			private static var _listMissingAtlases:Array;
+			private static var _bitmapsReadyCallback:Function;
+			private static var _bitmapsReadyCallbackArgs:Array;
+			public static function prepareBitmapDatasForTetxures(listTextureIds:Array, onBitmapsReady:Function, callbackArgs:Array = null):void
+			{
+				_bitmapsReadyCallback = onBitmapsReady;
+				_bitmapsReadyCallbackArgs = callbackArgs;
+				
+				var tm:TextureManager = TextureManager.getInstance();
+				if (_listMissingAtlases == null)
+				{
+					_listMissingAtlases = new Array();
+				}
+				
+				for (var i:int = 0 ; i < listTextureIds.length; i++)
+				{
+					var atlasData:TextureAtlasData = tm.getAtlasDataByTextureID(listTextureIds[i]);
+					if (atlasData == null)
+					{
+						continue;
+					}
+					
+					var atlasID:String = atlasData.atlasID;
+					
+					var bitmapData:BitmapData = TextureManager.getInstance().getAtlasBitmapByID(atlasID);
+					if (bitmapData != null)
+					{
+						_instance._hashBitmapsByAtlasId[atlasID] = bitmapData;
+					}
+					
+					if (_instance._hashBitmapsByAtlasId[atlasID] == null && _listMissingAtlases.indexOf(atlasID) == -1)
+					{
+						_listMissingAtlases.push(atlasID);
+					}
+				}
+				
+				if (_listMissingAtlases != null && _listMissingAtlases.length > 0)
+				{
+					_instance.showAtlasById(_listMissingAtlases.shift());
+				}
+				else if (_bitmapsReadyCallback != null)
+				{
+					_bitmapsReadyCallback.apply(null, _bitmapsReadyCallbackArgs);
+					_bitmapsReadyCallback = null;
+				}
+			}
+			
+			public static function getBitmapDataForTexture(textureId:String):BitmapData
+			{
+				var tm:TextureManager = TextureManager.getInstance();
+				var atlasData:TextureAtlasData = tm.getAtlasDataByTextureID(textureId);
+				if (atlasData == null)
+				{
+					return null;
+				}
+				var atlasID:String = atlasData.atlasID;
+				var atlasBitmap:BitmapData = _instance._hashBitmapsByAtlasId[atlasID];
+				
+				var textureData:TextureData = tm.getTextureDataByID(textureId);
+				var bitmapData:BitmapData = new BitmapData(textureData.width, textureData.height, true, 0x00000000);
+				var bitmapRect:Rectangle = tm.getBitmapRectangleByID(textureId);
+				bitmapData.copyPixels(
+					atlasBitmap,
+					bitmapRect,
+					new Point(textureData.blankOffsetX, textureData.blankOffsetY),
+					null,
+					null,
+					true
+				);
+				
+				return bitmapData;
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				if (cmbTextureIDs.selectedIndex == -1)
+				{
+					return;
+				}
+				
+				dispatchEvent(
+					new TextureExplorerEvent(
+						TextureExplorerEvent.TEXTURE_SELECTED,
+						cmbTextureIDs.selectedItem
+					)
+				);
+			}
+			
+			protected function grpTexture_doubleClickHandler(event:MouseEvent):void
+			{
+				if (_texturePreview != null && grpTexture.containsElement(_texturePreview))
+				{
+					dispatchEvent(
+						new TextureExplorerEvent(
+							TextureExplorerEvent.TEXTURE_SELECTED,
+							_texturePreview.textureName
+						)
+					);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Group id="grpContent" left="0" right="0" top="0" bottom="0">
+		<s:Group left="0" right="0" top="27" bottom="0">
+			<s:Scroller x="0" y="0" width="100%" height="100%">
+				<s:Group id="grpTexture" width="100%" height="100%" doubleClick="grpTexture_doubleClickHandler(event)">
+					<s:Image id="imgTexture" x="0" y="0"
+							 mouseDown="imgTexture_mouseDownHandler(event)"
+							 mouseMove="imgTexture_mouseMoveHandler(event)"
+							 mouseOut="imgTexture_mouseOutHandler(event)"/>
+				</s:Group>
+			</s:Scroller>
+		</s:Group>
+		<s:ComboBox id="cmbTextureIDs" x="69" y="2" width="265"/>
+		<s:Label x="10" y="9" text="Texture ID"/>
+		<s:ComboBox id="cmbAtlasIDs" x="391" y="2" width="265"
+					change="cmbAtlasIDs_changeHandler(event)"/>
+		<s:Label x="343" y="9" text="Atlas ID"/>
+		<s:Button x="666" y="3" label="Select" click="button2_clickHandler(event)"/>
+	</s:Group>
+	<s:Button right="6" top="-27" width="28" label="X" click="button1_clickHandler(event)"/>
+	<s:Button id="btnResize" right="0" bottom="0" width="16" height="16" label="Resize Window"
+			  mouseDown="btnResize_mouseDownHandler(event)"/>
+</s:Panel>

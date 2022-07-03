@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="200" height="250" addedToStage="group1_addedToStageHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import components.AnimationEditorComponent;
+			
+			import model.Model;
+			import model.events.AnimationDataEvent;
+			import model.events.FrameDataEvent;
+			import model.events.ModelEvent;
+			import model.types.AnimationPlayMode;
+			
+			import molehill.core.animation.CustomAnimationData;
+			
+			import mx.collections.ArrayList;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			[Bindable]
+			private var prvListAnimationStates:ArrayList;
+			
+			private var _animationData:CustomAnimationData;
+			public function get animationData():CustomAnimationData
+			{
+				return _animationData;
+			}
+			
+			public function set animationData(value:CustomAnimationData):void
+			{
+				_animationData = value;
+				
+				Model.getInstance().addEventListener(AnimationDataEvent.PROPERTIES_CHANGED, onPropertiesChanged);
+				Model.getInstance().addEventListener(AnimationDataEvent.FRAMES_CHANGED, onPropertiesChanged);
+				Model.getInstance().addEventListener(FrameDataEvent.REPEAT_COUNT_CHANGED, onPropertiesChanged);
+				
+				update();
+			}
+			
+			private function update():void
+			{
+				edtAnimationName.text = _animationData == null ? "" : _animationData.animationName;
+				edtAnimationDuration.text = _animationData == null ? "" : _animationData.animationDuration.toString();
+				edtAnimationFrameRate.text = _animationData == null ? "" : _animationData.frameRate.toString();
+				edtAnimationTotalFrames.text = _animationData == null ? "" : _animationData.totalFrames.toString();
+				lstPlayMode.selectedIndex = _animationData == null ? -1 : _listAnimationStates.indexOf(_animationData.playMode);
+			}
+			
+			private var _listAnimationStates:Array;
+			protected function group1_addedToStageHandler(event:Event):void
+			{
+				prvListAnimationStates = new ArrayList(
+					[
+						{
+							label: 'Loop',
+							data: AnimationPlayMode.LOOP
+						},
+						{
+							label: 'Ping Pong',
+							data: AnimationPlayMode.PING_PONG
+						}
+					]
+				);
+				_listAnimationStates = [AnimationPlayMode.LOOP, AnimationPlayMode.PING_PONG];
+				
+				Model.getInstance().addEventListener(ModelEvent.ACTIVE_ANIMATION_CHANGED, onActiveAnimationChanged);
+			}
+			
+			protected function onActiveAnimationChanged(event:Event):void
+			{
+				animationData = Model.getInstance().activeAnimationData;
+			}
+			
+			protected function edtAnimationName_changeHandler(event:TextOperationEvent):void
+			{
+				if (_animationData == null)
+				{
+					return;
+				}
+				
+				_animationData.animationName = (event.target as TextInput).text;
+				Model.getInstance().dispatchEvent(
+					new AnimationDataEvent(
+						AnimationDataEvent.PROPERTIES_CHANGED,
+						_animationData
+					)
+				);
+			}
+			
+			protected function edtAnimationFrameRate_changeHandler(event:TextOperationEvent):void
+			{
+				if (_animationData == null)
+				{
+					return;
+				}
+				
+				_animationData.frameRate = Number((event.target as TextInput).text);
+				Model.getInstance().dispatchEvent(
+					new AnimationDataEvent(
+						AnimationDataEvent.PROPERTIES_CHANGED,
+						_animationData
+					)
+				);
+			}
+			
+			protected function onPropertiesChanged(event:Event):void
+			{
+				update();
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				AnimationEditorComponent.instance.animationView.play();
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				AnimationEditorComponent.instance.animationView.stop();
+			}
+			
+			protected function lstPlayMode_changeHandler(event:IndexChangeEvent):void
+			{
+				Model.getInstance().activeAnimationData.playMode = lstPlayMode.selectedItem['data'];
+				Model.getInstance().dispatchEvent(
+					new AnimationDataEvent(
+						AnimationDataEvent.PROPERTIES_CHANGED,
+						_animationData
+					)
+				);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:BorderContainer x="0" y="0" width="100%" height="250" borderColor="#AF9F9F"
+					   borderWeight="3" dropShadowVisible="false">
+		<s:Label x="10" y="44" text="Name"/>
+		<s:Label x="10" y="10" text="Animation properties"/>
+		<s:Label x="10" y="73" text="Frames"/>
+		<s:TextInput id="edtAnimationName" x="90" y="34" width="93"
+					 change="edtAnimationName_changeHandler(event)"/>
+		<s:TextInput id="edtAnimationTotalFrames" x="90" y="63" width="93"/>
+		<s:TextInput id="edtAnimationFrameRate" x="90" y="93" width="94"
+					 change="edtAnimationFrameRate_changeHandler(event)"/>
+		<s:Label x="10" y="103" text="Frame rate"/>
+		<s:Label x="10" y="133" text="Duration"/>
+		<s:TextInput id="edtAnimationDuration" x="90" y="123" width="94"/>
+		<s:Label x="10" y="162" text="Play mode"/>
+		<s:DropDownList id="lstPlayMode" x="90" y="153" width="94"
+						change="lstPlayMode_changeHandler(event)"
+						dataProvider="{prvListAnimationStates}" selectedIndex="0">
+		</s:DropDownList>
+		<s:Button x="10" y="182" label="Play" click="button1_clickHandler(event)"/>
+		<s:Button x="90" y="182" label="Stop" click="button2_clickHandler(event)"/>
+	</s:BorderContainer>
+</s:Group>

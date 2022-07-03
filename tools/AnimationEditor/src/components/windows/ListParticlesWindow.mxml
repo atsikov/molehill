@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="spark.components.*" width="400" height="300"
+				   showStatusBar="false"
+				   title="Saved particle emitters">
+	<fx:Script>
+		<![CDATA[
+			import model.data.ParticleEmitterData;
+			import model.providers.ParticlesListDataProvider;
+			
+			import mx.core.FlexGlobals;
+			import mx.managers.WindowedSystemManager;
+			
+			import spark.components.WindowedApplication;
+			
+			static public function getOpenedWindow():ListParticlesWindow
+			{
+				var listOpenedWindows:Array = (FlexGlobals.topLevelApplication as WindowedApplication).nativeApplication.openedWindows;
+				for (var i:int = 0; i < listOpenedWindows.length; i++)
+				{
+					var windowSystemManager:WindowedSystemManager = listOpenedWindows[i].stage.getChildAt(0) as WindowedSystemManager;
+					if (windowSystemManager != null)
+					{
+						if (windowSystemManager.getChildAt(0) is ListParticlesWindow)
+						{
+							return windowSystemManager.getChildAt(0) as ListParticlesWindow;
+						}
+					}
+				}
+				
+				return null;
+			}
+			
+			protected function lstParticles_mouseDownHandler(event:MouseEvent):void
+			{
+				if (lstParticles.selectedIndex == -1)
+				{
+					return;
+				}
+				
+				var particlesData:ParticleEmitterData = ParticlesListDataProvider.getInstance().getParticlesDataByName(lstParticles.selectedItem);
+				var clipboard:Clipboard = new Clipboard();
+				
+				var clipboardData:Object = {
+					type: 'particles',
+					name: particlesData.name
+				}
+					
+				clipboard.setData(
+					ClipboardFormats.TEXT_FORMAT,
+					JSON.stringify(clipboardData)
+				);
+				
+				NativeDragManager.doDrag(
+					lstParticles,
+					clipboard
+				);
+			}
+			
+			protected function btnSave_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+			
+			protected function btnLoad_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<components:List id="lstParticles" left="0" right="0" top="0" bottom="30" dataProvider="{ParticlesListDataProvider.getInstance()}"
+					 mouseDown="lstParticles_mouseDownHandler(event)">
+	</components:List>
+	<components:Button id="btnSave" left="10" bottom="4" label="Save" click="btnSave_clickHandler(event)"/>
+	<components:Button id="btnLoad" left="88" bottom="4" label="Load" click="btnLoad_clickHandler(event)"/>
+</components:Window>

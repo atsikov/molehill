@@ -8,6 +8,8 @@ This library is a 2D sprite render and input handling engine, developed mostly b
 
 The engine provided smooth content-rich render (though depends on hardware) and made it easier to port assets from Unity-based mobile games.
 
+`/tools` folder contains texture atlas packer and visual prefabs editor.
+
 ## Highlights
 
 Features include but not limited to

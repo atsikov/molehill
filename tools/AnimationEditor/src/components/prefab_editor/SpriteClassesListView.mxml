@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="400" height="300" mouseDown="panel1_mouseDownHandler(event)"
+		 mouseUp="panel1_mouseUpHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.DragEvent;
+			
+			import spark.components.Group;
+			
+			private var _spriteListData:ArrayCollection = new ArrayCollection(
+				[
+					{
+						label: 'Sprite3DContainer',
+						fullName: 'molehill.core.sprite.Sprite3DContainer'
+					},
+					{
+						label: 'CustomAnimatedSprite3D',
+						fullName: 'molehill.core.sprite.CustomAnimatedSprite3D'
+					},
+					{
+						label: 'TextField3D',
+						fullName: 'molehill.core.text.TextField3D'
+					},
+					/*{
+						label: 'TiledSprite3D',
+						fullName: 'molehill.easy.ui3d.TiledSprite3D'
+					},*/
+				]
+			);
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				(parent as Group).removeElement(this);
+			}
+			
+			protected function panel1_mouseDownHandler(event:MouseEvent):void
+			{
+				var parent:DisplayObject = event.target as DisplayObject;
+				while (parent != null && !(parent is List))
+				{
+					parent = parent.parent;
+				}
+				
+				if (parent is List)
+				{
+					return;
+				}
+				
+				startDrag();
+			}
+			
+			protected function panel1_mouseUpHandler(event:MouseEvent):void
+			{
+				var parent:DisplayObject = event.target as DisplayObject;
+				while (parent != null && !(parent is List))
+				{
+					parent = parent.parent;
+				}
+				
+				if (parent is List)
+				{
+					return;
+				}
+				
+				stopDrag();
+			}
+			
+			protected function list1_dragDropHandler(event:DragEvent):void
+			{
+				event.preventDefault();
+				(event.target as List).layout.hideDropIndicator();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:List left="0" right="0" top="0" bottom="0" dragDrop="list1_dragDropHandler(event)"
+			dragEnabled="true" dragMoveEnabled="true" dropEnabled="true" dataProvider="{_spriteListData}">
+	</s:List>
+	<s:Button x="364" y="-26" width="31" label="X" click="button1_clickHandler(event)"/>
+</s:Panel>

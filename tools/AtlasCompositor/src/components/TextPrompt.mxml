@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Panel xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="276" height="102">
+	<fx:Script>
+		<![CDATA[
+			import model.events.TextPromptEvent;
+			
+			import spark.events.TextOperationEvent;
+			
+			private var _checkTextFunction:Function;
+			public function get checkTextFunction():Function
+			{
+				// ^(?!\d+)\w+$
+				return _checkTextFunction;
+			}
+
+			public function set checkTextFunction(value:Function):void
+			{
+				_checkTextFunction = value;
+			}
+
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(
+					new TextPromptEvent(TextPromptEvent.OK, edtPromptValue.text)
+				);
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				dispatchEvent(
+					new TextPromptEvent(TextPromptEvent.CANCEL, edtPromptValue.text)
+				);
+			}
+			
+			protected function edtPromptValue_changeHandler(event:TextOperationEvent):void
+			{
+				btnOK.enabled = _checkTextFunction == null || _checkTextFunction(edtPromptValue.text);
+				
+				if (!btnOK.enabled)
+				{
+					edtPromptValue.setStyle("color", "#FF0000");
+				}
+				else
+				{
+					edtPromptValue.setStyle("color", "#000000");
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:TextInput id="edtPromptValue" y="10" left="10" right="10"
+				 change="edtPromptValue_changeHandler(event)"/>
+	<s:Button id="btnOK" y="39" label="OK" click="button1_clickHandler(event)" horizontalCenter="-40"/>
+	<s:Button y="39" label="Cancel" click="button2_clickHandler(event)" horizontalCenter="40"/>
+</s:Panel>

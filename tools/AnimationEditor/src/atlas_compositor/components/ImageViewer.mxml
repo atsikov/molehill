@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="spark.components.*"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   width="250" height="100" borderColor="#919191" borderWeight="3"
+				   click="group1_clickHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.graphics.SolidColorStroke;
+			[Bindable]
+			private var image:BitmapData;
+			
+			[Bindable]
+			private var imageName:String;
+			public function setImage(image:BitmapData, imageName:String):void
+			{
+				this.image = image;
+				this.imageName = imageName;
+			}
+			
+			protected function group1_clickHandler(event:MouseEvent):void
+			{
+				if (!(event.target is CheckBox))
+				{
+					chkImageName.selected = !chkImageName.selected;
+				}
+				
+				borderStroke = new SolidColorStroke(chkImageName.selected ? 0x403e77 : 0x919191, 3);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:CheckBox id="chkImageName" left="6" label="{imageName}" verticalCenter="0"/>
+	<s:Image id="imgSource" left="150" right="0" top="0" bottom="0" source="{image}"/>
+</s:BorderContainer>

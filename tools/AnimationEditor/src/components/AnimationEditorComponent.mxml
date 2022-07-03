@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="spark.components.*" 
+		 xmlns:components="components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="1216" height="818"
+		 addedToStage="group1_addedToStageHandler(event)"
+		 resize="group1_resizeHandler(event)" xmlns:ns="components.animation_editor.*" xmlns:ns1="components.prefab_editor.*">
+	<fx:Script>
+		<![CDATA[
+			import components.animation_editor.TextPrompt;
+			
+			import model.Model;
+			import model.events.TextPromptEvent;
+			import model.providers.AnimationListDataProvider;
+			
+			import molehill.core.Scene3DManager;
+			import molehill.core.animation.CustomAnimationData;
+			import molehill.core.animation.CustomAnimationManager;
+			import molehill.core.render.Scene3D;
+			
+			import mx.events.ResizeEvent;
+			import mx.managers.PopUpManager;
+			
+			import view.AnimationView;
+			
+			public static var instance:AnimationEditorComponent;
+			
+			[Bindable]
+			private var prvAnimationData:AnimationListDataProvider;
+			
+			private var _mainScene:Scene3D;
+			public function get scene():Scene3D
+			{
+				return _mainScene;
+			}
+			
+			protected function group1_addedToStageHandler(event:Event):void
+			{
+				if (_mainScene == null)
+				{
+					_mainScene = new Scene3D();
+				}
+				if (prvAnimationData == null)
+				{
+					prvAnimationData = new AnimationListDataProvider();
+				}
+				if (_animationView == null)
+				{
+					_animationView = new AnimationView();
+					_mainScene.addChild(_animationView);
+				}
+				
+				instance = this;
+				Scene3DManager.getInstance().addScene(_mainScene);
+				
+				Model.getInstance().refreshListTextures();
+			}
+			
+			private var _animationView:AnimationView;
+			public function get animationView():AnimationView
+			{
+				return _animationView;
+			}
+			
+			protected function group1_resizeHandler(event:ResizeEvent):void
+			{
+				if (stage == null)
+				{
+					return;
+				}
+				
+				if (Scene3DManager.getInstance().renderEngine != null)
+				{
+					Scene3DManager.getInstance().renderEngine.setViewportSize(
+						stage.stageWidth - 400,
+						stage.stageHeight - 130
+					);
+				}
+				
+				if (_promptAnimationName != null && _promptAnimationName.stage != null)
+				{
+					PopUpManager.centerPopUp(_promptAnimationName);
+				}
+			}
+			
+			public function updateViewportSize():void
+			{
+				if (Scene3DManager.getInstance().renderEngine != null)
+				{
+					Scene3DManager.getInstance().renderEngine.setViewportSize(
+						stage.stageWidth - 400,
+						stage.stageHeight - 130
+					);
+				}
+				
+				if (_promptAnimationName != null && _promptAnimationName.stage != null)
+				{
+					PopUpManager.centerPopUp(_promptAnimationName);
+				}
+			}
+			
+			
+			private var _promptAnimationName:TextPrompt;
+			protected function button1_clickCreateAnimationHandler(event:MouseEvent):void
+			{
+				if (_promptAnimationName == null)
+				{
+					_promptAnimationName = new TextPrompt();
+					_promptAnimationName.title = "Enter animation name";
+					
+					_promptAnimationName.addEventListener(TextPromptEvent.OK, onAnimationNameComfirmed);
+					_promptAnimationName.addEventListener(TextPromptEvent.CANCEL, onAnimationNameCanceled);
+				}
+				
+				PopUpManager.addPopUp(_promptAnimationName, this, true);
+				PopUpManager.centerPopUp(_promptAnimationName);
+			}
+			
+			private function onAnimationNameComfirmed(event:TextPromptEvent):void
+			{
+				var animationData:CustomAnimationData = new CustomAnimationData(event.value);
+				CustomAnimationManager.getInstance().addAnimationData(animationData);
+				
+				Model.getInstance().addNewAnimation(event.value);
+				PopUpManager.removePopUp(_promptAnimationName);
+			}
+			
+			private function onAnimationNameCanceled(event:TextPromptEvent):void
+			{
+				PopUpManager.removePopUp(_promptAnimationName);
+			}
+			
+			protected function button2_clickRemoveAnimationHandler(event:MouseEvent):void
+			{
+				var selectedAnimationIndex:int = lstAnimationNames.selectedIndex;
+				if (selectedAnimationIndex == -1)
+				{
+					return;
+				}
+				
+				var animationData:CustomAnimationData = Model.getInstance().listCreatedAnimations[selectedAnimationIndex];
+				Model.getInstance().removeAnimation(animationData);
+			}
+			
+			private function onListAnimationNamesClick(event:MouseEvent):void
+			{
+				var selectedIndex:int = lstAnimationNames.selectedIndex;
+				if (selectedIndex == -1)
+				{
+					return;
+				}
+				
+				Model.getInstance().setActiveAnimation(
+					CustomAnimationManager.getInstance().getAnimationData(lstAnimationNames.selectedItem)
+				);
+			}
+			
+			protected function button3_clickHandler(event:MouseEvent):void
+			{
+				var so:SharedObject = SharedObject.getLocal("AnimationEditorSettings");
+				var lastPath:String = so.data.lastSaveFilePath;
+				
+				var file:File = new File(lastPath);
+				file.addEventListener(Event.SELECT, onSaveFileSelected);
+				
+				file.browseForSave("Save animation package");
+			}
+			
+			protected function onSaveFileSelected(event:Event):void
+			{
+				var file:File = event.currentTarget as File;
+				
+				var pathToLowerCase:String = file.nativePath.toLowerCase();
+				if (pathToLowerCase.lastIndexOf('.sap') != pathToLowerCase.length - 4)
+				{
+					file.nativePath += '.sap';
+				}
+				
+				var so:SharedObject = SharedObject.getLocal("AnimationEditorSettings");
+				so.data.lastSaveFilePath = file.parent.nativePath;
+				so.flush();
+				
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(file, FileMode.WRITE);
+				
+				var bytes:ByteArray = new ByteArray();
+				var listRawAnimations:Array = new Array();
+				
+				var listSelectedAnimations:Vector.<Object> = lstAnimationNames.selectedItems;
+				for (var i:int = 0; i < listSelectedAnimations.length; i++)
+				{
+					var animationName:String = listSelectedAnimations[i].toString();
+					var animationData:CustomAnimationData = CustomAnimationManager.getInstance().getAnimationData(animationName);
+					
+					var rawAnimationData:Object = JSON.parse(JSON.stringify(animationData));
+					delete rawAnimationData['totalFrames'];
+					delete rawAnimationData['animationDuration'];
+					delete rawAnimationData['frameTime'];
+					listRawAnimations.push(rawAnimationData);
+				}
+				
+				bytes.writeObject(listRawAnimations);
+				
+				fileStream.writeByte(('S').charCodeAt(0));
+				fileStream.writeByte(('A').charCodeAt(0));
+				fileStream.writeByte(('P').charCodeAt(0));
+				
+				var size:int = bytes.length;
+				var s1:int = (size >> 16) & 0xFF;
+				var s2:int = (size >> 8) & 0xFF;
+				var s3:int = size & 0xFF;
+				
+				fileStream.writeByte(s1);
+				fileStream.writeByte(s2);
+				fileStream.writeByte(s3);
+				
+				fileStream.writeBytes(bytes, 0, file.size);
+				fileStream.close();
+				
+			}
+			
+			protected function button4_clickHandler(event:MouseEvent):void
+			{
+				var so:SharedObject = SharedObject.getLocal("AnimationEditorSettings");
+				var lastPath:String = so.data.lastLoadFilePath;
+				
+				var file:File = new File(lastPath);
+				file.addEventListener(Event.SELECT, onLoadFileSelected);
+				
+				file.browseForOpen("Load animation package", [new FileFilter("Sprite Animation Package", "*.sap", "*.sap")]);
+			}
+			
+			private var _hashFileByAnimationName:Object;
+			protected function onLoadFileSelected(event:Event):void
+			{
+				var file:File = event.currentTarget as File;
+				
+				var so:SharedObject = SharedObject.getLocal("AnimationEditorSettings");
+				so.data.lastLoadFilePath = file.parent.nativePath;
+				so.flush();
+				
+				var bytes:ByteArray = new ByteArray();
+				var fileStream:FileStream = new FileStream();
+				fileStream.open(file, FileMode.READ);
+				fileStream.readBytes(bytes, 0, file.size);
+				fileStream.close();
+				
+				bytes.position = 6;
+				var listRawAnimations:Array = bytes.readObject();
+				
+				listRawAnimations.sortOn('animationName');
+				
+				if (_hashFileByAnimationName == null)
+				{
+					_hashFileByAnimationName = new Object();
+				}
+				
+				for (var i:int = 0; i < listRawAnimations.length; i++)
+				{
+					var animationData:CustomAnimationData = CustomAnimationData.fromRawData(listRawAnimations[i]);
+					Model.getInstance().addAnimation(animationData);
+					_hashFileByAnimationName[listRawAnimations[i].animationName] = file;
+					
+					CustomAnimationManager.getInstance().addAnimationData(animationData);
+				}
+			}
+			
+			protected function textureloadingpanel1_completeHandler(event:Event):void
+			{
+				Model.getInstance().refreshListTextures();
+			}
+			
+			protected function lstAnimationNames_addedToStageHandler(event:Event):void
+			{
+				lstAnimationNames.addEventListener(MouseEvent.CLICK, onListAnimationNamesClick);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Scroller x="0" bottom="0" width="100%" height="100" contentBackgroundAlpha="1.0"
+				contentBackgroundColor="#CDBEBE">
+		<ns:AnimationFramesView id="viewAnimation" width="100%" height="150" gap="10"
+										paddingLeft="10" paddingTop="10" verticalAlign="top">
+		</ns:AnimationFramesView>
+	</s:Scroller>
+	<ns:AnimationPropertiesView right="200" top="0" width="200" height="250">
+	</ns:AnimationPropertiesView>
+	<ns:FramePropertiesView right="200" top="248" bottom="150" width="200">
+	</ns:FramePropertiesView>
+	<s:BorderContainer right="0" top="0" bottom="100" width="202" borderColor="#D6BCBC"
+					   borderWeight="3">
+		<s:List id="lstAnimationNames" x="0" top="0" bottom="80" width="100%"
+				addedToStage="lstAnimationNames_addedToStageHandler(event)"
+				allowMultipleSelection="true" dataProvider="{prvAnimationData}"></s:List>
+		<s:Button x="10" bottom="51" width="77" label="Create"
+				  click="button1_clickCreateAnimationHandler(event)"/>
+		<s:Button x="108" bottom="51" width="78" label="Remove"
+				  click="button2_clickRemoveAnimationHandler(event)"/>
+		<s:Button x="10" bottom="22" label="Save pack" click="button3_clickHandler(event)"/>
+		<s:Button x="108" bottom="22" label="Load pack" click="button4_clickHandler(event)"/>
+	</s:BorderContainer>
+	<ns1:TextureLoadingPanel right="200" bottom="100" width="200" height="50"
+									complete="textureloadingpanel1_completeHandler(event)">
+	</ns1:TextureLoadingPanel>
+</s:Group>

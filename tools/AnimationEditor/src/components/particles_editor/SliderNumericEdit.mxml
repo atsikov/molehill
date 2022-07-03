@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<components:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				  xmlns:s="library://ns.adobe.com/flex/spark" 
+				  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:components="spark.components.*" width="226" height="28">
+	
+	<fx:Script>
+		<![CDATA[
+			private var _caption:String = "Value";
+			[Inspectable(defaultValue="Value")]
+			public function get caption():String
+			{
+				return _caption;
+			}
+			
+			[Inspectable(defaultValue="Value")]
+			public function set caption(value:String):void
+			{
+				_caption = value;
+				updateValue();
+			}
+			
+			private function updateValue():void
+			{
+				lblValue.text = _caption + ": " + sldValue.value;
+			}
+			
+			[Inspectable(defaultValue="0")]
+			public function get minValue():Number
+			{
+				return sldValue.minimum;
+			}
+			
+			[Inspectable(defaultValue="0")]
+			public function set minValue(value:Number):void
+			{
+				sldValue.minimum = value;
+			}
+			
+			[Inspectable(defaultValue="1")]
+			public function get stepSize():Number
+			{
+				return sldValue.stepSize;
+			}
+			
+			[Inspectable(defaultValue="1")]
+			public function set stepSize(value:Number):void
+			{
+				sldValue.stepSize = value;
+			}
+			
+			[Inspectable(defaultValue="0")]
+			public function get value():Number
+			{
+				return sldValue.value;
+			}
+			
+			[Inspectable(defaultValue="0")]
+			public function set value(val:Number):void
+			{
+				sldValue.value = val;
+				updateValue();
+			}
+			
+			[Inspectable(defaultValue="10")]
+			public function get maxValue():Number
+			{
+				return sldValue.maximum;
+			}
+			
+			[Inspectable(defaultValue="10")]
+			public function set maxValue(value:Number):void
+			{
+				sldValue.maximum = value;
+			}
+			
+			protected function hslider1_changeHandler(event:Event):void
+			{
+				updateValue();
+				
+				dispatchEvent(
+					new Event(Event.CHANGE)
+				);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<components:HSlider y="16" left="0" right="0" change="hslider1_changeHandler(event)" stepSize="1" id="sldValue"/>
+	<components:Label id="lblValue" left="1" top="3" text="Value: 0"/>
+</components:Group>

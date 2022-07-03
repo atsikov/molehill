@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="spark.components.*"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="200" height="300" addedToStage="group1_addedToStageHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import model.Model;
+			import model.events.AnimationDataEvent;
+			import model.events.FrameDataEvent;
+			import model.events.ModelEvent;
+			
+			import molehill.core.animation.CustomAnimationFrameData;
+			
+			import mx.collections.ArrayList;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.TextOperationEvent;
+			
+			[Bindable]
+			private var listTextureNames:ArrayList;
+			
+			protected function group1_addedToStageHandler(event:Event):void
+			{
+				if (listTextureNames == null)
+				{
+					listTextureNames = new ArrayList();
+				}
+				listTextureNames.source = Model.getInstance().listActiveTextures;
+				
+				Model.getInstance().addEventListener(ModelEvent.ACTIVE_FRAME_CHANGED, onActiveFrameChanged);
+				Model.getInstance().addEventListener(ModelEvent.TEXTURES_UPDATED, onTexturesUpdated);
+			}
+			
+			protected function onActiveFrameChanged(event:Event):void
+			{
+				_frameData = Model.getInstance().activeFrameData;
+				update();
+			}
+			
+			private var _frameData:CustomAnimationFrameData;
+			private function update():void
+			{
+				lstFrameTexture.selectedIndex = _frameData == null ? -1 : listTextureNames.source.indexOf(_frameData.textureName);
+				edtFrameRepeatCount.text = _frameData == null ? "" : _frameData.repeatCount.toString();
+			}
+			
+			protected function edtFrameRepeatCount_changeHandler(event:TextOperationEvent):void
+			{
+				if (_frameData == null)
+				{
+					return;
+				}
+				
+				_frameData.repeatCount = int(edtFrameRepeatCount.text);
+				Model.getInstance().dispatchEvent(
+					new FrameDataEvent(
+						FrameDataEvent.REPEAT_COUNT_CHANGED,
+						_frameData
+					)
+				);
+			}
+			
+			protected function btnDeleteFrame_clickHandler(event:MouseEvent):void
+			{
+				if (_frameData == null)
+				{
+					return;
+				}
+				
+				var listFrames:Vector.<CustomAnimationFrameData> = Model.getInstance().activeAnimationData.listFrames;
+				var index:int = listFrames.indexOf(_frameData);
+				if (index != -1)
+				{
+					listFrames.splice(index, 1);
+					
+					Model.getInstance().dispatchEvent(
+						new AnimationDataEvent(
+							AnimationDataEvent.FRAMES_CHANGED,
+							Model.getInstance().activeAnimationData
+						)
+					);
+				}
+				
+				_frameData = null;
+				update();
+			}
+			
+			protected function onTexturesUpdated(event:Event):void
+			{
+				listTextureNames.source = Model.getInstance().listActiveTextures;
+			}
+			
+			protected function lstFrameTexture_changeHandler(event:IndexChangeEvent):void
+			{
+				if (_frameData == null)
+				{
+					return;
+				}
+				
+				_frameData.textureName = lstFrameTexture.selectedItem;
+				Model.getInstance().dispatchEvent(
+					new FrameDataEvent(
+						FrameDataEvent.TEXTURE_CHANGED,
+						_frameData
+					)
+				);
+			}
+			
+			private function getListSimilarTextures(textureName:String):Array
+			{
+				var listTextures:Array = Model.getInstance().listActiveTextures;
+				var selectedTexture:String = lstFrameTexture.selectedItem;
+				
+				var matchFrameIndex:Array = selectedTexture.match(/(.*?)(\d+)$/);
+				if (matchFrameIndex == null)
+				{
+					return [selectedTexture];
+				}
+				
+				var listSimilarTextures:Array = new Array();
+				
+				var selectedTexturePrefix:String = matchFrameIndex[1];
+				var selectedTextureIndex:int = matchFrameIndex[2];
+				
+				var regExp:RegExp = new RegExp(selectedTexturePrefix + "\\d+$");
+				for (var i:int = 0; i < listTextures.length; i++)
+				{
+					var textureName:String = listTextures[i];
+					var matches:Array = textureName.match(regExp);
+					if (matches == null)
+					{
+						continue;
+					}
+					
+					listSimilarTextures.push(textureName);
+				}
+				
+				listSimilarTextures.sort(sortTextures);
+				return listSimilarTextures;
+			}
+			
+			private function sortTextures(a:String, b:String):int
+			{
+				var matchFrameIndex:Array = a.match(/(.*?)(\d+)$/);
+				var indexA:int = matchFrameIndex[2];
+				
+				matchFrameIndex = b.match(/(.*?)(\d+)$/);
+				var indexB:int = matchFrameIndex[2];
+				
+				return indexA - indexB;
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				if (Model.getInstance().activeAnimationData == null)
+				{
+					return;
+				}
+				
+				var currentTexture:String = lstFrameTexture.selectedItem;
+				var similarTextures:Array = getListSimilarTextures(currentTexture);
+				var index:int = similarTextures.indexOf(currentTexture);
+				
+				var framesToAdd:Array = similarTextures.splice(index + 1, similarTextures.length);
+				
+				for (var i:int = 0; i < framesToAdd.length; i++)
+				{
+					Model.getInstance().activeAnimationData.listFrames.push(
+						new CustomAnimationFrameData(framesToAdd[i])
+					);
+				}
+				
+				Model.getInstance().dispatchEvent(
+					new AnimationDataEvent(
+						AnimationDataEvent.FRAMES_CHANGED,
+						Model.getInstance().activeAnimationData
+					)
+				);
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				if (Model.getInstance().activeAnimationData == null)
+				{
+					return;
+				}
+				
+				var currentTexture:String = lstFrameTexture.selectedItem;
+				var similarTextures:Array = getListSimilarTextures(currentTexture);
+				var index:int = similarTextures.indexOf(currentTexture);
+				
+				var framesToAdd:Array = similarTextures.splice(0, index).reverse();
+				
+				for (var i:int = 0; i < framesToAdd.length; i++)
+				{
+					Model.getInstance().activeAnimationData.listFrames.push(
+						new CustomAnimationFrameData(framesToAdd[i])
+					);
+				}
+				
+				Model.getInstance().dispatchEvent(
+					new AnimationDataEvent(
+						AnimationDataEvent.FRAMES_CHANGED,
+						Model.getInstance().activeAnimationData
+					)
+				);
+		}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:BorderContainer x="0" y="0" width="100%" height="100%" borderWeight="3">
+		<s:Label x="10" y="10" text="Frame properties"/>
+		<s:Label x="8" y="37" text="Texture"/>
+		<s:ComboBox id="lstFrameTexture" x="10" y="57" width="174"
+					change="lstFrameTexture_changeHandler(event)" dataProvider="{listTextureNames}"/>
+		<s:Label x="10" y="98" text="Repeat"/>
+		<s:TextInput id="edtFrameRepeatCount" x="88" y="88" width="96"
+					 change="edtFrameRepeatCount_changeHandler(event)"/>
+		<s:Button id="btnDeleteFrame" x="62" y="118" label="Remove"
+				  click="btnDeleteFrame_clickHandler(event)"/>
+		<s:Button x="10" y="147" label="Create 1..9" click="button1_clickHandler(event)"/>
+		<s:Button x="103" y="147" label="Create 9..1" click="button2_clickHandler(event)"/>
+	</s:BorderContainer>
+</s:Group>
